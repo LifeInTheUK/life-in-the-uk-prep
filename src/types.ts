@@ -1,4 +1,5 @@
 export interface Question {
+    id: number;
     q: string;
     o: string[];
     a: number | number[];

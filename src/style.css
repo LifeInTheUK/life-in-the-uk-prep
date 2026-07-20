@@ -21,6 +21,14 @@ body {
     background-color: var(--color-bg);
 }
 
+button:not(:disabled) {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+}
+
 .tabular {
     font-variant-numeric: tabular-nums;
 }

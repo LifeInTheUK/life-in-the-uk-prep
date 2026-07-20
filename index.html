@@ -16,28 +16,35 @@
                 Life in the UK Prep
             </h1>
 
-            <div class="order-2 sm:order-3 sm:bg-surface sm:rounded-2xl sm:border sm:border-line py-2 sm:p-7">
-                <div id="quiz-container" class="fade-in">
+            <div class="order-2 sm:order-3 flex flex-col sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
+                <div id="quiz-container" class="order-1 fade-in">
                     <!-- Question rendered here -->
                 </div>
 
-                <div id="feedback-container" class="hidden mt-5 pt-5 border-t border-line">
-                    <!-- Feedback rendered here -->
-                </div>
-
-                <div id="navigation" class="mt-6 flex justify-end">
+                <div id="navigation" class="order-2 sm:order-3 mt-6 flex justify-end">
                     <button
                         id="next-btn"
-                        class="hidden w-full sm:w-auto bg-accent hover:bg-accent-dark text-white font-medium text-sm py-3 px-6 rounded-xl transition-colors"
+                        class="hidden w-full sm:w-auto bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
                     >
                         Next Question
+                        <kbd class="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">↵</kbd>
                     </button>
                     <button
                         id="restart-btn"
-                        class="hidden w-full sm:w-auto bg-ink hover:bg-slate-700 text-white font-medium text-sm py-3 px-6 rounded-xl transition-colors"
+                        class="hidden w-full sm:w-auto bg-ink hover:bg-slate-700 active:scale-[0.98] text-white font-medium text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
                     >
                         Start Again
+                        <kbd class="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">↵</kbd>
                     </button>
+                </div>
+
+                <div
+                    id="feedback-container"
+                    class="hidden order-3 sm:order-2 mt-5 pt-5 border-t border-line"
+                    role="status"
+                    aria-live="polite"
+                >
+                    <!-- Feedback rendered here -->
                 </div>
             </div>
 
@@ -62,12 +69,12 @@
                 </div>
                 <div
                     class="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2"
-                    title="Score on first attempt"
+                    title="Correct answers this session"
                 >
                     <div class="text-base font-semibold tabular" id="score">
                         0
                     </div>
-                    <div class="text-[11px] text-muted">First Try</div>
+                    <div class="text-[11px] text-muted">Score</div>
                 </div>
             </div>
         </div>

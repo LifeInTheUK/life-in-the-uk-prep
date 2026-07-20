@@ -1,13 +1,13 @@
 import type { SM2Data } from "./types";
 
-const STORAGE_KEY = "ukTestSm2";
+const STORAGE_KEY = "ukTestSm2ById";
 
-export function getSM2(qText: string): SM2Data {
-    const data: Record<string, SM2Data> =
+export function getSM2(id: number): SM2Data {
+    const data: Record<number, SM2Data> =
         JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
     // n: repetitions in a row, ef: ease factor, i: interval (days), next: timestamp, attempts: total tries, correct: total correct
     return (
-        data[qText] || {
+        data[id] || {
             n: 0,
             ef: 2.5,
             i: 0,
@@ -18,16 +18,16 @@ export function getSM2(qText: string): SM2Data {
     );
 }
 
-export function saveSM2(qText: string, sm2Data: SM2Data): void {
-    const data: Record<string, SM2Data> =
+export function saveSM2(id: number, sm2Data: SM2Data): void {
+    const data: Record<number, SM2Data> =
         JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
-    data[qText] = sm2Data;
+    data[id] = sm2Data;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     updateGlobalAccuracy();
 }
 
 export function updateGlobalAccuracy(): void {
-    const data: Record<string, SM2Data> =
+    const data: Record<number, SM2Data> =
         JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
     let totalAttempts = 0;
     let totalCorrect = 0;
