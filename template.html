@@ -1,0 +1,3682 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Life in the UK Test Prep</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            body {
+                font-family: "Inter", sans-serif;
+            }
+            .fade-in {
+                animation: fadeIn 0.3s ease-in;
+            }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+            .correct {
+                background-color: #dcfce7 !important;
+                border-color: #22c55e !important;
+            }
+            .incorrect {
+                background-color: #fee2e2 !important;
+                border-color: #ef4444 !important;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-slate-50 text-slate-900 min-h-screen flex flex-col items-center py-8 px-4"
+    >
+        <div
+            id="app"
+            class="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-6 md:p-8"
+        >
+            <div
+                id="header"
+                class="mb-8 border-b pb-4 flex justify-between items-center"
+            >
+                <h1 class="text-2xl font-bold text-slate-800">
+                    Life in the UK Prep
+                </h1>
+                <div class="flex gap-2">
+                    <div
+                        class="text-sm font-semibold bg-blue-100 px-3 py-1 rounded-full text-blue-800"
+                        title="All-time overall accuracy"
+                    >
+                        Accuracy: <span id="global-accuracy">0%</span>
+                    </div>
+                    <div
+                        class="text-sm font-semibold bg-slate-100 px-3 py-1 rounded-full text-slate-600"
+                        title="Score on first attempt"
+                    >
+                        First-Try Score: <span id="score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="quiz-container" class="fade-in">
+                <!-- Question rendered here -->
+            </div>
+
+            <div
+                id="feedback-container"
+                class="hidden mt-6 p-4 rounded-lg border"
+            >
+                <!-- Feedback rendered here -->
+            </div>
+
+            <div id="navigation" class="mt-8 flex justify-end">
+                <button
+                    id="next-btn"
+                    class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+                >
+                    Next Question
+                </button>
+                <button
+                    id="restart-btn"
+                    class="hidden bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+                >
+                    Start Again
+                </button>
+            </div>
+        </div>
+
+        <script>
+            const questions = [
+                // Original & First Update Set
+                {
+                    q: "Which of these is a fundamental principle of British life?",
+                    o: [
+                        "Participation in community life",
+                        "Going to the pub on Fridays",
+                        "Owning a home",
+                        "Having a university degree",
+                    ],
+                    a: 0,
+                    ex: "Participation in community life is one of the fundamental principles of British life outlined in the study materials.",
+                },
+                {
+                    q: "What is the name of the UK's currency?",
+                    o: ["Euro", "Dollar", "Pound Sterling", "Franc"],
+                    a: 2,
+                    ex: "The official currency of the United Kingdom is the Pound Sterling (£).",
+                },
+                {
+                    q: "Who is the patron saint of Scotland?",
+                    o: ["St George", "St David", "St Patrick", "St Andrew"],
+                    a: 3,
+                    ex: "St Andrew is the patron saint of Scotland. His day is celebrated on 30 November.",
+                },
+                {
+                    q: "Which famous document restricted the power of the King and established that the King was subject to the law?",
+                    o: [
+                        "The Bill of Rights",
+                        "Magna Carta",
+                        "The Domesday Book",
+                        "The Act of Union",
+                    ],
+                    a: 1,
+                    ex: "The Magna Carta (Great Charter) was signed by King John in 1215. It established that even the King was subject to the law.",
+                },
+                {
+                    q: "When is St George's Day?",
+                    o: ["1 March", "17 March", "23 April", "30 November"],
+                    a: 2,
+                    ex: "St George is the patron saint of England, and his day is celebrated on 23 April.",
+                },
+                {
+                    q: "What was the name of the ship that brought the Pilgrims to America?",
+                    o: [
+                        "The Mayflower",
+                        "The Beagle",
+                        "The Golden Hind",
+                        "The Victory",
+                    ],
+                    a: 0,
+                    ex: "The Mayflower took a group of English Puritans (known as the Pilgrims) to America in 1620.",
+                },
+                {
+                    q: "Who designed the new St Paul's Cathedral after the Great Fire of London?",
+                    o: [
+                        "Inigo Jones",
+                        "Sir Christopher Wren",
+                        "Isambard Kingdom Brunel",
+                        "John Nash",
+                    ],
+                    a: 1,
+                    ex: "Sir Christopher Wren designed the new St Paul's Cathedral after the Great Fire of London in 1666.",
+                },
+                {
+                    q: "What flower is associated with Wales?",
+                    o: ["Rose", "Thistle", "Shamrock", "Daffodil"],
+                    a: 3,
+                    ex: "The daffodil is the national flower of Wales.",
+                },
+                {
+                    q: "Who was the first female Prime Minister of the UK?",
+                    o: [
+                        "Theresa May",
+                        "Margaret Thatcher",
+                        "Mary Queen of Scots",
+                        "Queen Victoria",
+                    ],
+                    a: 1,
+                    ex: "Margaret Thatcher became the first female Prime Minister of the UK in 1979.",
+                },
+                {
+                    q: "What is the capital city of Northern Ireland?",
+                    o: ["Dublin", "Belfast", "Cardiff", "Edinburgh"],
+                    a: 1,
+                    ex: "Belfast is the capital city of Northern Ireland.",
+                },
+                {
+                    q: "Which sport can be traced back to the 15th century in Scotland?",
+                    o: ["Cricket", "Football", "Golf", "Rugby"],
+                    a: 2,
+                    ex: "The modern game of golf was developed in Scotland in the 15th century.",
+                },
+                {
+                    q: "What is the longest river in the UK?",
+                    o: [
+                        "River Thames",
+                        "River Severn",
+                        "River Trent",
+                        "River Clyde",
+                    ],
+                    a: 1,
+                    ex: "The River Severn is the longest river in the UK.",
+                },
+                {
+                    q: "Who wrote 'The Lord of the Rings'?",
+                    o: [
+                        "J.K. Rowling",
+                        "C.S. Lewis",
+                        "J.R.R. Tolkien",
+                        "Roald Dahl",
+                    ],
+                    a: 2,
+                    ex: "J.R.R. Tolkien is the author of 'The Lord of the Rings' and 'The Hobbit'.",
+                },
+                {
+                    q: "What age must you be to drive a car or motorcycle in the UK?",
+                    o: ["16", "17", "18", "21"],
+                    a: 1,
+                    ex: "You must be 17 years old to drive a car or a motorcycle in the UK.",
+                },
+                {
+                    q: "Which of these places is a Crown Dependency?",
+                    o: [
+                        "Wales",
+                        "The Isle of Man",
+                        "Northern Ireland",
+                        "Gibraltar",
+                    ],
+                    a: 1,
+                    ex: "The Isle of Man and the Channel Islands are Crown Dependencies. They are not part of the UK but are linked to it.",
+                },
+                {
+                    q: "What was the population of the UK in 2011?",
+                    o: [
+                        "Around 45 million",
+                        "Around 55 million",
+                        "Around 63 million",
+                        "Around 70 million",
+                    ],
+                    a: 2,
+                    ex: "In 2011, the population of the UK was just over 63 million.",
+                },
+                {
+                    q: "Who is the spiritual leader of the Church of England?",
+                    o: [
+                        "The Monarch",
+                        "The Archbishop of Canterbury",
+                        "The Pope",
+                        "The Prime Minister",
+                    ],
+                    a: 1,
+                    ex: "The Archbishop of Canterbury is the spiritual leader of the Church of England. The monarch is the Supreme Governor.",
+                },
+                {
+                    q: "Which King was defeated at the Battle of Hastings?",
+                    o: [
+                        "King Harold",
+                        "King John",
+                        "King Richard III",
+                        "King Henry V",
+                    ],
+                    a: 0,
+                    ex: "King Harold was defeated by William the Conqueror at the Battle of Hastings in 1066.",
+                },
+                {
+                    q: "What is the system called where citizens elect representatives to make laws for them?",
+                    o: [
+                        "Direct Democracy",
+                        "Representative Democracy",
+                        "Oligarchy",
+                        "Autocracy",
+                    ],
+                    a: 1,
+                    ex: "The UK is a representative democracy, where citizens elect MPs to Parliament to make laws on their behalf.",
+                },
+                {
+                    q: "Which TWO of these are national galleries in London?",
+                    o: [
+                        "The National Gallery",
+                        "The Louvre",
+                        "The Prado",
+                        "Tate Modern",
+                    ],
+                    a: [0, 3],
+                    ex: "The National Gallery, Tate Britain, and Tate Modern are major art galleries in London.",
+                },
+                {
+                    q: "What did the Romans build to keep out the Picts?",
+                    o: [
+                        "The Tower of London",
+                        "Hadrian's Wall",
+                        "Stonehenge",
+                        "Windsor Castle",
+                    ],
+                    a: 1,
+                    ex: "Emperor Hadrian ordered the building of a wall in the north of England (Hadrian's Wall) to keep out the Picts (ancestors of the Scottish people).",
+                },
+                {
+                    q: "When did the first farmers arrive in Britain?",
+                    o: [
+                        "4,000 years ago",
+                        "6,000 years ago",
+                        "8,000 years ago",
+                        "10,000 years ago",
+                    ],
+                    a: 1,
+                    ex: "The first farmers arrived in Britain about 6,000 years ago. Their ancestors probably came from south-east Europe.",
+                },
+                {
+                    q: "Which TWO wives of Henry VIII were executed?",
+                    o: [
+                        "Jane Seymour",
+                        "Catherine Howard",
+                        "Anne Boleyn",
+                        "Catherine of Aragon",
+                    ],
+                    a: [1, 2],
+                    ex: "Anne Boleyn and Catherine Howard were both accused of taking lovers and were executed at the Tower of London.",
+                },
+                {
+                    q: "How many members does The Northern Ireland Assembly have?",
+                    o: ["90", "129", "119", "110"],
+                    a: 0,
+                    ex: "The Northern Ireland Assembly has 90 elected members, known as MLAs (Members of the Legislative Assembly).",
+                },
+                {
+                    q: "Who can get a 50% discount on their TV licence?",
+                    o: [
+                        "Blind people",
+                        "Army Officers",
+                        "Deaf people",
+                        "Students",
+                    ],
+                    a: 0,
+                    ex: "Blind people can get a 50% discount on their TV licence. People over 75 can apply for a free TV licence.",
+                },
+                {
+                    q: "What is known as Lent?",
+                    o: [
+                        "The 40 days before Easter",
+                        "The 40 days after Christmas",
+                        "The 40 days before Christmas",
+                        "The 40 days after Easter",
+                    ],
+                    a: 0,
+                    ex: "The 40 days before Easter are known as Lent, a period of fasting and preparation.",
+                },
+                {
+                    q: "Which country's flag is NOT part of the Union Flag?",
+                    o: ["Wales", "Ireland", "Scotland", "England"],
+                    a: 0,
+                    ex: "The Welsh dragon is not part of the Union Flag because, when the first Union Flag was created in 1606, Wales was already united with England.",
+                },
+                {
+                    q: "When did the UK leave the EU following the Brexit Vote?",
+                    o: ["1987", "2020", "1957", "1973"],
+                    a: 1,
+                    ex: "The UK officially left the European Union on 31 January 2020, following the 2016 referendum.",
+                },
+                {
+                    q: "What does the money raised from National Insurance Contributions pay for? (Choose TWO)",
+                    o: [
+                        "Child benefits",
+                        "NHS",
+                        "The state retirement pension",
+                        "Job allowances",
+                    ],
+                    a: [1, 2],
+                    ex: "The money raised from National Insurance Contributions is used to pay for state benefits and services such as the state retirement pension and the National Health Service (NHS).",
+                },
+                {
+                    q: "Which TWO are used when making Haggis?",
+                    o: ["Chicken", "Dough", "Oatmeal", "Onions"],
+                    a: [2, 3],
+                    ex: "Haggis is a traditional Scottish dish made with ingredients including onion, oatmeal, and suet.",
+                },
+
+                // --- Extracted from Britizen Test #25 ---
+                {
+                    q: "Who defeated Napoleon at the Battle of Waterloo?",
+                    o: [
+                        "Nelson",
+                        "Henry VII",
+                        "Louis XIV",
+                        "The Duke of Wellington",
+                    ],
+                    a: 3,
+                    ex: "In 1815, the French Wars ended with the defeat of the Emperor Napoleon by the Duke of Wellington at the Battle of Waterloo.",
+                },
+                {
+                    q: "What is the National Anthem of the UK?",
+                    o: [
+                        "God Save the King/Queen",
+                        "God Save the UK",
+                        "King reign over the UK",
+                        "United we stand",
+                    ],
+                    a: 0,
+                    ex: "The National Anthem of the UK is 'God Save the King/Queen'. It is played at important national occasions.",
+                },
+                {
+                    q: "Who was the first Danish King?",
+                    o: [
+                        "Kenneth MacAlpin",
+                        "Cnut also 'Canute'",
+                        "William",
+                        "Harold",
+                    ],
+                    a: 1,
+                    ex: "The first Danish King was Cnut, also called Canute.",
+                },
+                {
+                    q: "How long is Hanukkah celebrated for?",
+                    o: ["9 days", "7 days", "8 days", "10 days"],
+                    a: 2,
+                    ex: "Hanukkah is in November or December and is celebrated for eight days. It is to remember the Jews' struggle for religious freedom.",
+                },
+                {
+                    q: "How old do you have to be to buy a lottery ticket or a scratch card?",
+                    o: ["18", "16", "15", "17"],
+                    a: 0,
+                    ex: "As of 2021, people under 18 are not allowed to participate in the National Lottery. This includes buying Scratch Cards.",
+                },
+                {
+                    q: "How many 'local authorities' does the city of London have?",
+                    o: ["33", "21", "5", "15"],
+                    a: 0,
+                    ex: "London has 33 local authorities, with the Greater London Authority and the Mayor of London coordinating policies across the capital.",
+                },
+                {
+                    q: "Who developed important Economics ideas?",
+                    o: [
+                        "David Hume",
+                        "James Watt",
+                        "Adam Smith",
+                        "Richard Arkwright",
+                    ],
+                    a: 2,
+                    ex: "Many of the great thinkers of the Enlightenment were Scottish. Adam Smith developed ideas about economics which are still referred to today.",
+                },
+                {
+                    q: "What happens at 11:00 on the Remembrance Day?",
+                    o: [
+                        "A 10 second silence",
+                        "A 30 second silence",
+                        "A 1 minute silence",
+                        "A 2 minute silence",
+                    ],
+                    a: 3,
+                    ex: "At 11.00 am on Remembrance Day, there is a two-minute silence across the country to remember those who died in wars.",
+                },
+                {
+                    q: "What was the purpose of the Emancipation Act?",
+                    o: [
+                        "Abolish slavery in the British Empire",
+                        "Freedom of speech",
+                        "Freedom of religion",
+                        "No one could be held prisoner unlawfully",
+                    ],
+                    a: 0,
+                    ex: "In 1833, the Emancipation Act abolished slavery throughout the British Empire.",
+                },
+                {
+                    q: "When was the famous satirical magazine 'Punch' published?",
+                    o: ["1880s", "1840s", "1860s", "1820s"],
+                    a: 1,
+                    ex: "Satirical magazines began to be published. The most famous was Punch, which was first published in the 1840s.",
+                },
+                {
+                    q: "How old do you have to be to go into betting shops or gambling clubs?",
+                    o: ["20", "16", "21", "18"],
+                    a: 3,
+                    ex: "You must be 18 to go into betting shops or gambling clubs.",
+                },
+                {
+                    q: "In which TWO countries were PCCs (Police and Crime Commissioners) elected in?",
+                    o: ["Northern Ireland", "Wales", "Scotland", "England"],
+                    a: [1, 3],
+                    ex: "Police and Crime Commissioners (PCCs) are elected in England and Wales to oversee the local police force.",
+                },
+                {
+                    q: "When did newspapers begin to operate without a government licence?",
+                    o: ["1712", "1708", "1695", "1681"],
+                    a: 2,
+                    ex: "From 1695, newspapers were allowed to operate without a government licence. This meant a free press was born.",
+                },
+
+                // --- Extracted from Britizen Test #39 ---
+                {
+                    q: "What is the monarch's ceremonial role?",
+                    o: [
+                        "Making parliamentary policies",
+                        "Opening a parliamentary session",
+                        "Travelling abroad for banquets and to negotiate with foreign dignitaries",
+                        "Travelling in the UK",
+                    ],
+                    a: 1,
+                    ex: "The Monarch has important ceremonial roles, such as the opening of the new parliamentary session each year.",
+                },
+                {
+                    q: "Under which king did the people unite to defeat the Vikings?",
+                    o: [
+                        "Harold",
+                        "King Alfred the Great",
+                        "Henry I",
+                        "King William",
+                    ],
+                    a: 1,
+                    ex: "The Anglo-Saxon kingdoms in England united under King Alfred the Great, who defeated the Vikings.",
+                },
+                {
+                    q: "What did the first farmers build in Britain?",
+                    o: [
+                        "Houses and Monuments",
+                        "Hospitals and Roads",
+                        "Theatres and Houses",
+                        "Tombs and Stadiums",
+                    ],
+                    a: 0,
+                    ex: "The first farmers built houses, tombs and monuments on the land.",
+                },
+                {
+                    q: "Which operas were written by Gilbert and Sullivan?",
+                    o: [
+                        "Jesus Christ Superstar",
+                        "HMS Pinafore and The Mikado",
+                        "Tim Rice and Evita",
+                        "The Phantom of the Opera",
+                    ],
+                    a: 1,
+                    ex: "Gilbert and Sullivan wrote comic operas, often making fun of popular culture and politics. These operas include HMS Pinafore, The Pirates of Penzance and The Mikado.",
+                },
+                {
+                    q: "What were the working conditions like during the Industrial Revolution?",
+                    o: [
+                        "Average",
+                        "Very Poor",
+                        "Best in the World",
+                        "Acceptable",
+                    ],
+                    a: 1,
+                    ex: "Working conditions during the Industrial Revolution were very poor. There were no laws to protect employees, who were often forced to work long hours in dangerous situations.",
+                },
+                {
+                    q: "Which TWO are compulsory in the UK if you own an old car?",
+                    o: [
+                        "Mortgage",
+                        "A valid MOT test certificate",
+                        "Car insurance",
+                        "Life insurance",
+                    ],
+                    a: [1, 2],
+                    ex: "If your car is over three years old, it must pass an annual MOT test. You must also have valid motor insurance.",
+                },
+                {
+                    q: "Which of these is a charity working with animals?",
+                    o: ["Crisis and Shelter", "NSPCC", "PDSA", "Age UK"],
+                    a: 2,
+                    ex: "The PDSA (People's Dispensary for Sick Animals) is a veterinary charity.",
+                },
+                {
+                    q: "Who makes a speech which summarises the government's policies for the year ahead?",
+                    o: [
+                        "The Prime Minister",
+                        "Local Authorities",
+                        "The Cabinet",
+                        "The Monarch",
+                    ],
+                    a: 3,
+                    ex: "At the State Opening of Parliament, the Monarch makes a speech (the King's or Queen's Speech) which summarises the government's policies for the year ahead.",
+                },
+                {
+                    q: "Until what time do people play jokes on one another on April Fool's Day?",
+                    o: ["Until 9 PM", "Until 11 AM", "All day", "Until Midday"],
+                    a: 3,
+                    ex: "April Fool's Day is 1 April. People play jokes on each other until midday.",
+                },
+                {
+                    q: "In which UK country can you find the best preserved prehistoric village in northern Europe?",
+                    o: ["Northern Ireland", "Wales", "England", "Scotland"],
+                    a: 3,
+                    ex: "Skara Brae on Orkney, off the north coast of Scotland, is the best preserved prehistoric village in northern Europe.",
+                },
+                {
+                    q: "What are the parliaments in Scotland, Wales and Northern Ireland also known as?",
+                    o: [
+                        "Formal institutions",
+                        "Devolved administrations",
+                        "Political parties",
+                        "Local authorities",
+                    ],
+                    a: 1,
+                    ex: "The Welsh Government, the Scottish Government and the Northern Ireland Executive are known as the devolved administrations.",
+                },
+                {
+                    q: "Select TWO famous Paralympians.",
+                    o: [
+                        "Jessica Ennis",
+                        "Ellie Simmonds",
+                        "Baroness Tanni Grey-Thompson",
+                        "Dame Ellen MacArthur",
+                    ],
+                    a: [1, 2],
+                    ex: "Ellie Simmonds and Baroness Tanni Grey-Thompson are famous British Paralympians.",
+                },
+                {
+                    q: "Which TWO of these are associated with Sir Francis Drake?",
+                    o: [
+                        "Building the Titanic",
+                        "Sailing around the world",
+                        "The Spanish Armada invasion",
+                        "Invasion of Ireland",
+                    ],
+                    a: [1, 2],
+                    ex: "Sir Francis Drake was one of the commanders in the defeat of the Spanish Armada (1588) and was the first Englishman to sail around the world.",
+                },
+                {
+                    q: "Which TWO major welfare changes were introduced between 1945 and 1950?",
+                    o: [
+                        "A social security system for everyone",
+                        "State pension",
+                        "The NHS",
+                        "Employment benefits",
+                    ],
+                    a: [0, 2],
+                    ex: "Following the Second World War, a welfare state was established, introducing a National Health Service (NHS) and a social security system for all.",
+                },
+                {
+                    q: "How many member states does the Commonwealth have?",
+                    o: ["27", "190", "56", "5"],
+                    a: 2,
+                    ex: "The Commonwealth is an association of 56 independent countries.",
+                },
+
+                // --- Extracted from Britizen Test #14 ---
+                {
+                    q: "What is the fundamental principle of British life?",
+                    o: [
+                        "Attending a Church on Sundays",
+                        "The rule of law",
+                        "Taking part in festivals",
+                        "Supporting your local team",
+                    ],
+                    a: 1,
+                    ex: "The rule of law is one of the fundamental principles of British Life.",
+                },
+                {
+                    q: "Which word comes from the Viking language?",
+                    o: ["Arm", "Cow", "Leg", "Scunthorpe"],
+                    a: 3,
+                    ex: "Grimsby and Scunthorpe are examples of words that come from the Viking languages.",
+                },
+                {
+                    q: "Who designed the Clifton Suspension Bridge?",
+                    o: [
+                        "Sir Christopher Wren",
+                        "Richard Arkwright",
+                        "Florence Nightingale",
+                        "Isambard Kingdom Brunel",
+                    ],
+                    a: 3,
+                    ex: "Isambard Kingdom Brunel was an engineer who built tunnels, bridges, railway lines and ships, including the Clifton Suspension Bridge.",
+                },
+                {
+                    q: "What happens if an MP dies or resigns?",
+                    o: [
+                        "A by-election is held",
+                        "Someone takes over",
+                        "The closest MP will have to cover",
+                        "A new General Election is held",
+                    ],
+                    a: 0,
+                    ex: "If an MP dies or resigns, there will be a fresh election, called a by-election, in his or her constituency.",
+                },
+                {
+                    q: "How many times has the UK hosted the Olympic Games?",
+                    o: ["3", "4", "1", "2"],
+                    a: 0,
+                    ex: "The UK has hosted the Olympic Games on three occasions: 1908, 1948 and 2012.",
+                },
+                {
+                    q: "What does the 'R' Plate stand for?",
+                    o: [
+                        "Restricted Driver",
+                        "Repaired Damages",
+                        "Rage Drinking",
+                        "Refreshed Data",
+                    ],
+                    a: 0,
+                    ex: "In Northern Ireland, a newly qualified driver must display an 'R' plate (for restricted driver) for one year after passing the test.",
+                },
+                {
+                    q: "When did the Vikings first attack Britain?",
+                    o: ["AD 798", "AD 879", "AD 897", "AD 789"],
+                    a: 3,
+                    ex: "The Vikings came from Denmark and Norway. They first visited Britain in AD 789 to raid coastal towns.",
+                },
+                {
+                    q: "When did William of Orange invade England?",
+                    o: ["1696", "1684", "1692", "1688"],
+                    a: 3,
+                    ex: "William of Orange invaded England in 1688 in what became known as the Glorious Revolution.",
+                },
+                {
+                    q: "What prehistoric village (off the north coast of Scotland) has helped archaeologists to understand more about how people lived near the end of the Stone Age?",
+                    o: [
+                        "Shetland",
+                        "St Helena",
+                        "Falkland Islands",
+                        "Skara Brae on Orkney",
+                    ],
+                    a: 3,
+                    ex: "Skara Brae on Orkney is a stone age village that provides insight into life near the end of the Stone Age.",
+                },
+                {
+                    q: "In what county can you see a hill fort at Maiden Castle?",
+                    o: ["Dorset", "Wiltshire", "Cheshire", "Lancashire"],
+                    a: 0,
+                    ex: "Maiden Castle, a massive Iron Age hill fort, is situated in Dorset.",
+                },
+                {
+                    q: "What is the 'Grand National'?",
+                    o: [
+                        "A motor race",
+                        "A horse race",
+                        "A football cup competition",
+                        "A tennis championship",
+                    ],
+                    a: 1,
+                    ex: "The Grand National is a famous horse race run at Aintree, near Liverpool.",
+                },
+                {
+                    q: "On which TWO occasions will there be a fresh election, called a by-election, in MP's constituency?",
+                    o: ["Gets ill", "Dies", "Goes abroad", "Resigns"],
+                    a: [1, 3],
+                    ex: "A by-election is held if an MP dies or resigns.",
+                },
+                {
+                    q: "How is the Speaker elected?",
+                    o: [
+                        "The Archbishop of Canterbury chooses the Speaker",
+                        "Fellow MPs choose the Speaker",
+                        "The Monarch appoints the Speaker",
+                        "The PM chooses the Speaker",
+                    ],
+                    a: 1,
+                    ex: "The Speaker is chosen by other MPs in a secret ballot.",
+                },
+                {
+                    q: "Why was the Habeas Corpus Act (1679) so important?",
+                    o: [
+                        "It gave women their property rights",
+                        "It gave women the right to vote",
+                        "It guaranteed that no one could be held prisoner unlawfully",
+                        "It limited the power of the monarch",
+                    ],
+                    a: 2,
+                    ex: "The Habeas Corpus Act became law in 1679. It guaranteed that no one could be held prisoner unlawfully.",
+                },
+
+                // --- Extracted from Britizen Test #3 ---
+                {
+                    q: "What did Henry VII do?",
+                    o: [
+                        "Broke away from the Church of Rome",
+                        "Reduced the power of the nobles",
+                        "Restricted King's power",
+                        "Increased the power of the nobles",
+                    ],
+                    a: 1,
+                    ex: "Henry VII deliberately strengthened the central administration of England and reduced the power of the nobles to ensure peace.",
+                },
+                {
+                    q: "Who is responsible for crime and immigration?",
+                    o: [
+                        "Foreign Secretary",
+                        "Home Secretary",
+                        "Chancellor of the Exchequer",
+                        "Secretary of State",
+                    ],
+                    a: 1,
+                    ex: "The Home Secretary is responsible for crime, policing, and immigration.",
+                },
+                {
+                    q: "When did the English civil war begin?",
+                    o: ["1646", "1640", "1641", "1642"],
+                    a: 3,
+                    ex: "Civil war between the king and Parliament could not be avoided and began in 1642.",
+                },
+                {
+                    q: "What is the Shadow Cabinet?",
+                    o: [
+                        "The cabinet that is in trouble",
+                        "The cabinet where the Prime Minister had to resign",
+                        "Senior members of the main opposition party who 'shadow' Government ministers in different departments",
+                        "The name of the office of the Leader of the Opposition in the Parliament",
+                    ],
+                    a: 2,
+                    ex: "The Shadow Cabinet consists of senior members of the main opposition party who 'shadow' Government ministers in different departments.",
+                },
+                {
+                    q: "Who wrote about their experiences in the First World War?",
+                    o: [
+                        "Lord Byron and John Masefield",
+                        "Wilfred Owen and William Blake",
+                        "Elizabeth and Robert Browning",
+                        "Wilfred Owen and Siegfried Sassoon",
+                    ],
+                    a: 3,
+                    ex: "British poets such as Wilfred Owen and Siegfried Sassoon wrote about their experiences in the First World War.",
+                },
+                {
+                    q: "What is the Giant's Causeway made of?",
+                    o: ["Volcanic Lava", "Bronze", "Iron", "Stone"],
+                    a: 0,
+                    ex: "The Giant's Causeway in Northern Ireland is made of columns formed from volcanic lava.",
+                },
+                {
+                    q: "When did the BBC begin the world's first regular TV service?",
+                    o: ["1921", "1922", "1936", "1938"],
+                    a: 2,
+                    ex: "The BBC began the world's first regular television service in 1936.",
+                },
+                {
+                    q: "What destroyed London in year 1666?",
+                    o: ["Nuclear Plant", "Fire", "Water", "Plague"],
+                    a: 1,
+                    ex: "The Great Fire of London destroyed much of the city in 1666.",
+                },
+                {
+                    q: "During the reigns of Elizabeth I and James I, where did the English government encourage Scottish and English Protestants to settle?",
+                    o: ["Cardiff", "Edinburgh", "East London", "Ulster"],
+                    a: 3,
+                    ex: "The English government encouraged Scottish and English Protestants to settle in Ulster, the northern province of Ireland.",
+                },
+                {
+                    q: "Which architectural style are the famous London buildings of the 19th century, such as the House of Parliament and St Pancras Station, associated with?",
+                    o: ["Gothic", "Indian", "Catholic", "Roman"],
+                    a: 0,
+                    ex: "In the 19th century, the Gothic style became popular for buildings like the Houses of Parliament and St Pancras Station.",
+                },
+                {
+                    q: "Which TWO things happened when Mary Stuart's husband got murdered?",
+                    o: [
+                        "She fled to France",
+                        "She gave her throne to Elizabeth I",
+                        "She was suspected of involvement in the murder",
+                        "She asked Elizabeth I for help",
+                    ],
+                    a: [2, 3],
+                    ex: "Mary Stuart (Queen of Scots) was suspected of involvement in her husband's murder. She fled to England and asked Elizabeth I for help.",
+                },
+                {
+                    q: "The Victoria Cross medal was introduced during which war?",
+                    o: [
+                        "The First World War",
+                        "The Hundred Years War",
+                        "The Crimean War",
+                        "The Second World War",
+                    ],
+                    a: 2,
+                    ex: "The Victoria Cross, the highest award for gallantry, was introduced during the Crimean War.",
+                },
+
+                // --- NEW BATCH: Extracted from Britizen Mock Tests 1, 2, 4, 13, 17, 21, 34, 40, 45 ---
+                {
+                    q: "Which of the following is part of the UK?",
+                    o: ["St Helena", "Canada", "Channel Islands", "Wales"],
+                    a: 3,
+                    ex: "The UK is made up of England, Scotland, Wales and Northern Ireland. The Channel Islands and St Helena are Crown Dependencies or Overseas Territories.",
+                },
+                {
+                    q: "Who became one of the most popular monarchs in the 16th century?",
+                    o: ["Henry VII", "Henry VIII", "Mary I", "Elizabeth I"],
+                    a: 3,
+                    ex: "Elizabeth I became one of the most popular monarchs in English history, particularly after the defeat of the Spanish Armada.",
+                },
+                {
+                    q: "When did the BBC start the first radio broadcast?",
+                    o: ["1928", "1922", "1903", "1936"],
+                    a: 1,
+                    ex: "The BBC started its first radio broadcasts in 1922.",
+                },
+                {
+                    q: "Where do the Laurence Olivier Awards take place?",
+                    o: ["London", "Edinburgh", "Manchester", "Kent"],
+                    a: 0,
+                    ex: "The Laurence Olivier Awards, which celebrate British theatre, take place annually in London.",
+                },
+                {
+                    q: "Who were the first people to start living in Britain?",
+                    o: [
+                        "Pirates",
+                        "The Romans",
+                        "Inventors",
+                        "Hunter-gatherers",
+                    ],
+                    a: 3,
+                    ex: "The first people to live in Britain were hunter-gatherers in the Stone Age.",
+                },
+                {
+                    q: "When did the 'Battle of the Boyne' happen?",
+                    o: ["1697", "1690", "1695", "1693"],
+                    a: 1,
+                    ex: "King William III defeated James II at the Battle of the Boyne in Ireland in 1690.",
+                },
+                {
+                    q: "What was built as part of the UK's celebration of the new millennium?",
+                    o: [
+                        "The Tower of London",
+                        "The London Eye",
+                        "Big Ben",
+                        "The Eden Project",
+                    ],
+                    a: 1,
+                    ex: "The London Eye, a large Ferris wheel, was built to celebrate the new millennium.",
+                },
+                {
+                    q: "What became the symbol of the House of Tudor?",
+                    o: [
+                        "A pink rose",
+                        "A red and white rose",
+                        "A red rose",
+                        "A white rose",
+                    ],
+                    a: 1,
+                    ex: "Henry Tudor married Elizabeth of York, uniting the red rose of Lancaster and the white rose of York into the red and white Tudor rose.",
+                },
+                {
+                    q: "Who is the head of the Church of England?",
+                    o: [
+                        "The Duke of Edinburgh",
+                        "The Monarch",
+                        "The Pope",
+                        "The Prime Minister",
+                    ],
+                    a: 1,
+                    ex: "The monarch is the head (Supreme Governor) of the Church of England.",
+                },
+                {
+                    q: "Who ordered to write the Book of Common Prayer?",
+                    o: ["Edward VI", "Queen Mary", "Henry VIII", "Henry VII"],
+                    a: 0,
+                    ex: "During the reign of Edward VI, the Book of Common Prayer was written for use in the Church of England.",
+                },
+                {
+                    q: "What was the main crop in Ireland in the 19th century?",
+                    o: ["Tomato", "Potato", "Wheat", "Cucumber"],
+                    a: 1,
+                    ex: "The potato was the main crop in Ireland. Its failure in the middle of the 19th century led to a terrible famine.",
+                },
+                {
+                    q: "What was the most important principle of the Enlightenment?",
+                    o: [
+                        "New technological advances",
+                        "Freedom of religion and political views",
+                        "Constitutional democracy",
+                        "Complete democracy",
+                    ],
+                    a: 1,
+                    ex: "The Enlightenment was a movement in the 18th century where new ideas about politics, philosophy, and science (like freedom of religion and political views) were developed.",
+                },
+                {
+                    q: "Which of the events is the landing of allied forces in Normandy?",
+                    o: [
+                        "The Dunkirk spirit",
+                        "D-Day",
+                        "The Blitz",
+                        "The Battle of Britain",
+                    ],
+                    a: 1,
+                    ex: "D-Day refers to the landing of Allied forces in Normandy, France, during the Second World War.",
+                },
+                {
+                    q: "In which year was the first Union Flag created?",
+                    o: ["1801", "1606", "1707", "1800"],
+                    a: 1,
+                    ex: "The first Union Flag was created in 1606, uniting the flags of England and Scotland.",
+                },
+                {
+                    q: "In the 20th century, what did Sir Edwin Lutyens design to be the seat of government in India?",
+                    o: ["Bangalore", "Mumbai", "New Delhi", "Kolkata"],
+                    a: 2,
+                    ex: "Sir Edwin Lutyens designed New Delhi to be the seat of government in India.",
+                },
+                {
+                    q: "Select TWO early members of the Royal Society.",
+                    o: [
+                        "Sir Edmund Halley",
+                        "Sir Geoffrey Chaucer",
+                        "Sir Isaac Newton",
+                        "Sir William Shakespeare",
+                    ],
+                    a: [0, 2],
+                    ex: "Sir Edmund Halley and Sir Isaac Newton were early members of the Royal Society, formed to promote natural knowledge.",
+                },
+                {
+                    q: "Who resides in 10 Downing Street?",
+                    o: [
+                        "The Prime Minister",
+                        "King Charles III",
+                        "The President",
+                        "The Speaker",
+                    ],
+                    a: 0,
+                    ex: "10 Downing Street in London is the official residence and office of the Prime Minister.",
+                },
+                {
+                    q: "What is Boxing Day? (Choose TWO)",
+                    o: [
+                        "The day after Christmas Day",
+                        "When people watch boxing championship",
+                        "A public holiday",
+                        "The day before New Year",
+                    ],
+                    a: [0, 2],
+                    ex: "Boxing Day is the day after Christmas Day and is a recognised bank/public holiday.",
+                },
+                {
+                    q: "Roast beef is a traditional food of which country?",
+                    o: ["England", "Northern Ireland", "Wales", "Scotland"],
+                    a: 0,
+                    ex: "Roast beef served with Yorkshire pudding is a traditional English food.",
+                },
+                {
+                    q: "Which languages were the basis of modern English?",
+                    o: [
+                        "Norman French and Celtic",
+                        "Norman French and Anglo Saxon",
+                        "Celtic and Anglo Saxon",
+                        "Gaelic and Celtic",
+                    ],
+                    a: 1,
+                    ex: "Modern English developed from a mixture of Norman French (spoken by the ruling class) and Anglo-Saxon (spoken by the peasants).",
+                },
+                {
+                    q: "When did the Irish Free State become a republic?",
+                    o: ["1922", "1949", "1937", "1931"],
+                    a: 1,
+                    ex: "The Irish Free State became a completely independent republic in 1949.",
+                },
+                {
+                    q: "Ulster fry is a traditional food of which country?",
+                    o: ["England", "Northern Ireland", "Wales", "Scotland"],
+                    a: 1,
+                    ex: "The Ulster fry is a traditional cooked breakfast in Northern Ireland.",
+                },
+                {
+                    q: "Who tells visitors about the history of the Tower of London?",
+                    o: [
+                        "London Guides",
+                        "Beefeaters",
+                        "Instructors",
+                        "History graduates",
+                    ],
+                    a: 1,
+                    ex: "Yeoman Warders, also known as Beefeaters, lead tours and tell visitors about the history of the Tower of London.",
+                },
+                {
+                    q: "When did Ireland split into two countries?",
+                    o: ["1922", "1916", "1921", "1959"],
+                    a: 0,
+                    ex: "In 1922, a treaty officially divided Ireland into two parts: Northern Ireland and the Irish Free State.",
+                },
+                {
+                    q: "What were the first Women's Social and Political Union group members called?",
+                    o: [
+                        "Slaves",
+                        "House of Lords",
+                        "Rotten boroughs",
+                        "Suffragettes",
+                    ],
+                    a: 3,
+                    ex: "The members of the Women's Social and Political Union, who campaigned for women's voting rights, were called suffragettes.",
+                },
+                {
+                    q: "What was the system of land ownership used by the Normans known as?",
+                    o: [
+                        "The Magna Carta",
+                        "Feudalism",
+                        "Noble land",
+                        "Democracy",
+                    ],
+                    a: 1,
+                    ex: "Feudalism was a system where the King owned all the land and gave portions of it to his lords in return for their loyalty and military service.",
+                },
+                {
+                    q: "For how long did England remain a republic?",
+                    o: ["11 years", "14 years", "12 years", "10 years"],
+                    a: 0,
+                    ex: "England was a republic (called the Commonwealth) for 11 years after the execution of Charles I in 1649 until the monarchy was restored in 1660.",
+                },
+                {
+                    q: "Where was one of the Anglo Saxon kings buried with treasure and armour?",
+                    o: ["Newcastle", "Kent", "London", "Suffolk"],
+                    a: 3,
+                    ex: "A famous Anglo-Saxon king was buried with treasure and armour in a ship at Sutton Hoo in modern-day Suffolk.",
+                },
+                {
+                    q: "When did the Glorious Revolution happen?",
+                    o: ["1688", "1685", "1680", "1692"],
+                    a: 0,
+                    ex: "The Glorious Revolution occurred in 1688 when William of Orange was invited to invade England, facing no resistance.",
+                },
+                {
+                    q: "Who designed the Cenotaph?",
+                    o: [
+                        "Sir Christopher Wren",
+                        "Robert Adam",
+                        "Inigo Jones",
+                        "Sir Edwin Lutyens",
+                    ],
+                    a: 3,
+                    ex: "Sir Edwin Lutyens designed the Cenotaph in Whitehall, the site of the annual Remembrance Day service.",
+                },
+                {
+                    q: "What is the longest distance on the mainland in the UK?",
+                    o: ["950 miles", "1400 miles", "1240 miles", "870 miles"],
+                    a: 3,
+                    ex: "The longest distance on the mainland is from John O'Groats to Land's End, which is about 870 miles.",
+                },
+                {
+                    q: "Who took the title 'King of Ireland'?",
+                    o: ["James VI", "Henry VII", "Henry VIII", "Charles II"],
+                    a: 2,
+                    ex: "Henry VIII was the first English monarch to take the title King of Ireland.",
+                },
+                {
+                    q: "Who was Robert Burns?",
+                    o: [
+                        "English social reformer",
+                        "English barber",
+                        "Welsh portrait painter",
+                        "Scottish poet",
+                    ],
+                    a: 3,
+                    ex: "Robert Burns (1759-96), known as 'The Bard', was a very famous Scottish poet.",
+                },
+                {
+                    q: "What percentage of the UK population lives in England?",
+                    o: ["95%", "84%", "71%", "62%"],
+                    a: 1,
+                    ex: "Around 84% of the UK population lives in England.",
+                },
+                {
+                    q: "Who governs the Church of Scotland?",
+                    o: [
+                        "The Archbishop of Canterbury",
+                        "Ministers and elders",
+                        "The Pope",
+                        "Local Authorities",
+                    ],
+                    a: 1,
+                    ex: "The Church of Scotland is a Presbyterian church and is governed by ministers and elders.",
+                },
+                {
+                    q: "What do the Brit Awards celebrate?",
+                    o: ["Movies", "Art", "Music", "Theatre"],
+                    a: 2,
+                    ex: "The Brit Awards are an annual event that celebrates British and international music.",
+                },
+                {
+                    q: "When did the English settlers first begin to colonise the eastern coast of America?",
+                    o: [
+                        "In Diana's time",
+                        "In Elizabeth I's time",
+                        "In William I's time",
+                        "In Mary I's time",
+                    ],
+                    a: 1,
+                    ex: "During the reign of Elizabeth I, English settlers began to colonise the eastern coast of America.",
+                },
+                {
+                    q: "Why was Mary known as 'Bloody Mary'?",
+                    o: [
+                        "She put her sister in prison",
+                        "She persecuted Protestants",
+                        "She fought in numerous battles",
+                        "She killed her father",
+                    ],
+                    a: 1,
+                    ex: "Mary I was a devout Catholic and became known as 'Bloody Mary' because she persecuted and burned many Protestants at the stake.",
+                },
+                {
+                    q: "When did the Habeas Corpus Act become law?",
+                    o: ["1679", "1687", "1685", "1683"],
+                    a: 0,
+                    ex: "The Habeas Corpus Act became law in 1679. It guaranteed that no one could be held prisoner unlawfully.",
+                },
+                {
+                    q: "Which of the events is the bombing of English cities by the Germans?",
+                    o: [
+                        "The Blitz",
+                        "The Dunkirk spirit",
+                        "D-Day",
+                        "The Battle of Britain",
+                    ],
+                    a: 0,
+                    ex: "The Blitz was the sustained bombing of British cities by Nazi Germany during the Second World War.",
+                },
+                {
+                    q: "Why is it called 'The Glorious Revolution'?",
+                    o: [
+                        "Women were given the right to vote",
+                        "Because there was no fighting",
+                        "Because of new technological advances",
+                        "Because of new achievements",
+                    ],
+                    a: 1,
+                    ex: "It was called the 'Glorious Revolution' because William of Orange faced no resistance and there was no fighting in England.",
+                },
+                {
+                    q: "Which of these venues is located in Greenwich?",
+                    o: [
+                        "The Copenhagen Concert Hall",
+                        "The SECC",
+                        "The O2",
+                        "Auditorio de Tenerife",
+                    ],
+                    a: 2,
+                    ex: "The O2 is a major indoor arena and entertainment venue located in Greenwich, London.",
+                },
+                {
+                    q: "When was The First British Prime minister (Sir Robert Walpole) in power?",
+                    o: ["1707-1714", "1742-1746", "1721-1742", "1714-1721"],
+                    a: 2,
+                    ex: "Sir Robert Walpole was Prime Minister from 1721 to 1742.",
+                },
+                {
+                    q: "Which country's national flower is a thistle?",
+                    o: ["Northern Ireland", "England", "Scotland", "Wales"],
+                    a: 2,
+                    ex: "The thistle is the national flower of Scotland.",
+                },
+                {
+                    q: "Which TWO countries took part in the Battle of Agincourt?",
+                    o: ["France", "Scotland", "Wales", "England"],
+                    a: [0, 3],
+                    ex: "King Henry V's English army defeated the French at the Battle of Agincourt in 1415.",
+                },
+                {
+                    q: "Who is credited with the introduction of the National Health Service (NHS) in 1948?",
+                    o: [
+                        "Winston Churchill",
+                        "Florence Nightingale",
+                        "David Hume",
+                        "Aneurin Bevan",
+                    ],
+                    a: 3,
+                    ex: "Aneurin (Nye) Bevan, the Minister for Health, led the establishment of the NHS in 1948.",
+                },
+                {
+                    q: "What religion were Puritans?",
+                    o: ["Buddhists", "Jews", "Protestants", "Catholics"],
+                    a: 2,
+                    ex: "Puritans were a group of English Protestants in the 16th and 17th centuries who sought to purify the Church of England.",
+                },
+                {
+                    q: "Who can nominate life peers? (Select TWO)",
+                    o: [
+                        "Leaders of other main political parties",
+                        "The Prime Minister",
+                        "The Monarchy",
+                        "The Speaker",
+                    ],
+                    a: [0, 1],
+                    ex: "Life peers can be nominated by the Prime Minister and the leaders of the other main political parties.",
+                },
+                {
+                    q: "What country did Hitler invade in 1939?",
+                    o: ["Italy", "USSR", "The USA", "Poland"],
+                    a: 3,
+                    ex: "Britain and France declared war on Germany after Hitler invaded Poland in 1939.",
+                },
+                {
+                    q: "Name the most famous cricket competition, which is a series of Test matches played between England and Australia.",
+                    o: ["Ashes", "Lords", "Masters", "Classics"],
+                    a: 0,
+                    ex: "The Ashes is a highly famous Test cricket series played between England and Australia.",
+                },
+                {
+                    q: "Which tribes invaded Britain after the Romans had left?",
+                    o: [
+                        "The Normans",
+                        "The Vikings",
+                        "The Jutes and the Anglo-Saxons",
+                        "The Celtics",
+                    ],
+                    a: 2,
+                    ex: "After the Romans left, Britain was invaded by tribes from northern Europe: the Jutes, the Angles, and the Saxons.",
+                },
+                {
+                    q: "Which of these UK landmarks is in Wales?",
+                    o: [
+                        "The Lake District",
+                        "Snowdonia",
+                        "Loch Lomond",
+                        "The Giant's Causeway",
+                    ],
+                    a: 1,
+                    ex: "Snowdonia is a beautiful national park located in North Wales.",
+                },
+                {
+                    q: "What's the age requirement to drink wine with a meal with someone over 18?",
+                    o: ["21", "16", "17", "18"],
+                    a: 1,
+                    ex: "At 16, a person can drink wine, beer or cider with a meal in a hotel or restaurant if accompanied by someone over 18.",
+                },
+                {
+                    q: "Who tried to arrest 5 parliamentary leaders from the House of Commons?",
+                    o: ["Henry VII", "James I", "Charles I", "Henry VIII"],
+                    a: 2,
+                    ex: "Charles I famously entered the House of Commons and tried to arrest five parliamentary leaders, sparking the events that led to the Civil War.",
+                },
+                {
+                    q: "When did Protestant ideas begin to spread?",
+                    o: [
+                        "15th century",
+                        "16th century",
+                        "17th century",
+                        "18th century",
+                    ],
+                    a: 1,
+                    ex: "Protestant ideas gradually gained strength in England, Wales and Scotland during the 16th century.",
+                },
+                {
+                    q: "What yearly event happens between Oxford and Cambridge Universities?",
+                    o: [
+                        "A game of Basketball",
+                        "A Rowing Race",
+                        "A Game of Football",
+                        "A Tennis Match",
+                    ],
+                    a: 1,
+                    ex: "The famous Boat Race is a rowing race that takes place annually on the River Thames between Oxford and Cambridge Universities.",
+                },
+                {
+                    q: "People living in the UK must pay tax on which of the following TWO?",
+                    o: [
+                        "Payday Loans",
+                        "Income from property, savings and dividends",
+                        "Wages from paid employment",
+                        "Student Loans",
+                    ],
+                    a: [1, 2],
+                    ex: "You must pay tax on income from property, savings and dividends, as well as on wages from paid employment.",
+                },
+                {
+                    q: "Where were the first farmers that came to Britain from?",
+                    o: [
+                        "South east Europe",
+                        "North Europe",
+                        "South west Europe",
+                        "North west Europe",
+                    ],
+                    a: 0,
+                    ex: "The ancestors of the first farmers in Britain probably came from south-east Europe.",
+                },
+                {
+                    q: "Which TWO are Police duties?",
+                    o: [
+                        "Detect and prevent crime",
+                        "Misuse their authority",
+                        "Be corrupt",
+                        "Protect life and property",
+                    ],
+                    a: [0, 3],
+                    ex: "The police force's duty is to protect life and property, prevent and detect crime, and keep the peace.",
+                },
+                {
+                    q: "Where was Isaac Newton born?",
+                    o: ["Ireland", "Scotland", "Wales", "England"],
+                    a: 3,
+                    ex: "Sir Isaac Newton, one of the most famous scientists in history, was born in Lincolnshire, England.",
+                },
+                {
+                    q: "Children's Hearings system is used in which country?",
+                    o: ["Northern Ireland", "England", "Wales", "Scotland"],
+                    a: 3,
+                    ex: "Scotland uses a unique Children's Hearings system for children who have offended or are considered at risk.",
+                },
+                {
+                    q: "What party won the General Election in 2010?",
+                    o: [
+                        "Liberal democrats",
+                        "None, Liberal Democrats and Conservative party formed a Coalition",
+                        "Tories",
+                        "Labour Party",
+                    ],
+                    a: 1,
+                    ex: "In 2010, no party won an overall majority, leading the Conservatives and Liberal Democrats to form a coalition government.",
+                },
+                {
+                    q: "Which TWO did the Romans establish in Britain?",
+                    o: [
+                        "Introduced new plants and animals",
+                        "Created a structure of law",
+                        "Introduced constitutional monarchy",
+                        "Introduced basic democracy",
+                    ],
+                    a: [0, 1],
+                    ex: "The Romans brought new plants and animals to Britain and established a structure of law.",
+                },
+                {
+                    q: "Robert the Bruce is associated with which country?",
+                    o: ["Ireland", "Scotland", "Wales", "England"],
+                    a: 1,
+                    ex: "Robert the Bruce was a famous King of Scotland who defeated the English at the Battle of Bannockburn in 1314.",
+                },
+                {
+                    q: "What system can be used to complete a tax return if you are self-employed?",
+                    o: [
+                        "Self-checkout",
+                        "National Insurance contribution",
+                        "PAYE (Pay as you earn)",
+                        "Self-assessment",
+                    ],
+                    a: 3,
+                    ex: "Self-employed people must complete a self-assessment tax return to calculate their tax.",
+                },
+                {
+                    q: "The London Eye is situated on the southern bank of which river?",
+                    o: ["Clyde", "Tyburn", "Walbrook", "Thames"],
+                    a: 3,
+                    ex: "The London Eye is situated on the southern bank of the River Thames in London.",
+                },
+                {
+                    q: "After the Black Death, a new social class appeared, - owners of large areas of land. What were they called?",
+                    o: ["The Tudors", "The Clans", "The Gentry", "The Serfs"],
+                    a: 2,
+                    ex: "Because of the labour shortages after the Black Death, a new class of large landowners emerged, known as the gentry.",
+                },
+                {
+                    q: "In 1348, a disease, probably a form of plague, came to Britain. What was it called?",
+                    o: ["White Death", "Black Death", "Malaria", "Giant Evil"],
+                    a: 1,
+                    ex: "The Black Death was a terrible disease that hit Britain in 1348, killing a third of the population in England.",
+                },
+                {
+                    q: "What is the official report that contains everything said in Parliament called?",
+                    o: [
+                        "Hansard",
+                        "The Government press",
+                        "The Government report",
+                        "The Domesday Book",
+                    ],
+                    a: 0,
+                    ex: "Proceedings in Parliament are published in official reports known as Hansard.",
+                },
+                {
+                    q: "What did the Statute of Rhuddlan do?",
+                    o: [
+                        "Annexed Wales to England",
+                        "Annexed Britain to England",
+                        "Annexed Ireland to England",
+                        "Annexed Scotland to England",
+                    ],
+                    a: 0,
+                    ex: "King Edward I introduced the Statute of Rhuddlan in 1284, which annexed Wales to the Crown of England.",
+                },
+                {
+                    q: "Which of these was a British plane in WWII?",
+                    o: ["Hurricane", "F-22", "PAK-22", "Mig-21"],
+                    a: 0,
+                    ex: "The Hurricane and the Spitfire were the most important British planes used by the RAF in the Battle of Britain.",
+                },
+                {
+                    q: "When did the Anglo-Saxon kingdoms establish in Britain?",
+                    o: ["AD 410", "AD 698", "AD 789", "AD 600"],
+                    a: 3,
+                    ex: "By AD 600, Anglo-Saxon kingdoms had been well established across much of Britain.",
+                },
+                {
+                    q: "Where can you visit Admiral Nelson's ship, HMS Victory?",
+                    o: ["Cheshire", "London", "Portsmouth", "Lincolnshire"],
+                    a: 2,
+                    ex: "Admiral Nelson's ship, HMS Victory, is preserved and can be visited in Portsmouth.",
+                },
+                {
+                    q: "A very impressive hill fort can still be seen today at Maiden Castle, what English county does it stand in?",
+                    o: ["Cornwall", "East Lothian", "Dorset", "Danebury"],
+                    a: 2,
+                    ex: "Maiden Castle is a massive Iron Age hill fort situated in the county of Dorset.",
+                },
+                {
+                    q: "Dame Ellen MacArthur is famous for her achievements in which sport?",
+                    o: ["Swimming", "Athletics", "Sailing", "Cycling"],
+                    a: 2,
+                    ex: "Dame Ellen MacArthur became the fastest person to sail single-handed around the world.",
+                },
+                {
+                    q: "The UK has hosted the Olympic Games three times. When did the UK host the games in the 20th century? (Choose TWO)",
+                    o: ["1928", "1908", "1916", "1948"],
+                    a: [1, 3],
+                    ex: "The UK hosted the Olympic Games in 1908, 1948 (both 20th century), and 2012.",
+                },
+                {
+                    q: "Which of these flowers is closely associated with Remembrance Day?",
+                    o: ["Lily", "Rose", "Daffodil", "Poppy"],
+                    a: 3,
+                    ex: "People wear artificial poppies to remember those who died in wars for the UK.",
+                },
+                {
+                    q: "Who, in 1810 opened the first curry house in Britain called 'The Hindoostane Coffee House' in George Street, London?",
+                    o: [
+                        "Ali Kerimov",
+                        "Alexander Burns",
+                        "Richard Arkwright",
+                        "Sake Dean Mahomet",
+                    ],
+                    a: 3,
+                    ex: "Sake Dean Mahomet opened the first curry house in Britain in 1810.",
+                },
+                {
+                    q: "Which TWO are correct about King Henry's wives?",
+                    o: [
+                        "Three wives were called Catherine",
+                        "Two wives were called Anne",
+                        "All were British",
+                        "Two of the wives were sisters",
+                    ],
+                    a: [0, 1],
+                    ex: "Henry VIII had six wives: three Catherines (Aragon, Howard, Parr) and two Annes (Boleyn, Cleves).",
+                },
+                {
+                    q: "What's the Monarch's yearly parliamentary speech for?",
+                    o: [
+                        "Credit distinguished politicians and policy-makers",
+                        "Summarise all of the last year's policies",
+                        "Set out the government's legislative plans for the next year",
+                        "Give advice to the general public on upcoming legislations",
+                    ],
+                    a: 2,
+                    ex: "The Monarch's Speech at the State Opening of Parliament outlines the government's proposed policies and legislative plans for the coming year.",
+                },
+                {
+                    q: "How often do the ministers meet to discuss important issues?",
+                    o: ["Weekly", "Daily", "Yearly", "Monthly"],
+                    a: 0,
+                    ex: "The Cabinet (a committee of senior ministers) usually meets weekly to make important decisions about government policy.",
+                },
+                {
+                    q: "Which of these are British Overseas Territories?",
+                    o: [
+                        "St Helena and Falkland Islands",
+                        "St Helena and the Isle of Man",
+                        "USA and Australia",
+                        "The Channel Islands and the Isle of Man",
+                    ],
+                    a: 0,
+                    ex: "St Helena and the Falkland Islands are British Overseas Territories. The Isle of Man and Channel Islands are Crown Dependencies.",
+                },
+                {
+                    q: "Which country invented Cricket?",
+                    o: ["Wales", "Australia", "Scotland", "England"],
+                    a: 3,
+                    ex: "Cricket originated in England and is now played in many countries around the world.",
+                },
+                {
+                    q: "What celebrates the end of Ramadan?",
+                    o: ["Eid al-Fitr", "Hanukkah", "Vaisakhi", "Eid ul Adha"],
+                    a: 0,
+                    ex: "Eid al-Fitr is the festival that celebrates the end of Ramadan, the Muslim month of fasting.",
+                },
+                {
+                    q: "Where can you get details about the small claims procedure?",
+                    o: [
+                        "Any council office",
+                        "High Court",
+                        "Your local polling station",
+                        "Your local County Court",
+                    ],
+                    a: 3,
+                    ex: "You can obtain details about the small claims procedure (an informal way of settling minor civil disputes) from your local County Court.",
+                },
+                {
+                    q: "What food is traditionally associated with Wales?",
+                    o: ["Welsh cakes", "Ulster fry", "Haggis", "Roast beef"],
+                    a: 0,
+                    ex: "Welsh cakes are traditional baked treats from Wales.",
+                },
+                {
+                    q: "Who of the following is associated with the Bonfire Night?",
+                    o: [
+                        "Roger Bannister",
+                        "Napoleon",
+                        "Guy Fawkes",
+                        "Ian Fleming",
+                    ],
+                    a: 2,
+                    ex: "Bonfire Night on November 5th marks the anniversary of Guy Fawkes' failed plot to blow up the Houses of Parliament in 1605.",
+                },
+                {
+                    q: "Who invented the Jet Engine?",
+                    o: [
+                        "Sir Tim Berners-Lee",
+                        "John Logie Baird",
+                        "John MacLeod",
+                        "Sir Frank Whittle",
+                    ],
+                    a: 3,
+                    ex: "The jet engine was developed in the 1930s by Sir Frank Whittle, a British RAF engineer.",
+                },
+                {
+                    q: "What religion did Queen Elizabeth I practise?",
+                    o: ["Catholic", "Sikh", "Atheist", "Protestant"],
+                    a: 3,
+                    ex: "Queen Elizabeth I was a Protestant and re-established the Protestant Church of England after the death of her Catholic sister, Mary.",
+                },
+                {
+                    q: "Which TWO developments are associated with the 'Swinging Sixties'?",
+                    o: [
+                        "Establishment of the NHS",
+                        "Divorce Law Reform",
+                        "Children's Rights Law Reform",
+                        "Abortion Law Reform",
+                    ],
+                    a: [1, 3],
+                    ex: "The 1960s saw significant social changes in the UK, including the reform of divorce and abortion laws.",
+                },
+                {
+                    q: "What was the longest British War with France called?",
+                    o: [
+                        "The Battle of Bannockburn",
+                        "The Hundred Years War",
+                        "The Battle of the Boyne",
+                        "The Battle of Trafalgar",
+                    ],
+                    a: 1,
+                    ex: "The conflict between England and France that actually lasted 116 years (1337-1453) is known as the Hundred Years War.",
+                },
+                {
+                    q: "What is the system that automatically deducts tax called?",
+                    o: ["Self-Assessment", "PAYE", "PAYG", "HMRC"],
+                    a: 1,
+                    ex: "For employees, tax is usually taken directly from their wages under a system called PAYE (Pay As You Earn).",
+                },
+                {
+                    q: "Where is Loch Lomond located?",
+                    o: ["Northern Ireland", "Scotland", "England", "Wales"],
+                    a: 1,
+                    ex: "Loch Lomond and The Trossachs National Park is located in Scotland.",
+                },
+                {
+                    q: "When were films first shown in the UK?",
+                    o: ["1894", "1896", "1901", "1902"],
+                    a: 1,
+                    ex: "Films were first shown publicly in the UK in 1896.",
+                },
+                {
+                    q: "When did the Parliament begin developing into the institution it is now?",
+                    o: [
+                        "During the Industrial Revolution",
+                        "During the Middle Ages",
+                        "During the Bronze Age",
+                        "During the Iron Age",
+                    ],
+                    a: 1,
+                    ex: "Parliament's origins can be traced back to the Middle Ages as the King's council of advisers.",
+                },
+                {
+                    q: "Who set up the first formal anti-slavery campaigns?",
+                    o: ["Roundheads", "The Quakers", "Cavaliers", "Jacobites"],
+                    a: 1,
+                    ex: "The first formal anti-slavery groups in Britain were established by the Quakers in the late 1700s.",
+                },
+                {
+                    q: "What type of painter was Joseph Turner?",
+                    o: [
+                        "Stained Glass",
+                        "Landscape",
+                        "Portrait",
+                        "Abstract Sculpture",
+                    ],
+                    a: 1,
+                    ex: "Joseph Mallord William Turner (1775-1851) was an influential and highly celebrated landscape painter.",
+                },
+                {
+                    q: "When was the Magna Carta established?",
+                    o: ["1415", "1215", "1314", "1516"],
+                    a: 1,
+                    ex: "The Magna Carta was forced on King John by his barons in 1215, restricting the monarch's power.",
+                },
+                {
+                    q: "What is the Mercury Music Prize awarded for?",
+                    o: [
+                        "The best music producer in the UK and Ireland",
+                        "The best classical song in the UK and Ireland",
+                        "The best song in the UK and Ireland",
+                        "The best album from the UK and Ireland",
+                    ],
+                    a: 3,
+                    ex: "The Mercury Music Prize is awarded annually for the best album from the UK and Ireland.",
+                },
+                {
+                    q: "How many members does the Scottish Parliament have?",
+                    o: ["76", "129", "108", "94"],
+                    a: 1,
+                    ex: "The Scottish Parliament at Holyrood, Edinburgh, has 129 members known as MSPs.",
+                },
+                {
+                    q: "When was Charles I executed?",
+                    o: ["1649", "1646", "1658", "1653"],
+                    a: 0,
+                    ex: "Following the English Civil War, King Charles I was executed by Parliament in 1649.",
+                },
+                {
+                    q: "Who wrote the popular operas HMS Pinafore, The Pirates of Penzance and the Mikado?",
+                    o: [
+                        "Tim Rice",
+                        "Laurence Olivier",
+                        "Gilbert and Sullivan",
+                        "Andrew Webber",
+                    ],
+                    a: 2,
+                    ex: "Gilbert and Sullivan wrote many popular comic operas during the 19th century.",
+                },
+                {
+                    q: "James Watt was famous for his work on what?",
+                    o: ["Radio", "Steam Power", "Human nature", "Economics"],
+                    a: 1,
+                    ex: "James Watt (1736-1819) was a Scottish inventor who vastly improved the efficiency of steam engines.",
+                },
+                {
+                    q: "Who is the author of 'Charlie and the Chocolate Factory'?",
+                    o: [
+                        "Roald Dahl",
+                        "Charles Dickens",
+                        "Jane Kipling",
+                        "J.R.R. Tolkien",
+                    ],
+                    a: 0,
+                    ex: "Roald Dahl wrote many famous children's books, including 'Charlie and the Chocolate Factory' and 'Matilda'.",
+                },
+                {
+                    q: "Who founded a monastery on the Island of Iona?",
+                    o: [
+                        "St Patrick",
+                        "St Andrew",
+                        "St Columba",
+                        "St Augustine",
+                    ],
+                    a: 2,
+                    ex: "St Columba founded a monastery on the Scottish island of Iona, spreading Christianity in the region.",
+                },
+                {
+                    q: "Which stories are associated with Geoffrey Chaucer?",
+                    o: [
+                        "The Eastend Tales",
+                        "The Westend Tales",
+                        "The London Tales",
+                        "The Canterbury Tales",
+                    ],
+                    a: 3,
+                    ex: "Geoffrey Chaucer wrote 'The Canterbury Tales' in the 14th century, documenting the journey of pilgrims to Canterbury.",
+                },
+
+                // --- NEW BATCH: 100 Additional Questions (History, Society, Government) ---
+
+                // Early Britain & Middle Ages
+                {
+                    q: "Who was Boudicca?",
+                    o: [
+                        "A Roman Emperor",
+                        "One of the tribal leaders who fought against the Romans",
+                        "A Viking queen",
+                        "The first female Prime Minister",
+                    ],
+                    a: 1,
+                    ex: "Boudicca was the queen of the Iceni, a Celtic tribe in Britain, who led a major rebellion against the occupying Roman forces.",
+                },
+                {
+                    q: "Which Emperor successfully invaded Britain in AD 43?",
+                    o: [
+                        "Julius Caesar",
+                        "Emperor Nero",
+                        "Emperor Claudius",
+                        "Emperor Hadrian",
+                    ],
+                    a: 2,
+                    ex: "Emperor Claudius successfully invaded Britain in AD 43, after which almost all of Britain was under Roman rule.",
+                },
+                {
+                    q: "Who became the first Archbishop of Canterbury?",
+                    o: [
+                        "St Patrick",
+                        "St Columba",
+                        "St Augustine",
+                        "St Andrew",
+                    ],
+                    a: 2,
+                    ex: "St Augustine was sent by the Pope to spread Christianity in the south of Britain and became the first Archbishop of Canterbury.",
+                },
+                {
+                    q: "Which war was fought between the House of Lancaster and the House of York?",
+                    o: [
+                        "The Hundred Years War",
+                        "The Civil War",
+                        "The Crimean War",
+                        "The Wars of the Roses",
+                    ],
+                    a: 3,
+                    ex: "The Wars of the Roses was a series of civil wars fought in the 15th century over the throne of England between the House of Lancaster (red rose) and the House of York (white rose).",
+                },
+                {
+                    q: "What was the Domesday Book?",
+                    o: [
+                        "A religious text",
+                        "A record of towns, villages, people and animals",
+                        "A book of laws",
+                        "A historical novel",
+                    ],
+                    a: 1,
+                    ex: "William the Conqueror sent people all over England to draw up lists of towns and villages, who lived there, and what they owned. This was compiled into the Domesday Book.",
+                },
+                {
+                    q: "Which TWO of the following are famous Scottish inventions or discoveries?",
+                    o: ["Hovercraft", "Penicillin", "Television", "Jet Engine"],
+                    a: [1, 2],
+                    ex: "Alexander Fleming (Penicillin) and John Logie Baird (Television) were both Scottish.",
+                },
+
+                // Tudors, Stuarts & The Civil War
+                {
+                    q: "Which of Henry VIII's wives survived him?",
+                    o: [
+                        "Catherine Howard",
+                        "Anne Boleyn",
+                        "Jane Seymour",
+                        "Catherine Parr",
+                    ],
+                    a: 3,
+                    ex: "Catherine Parr was Henry VIII's sixth wife. She survived him and married again after his death.",
+                },
+                {
+                    q: "What year did the Spanish Armada try to invade England?",
+                    o: ["1588", "1066", "1215", "1415"],
+                    a: 0,
+                    ex: "In 1588, the Spanish Armada, a large fleet of ships sent by Spain, was defeated by the English fleet under Elizabeth I.",
+                },
+                {
+                    q: "Who was Mary, Queen of Scots?",
+                    o: [
+                        "Elizabeth I's sister",
+                        "Elizabeth I's mother",
+                        "A Catholic cousin of Elizabeth I",
+                        "The wife of Henry VIII",
+                    ],
+                    a: 2,
+                    ex: "Mary, Queen of Scots, was a Catholic and a cousin of Elizabeth I. She was eventually executed for plotting against Elizabeth.",
+                },
+                {
+                    q: "What did the Gunpowder Plot of 1605 attempt to do?",
+                    o: [
+                        "Assassinate Henry VIII",
+                        "Blow up the Houses of Parliament",
+                        "Invade France",
+                        "Overthrow Oliver Cromwell",
+                    ],
+                    a: 1,
+                    ex: "Guy Fawkes and other Catholic conspirators attempted to blow up the Houses of Parliament and King James I in 1605.",
+                },
+                {
+                    q: "What is the idea of the 'Divine Right of Kings'?",
+                    o: [
+                        "The King shares power with Parliament",
+                        "The King is chosen by the people",
+                        "The King is directly appointed by God to rule",
+                        "The King is the head of the Church",
+                    ],
+                    a: 2,
+                    ex: "Charles I believed in the 'Divine Right of Kings', the idea that the king was directly appointed by God and shouldn't have to consult Parliament.",
+                },
+                {
+                    q: "Who was given the title of Lord Protector after the English Civil War?",
+                    o: [
+                        "Charles II",
+                        "Oliver Cromwell",
+                        "Winston Churchill",
+                        "William of Orange",
+                    ],
+                    a: 1,
+                    ex: "After the execution of Charles I, England became a republic and Oliver Cromwell was given the title of Lord Protector.",
+                },
+                {
+                    q: "What is the period called when Charles II returned from exile to become King?",
+                    o: [
+                        "The Reformation",
+                        "The Restoration",
+                        "The Renaissance",
+                        "The Enlightenment",
+                    ],
+                    a: 1,
+                    ex: "In 1660, Parliament invited Charles II to return from exile in the Netherlands. This event is known as the Restoration.",
+                },
+
+                // 18th & 19th Centuries (Empire, Enlightenment, Industrial Revolution)
+                {
+                    q: "Who discovered that blood is pumped around the body by the heart?",
+                    o: [
+                        "Isaac Newton",
+                        "Alexander Fleming",
+                        "William Harvey",
+                        "Francis Crick",
+                    ],
+                    a: 2,
+                    ex: "William Harvey was a famous medical professional during the Enlightenment who discovered the circulation of blood.",
+                },
+                {
+                    q: "Which famous ship did Captain James Cook command when he mapped the coast of Australia?",
+                    o: [
+                        "HMS Victory",
+                        "The Mayflower",
+                        "HMS Endeavour",
+                        "HMS Beagle",
+                    ],
+                    a: 2,
+                    ex: "Captain James Cook successfully mapped the coast of Australia and a few other territories commanding HMS Endeavour.",
+                },
+                {
+                    q: "Which act abolished slavery throughout the British Empire in 1833?",
+                    o: [
+                        "The Emancipation Act",
+                        "The Human Rights Act",
+                        "The Freedom Act",
+                        "The Equality Act",
+                    ],
+                    a: 0,
+                    ex: "In 1833, the Emancipation Act abolished slavery throughout the British Empire.",
+                },
+                {
+                    q: "Who is famous for establishing modern nursing during the Crimean War?",
+                    o: [
+                        "Emmeline Pankhurst",
+                        "Florence Nightingale",
+                        "Queen Victoria",
+                        "Boudicca",
+                    ],
+                    a: 1,
+                    ex: "Florence Nightingale went to Turkey during the Crimean War to treat wounded soldiers and is regarded as the founder of modern nursing.",
+                },
+                {
+                    q: "What did the Reform Act of 1832 do?",
+                    o: [
+                        "Gave women the right to vote",
+                        "Abolished slavery",
+                        "Increased the number of people with the right to vote",
+                        "Created the NHS",
+                    ],
+                    a: 2,
+                    ex: "The Reform Act of 1832 greatly increased the number of people with the right to vote and abolished 'rotten boroughs'.",
+                },
+                {
+                    q: "Who was George Stephenson?",
+                    o: [
+                        "A famous poet",
+                        "The inventor of the jet engine",
+                        "A pioneer of railway engines",
+                        "A Prime Minister",
+                    ],
+                    a: 2,
+                    ex: "George Stephenson and his son Robert were famous pioneers of railway engines during the Industrial Revolution.",
+                },
+                {
+                    q: "Which famous British author wrote 'Oliver Twist' and 'Great Expectations'?",
+                    o: [
+                        "Thomas Hardy",
+                        "Jane Austen",
+                        "Charles Dickens",
+                        "J.R.R. Tolkien",
+                    ],
+                    a: 2,
+                    ex: "Charles Dickens was a very famous Victorian author who wrote Oliver Twist and Great Expectations.",
+                },
+
+                // The 20th Century & Modern Era
+                {
+                    q: "In what year did the First World War begin?",
+                    o: ["1912", "1914", "1918", "1939"],
+                    a: 1,
+                    ex: "The First World War began in 1914 following the assassination of Archduke Franz Ferdinand.",
+                },
+                {
+                    q: "Which famous battle in 1916 during WWI resulted in around 60,000 British casualties on the first day?",
+                    o: [
+                        "Battle of Waterloo",
+                        "Battle of Trafalgar",
+                        "Battle of the Somme",
+                        "Battle of Agincourt",
+                    ],
+                    a: 2,
+                    ex: "The Battle of the Somme in July 1916 resulted in massive casualties, including about 60,000 British casualties on the first day alone.",
+                },
+                {
+                    q: "Who was the British Prime Minister during the majority of the Second World War?",
+                    o: [
+                        "Clement Attlee",
+                        "Winston Churchill",
+                        "Neville Chamberlain",
+                        "Margaret Thatcher",
+                    ],
+                    a: 1,
+                    ex: "Winston Churchill was the inspirational British Prime Minister from 1940 to 1945 during the Second World War.",
+                },
+                {
+                    q: "What did the Beveridge Report of 1942 lead to?",
+                    o: [
+                        "The creation of the Welfare State and NHS",
+                        "The end of WWII",
+                        "The right for women to vote",
+                        "The Brexit referendum",
+                    ],
+                    a: 0,
+                    ex: "The Beveridge Report (by William Beveridge) laid out plans for social insurance, leading to the creation of the modern Welfare State and the NHS.",
+                },
+                {
+                    q: "Which TWO organizations did the UK help establish after the Second World War?",
+                    o: [
+                        "The League of Nations",
+                        "The United Nations (UN)",
+                        "NATO",
+                        "The European Union (EU)",
+                    ],
+                    a: [1, 2],
+                    ex: "After WWII, the UK was a founding member of both the United Nations (UN) and the North Atlantic Treaty Organization (NATO).",
+                },
+                {
+                    q: "Which British scientist co-discovered the structure of DNA in 1953?",
+                    o: [
+                        "Francis Crick",
+                        "Isaac Newton",
+                        "Alexander Fleming",
+                        "Tim Berners-Lee",
+                    ],
+                    a: 0,
+                    ex: "Francis Crick, along with James Watson, Maurice Wilkins, and Rosalind Franklin, discovered the double-helix structure of DNA.",
+                },
+                {
+                    q: "Who invented the World Wide Web?",
+                    o: [
+                        "Alan Turing",
+                        "Tim Berners-Lee",
+                        "John Logie Baird",
+                        "Alexander Graham Bell",
+                    ],
+                    a: 1,
+                    ex: "Sir Tim Berners-Lee, a British computer scientist, invented the World Wide Web in 1989.",
+                },
+                {
+                    q: "Which country did the UK fight in the 1982 Falklands War?",
+                    o: ["Spain", "France", "Argentina", "Germany"],
+                    a: 2,
+                    ex: "In 1982, Argentina invaded the Falkland Islands, leading to the Falklands War which the UK won.",
+                },
+                {
+                    q: "What was the Good Friday Agreement (1998)?",
+                    o: [
+                        "A trade deal with the EU",
+                        "A peace treaty in Northern Ireland",
+                        "An agreement ending the Falklands War",
+                        "The law establishing the NHS",
+                    ],
+                    a: 1,
+                    ex: "The Good Friday Agreement (or Belfast Agreement) was signed in 1998, bringing peace to Northern Ireland after decades of conflict known as 'The Troubles'.",
+                },
+
+                // UK Geography, Culture, & Traditions
+                {
+                    q: "On what date is St Patrick's Day celebrated?",
+                    o: ["1 March", "17 March", "23 April", "30 November"],
+                    a: 1,
+                    ex: "St Patrick's Day, the patron saint of Ireland, is celebrated on 17 March.",
+                },
+                {
+                    q: "On what date is St David's Day celebrated?",
+                    o: ["1 March", "17 March", "23 April", "30 November"],
+                    a: 0,
+                    ex: "St David's Day, the patron saint of Wales, is celebrated on 1 March.",
+                },
+                {
+                    q: "What is the festival of Diwali?",
+                    o: [
+                        "A Muslim festival marking the end of Ramadan",
+                        "A Jewish festival of lights",
+                        "A Hindu and Sikh festival of lights",
+                        "A Christian harvest festival",
+                    ],
+                    a: 2,
+                    ex: "Diwali is the festival of lights, celebrated by Hindus and Sikhs, usually in October or November.",
+                },
+                {
+                    q: "Which sport is associated with Wimbledon?",
+                    o: ["Cricket", "Football", "Tennis", "Rugby"],
+                    a: 2,
+                    ex: "Wimbledon is the oldest tennis tournament in the world and is widely regarded as the most prestigious.",
+                },
+                {
+                    q: "What sport is associated with the Six Nations Championship?",
+                    o: ["Football", "Cricket", "Tennis", "Rugby Union"],
+                    a: 3,
+                    ex: "The Six Nations Championship is an annual international rugby union competition involving England, France, Ireland, Italy, Scotland, and Wales.",
+                },
+                {
+                    q: "Where does the Royal Ascot taking place?",
+                    o: ["Berkshire", "London", "Yorkshire", "Surrey"],
+                    a: 0,
+                    ex: "Royal Ascot is a famous five-day horse racing event held in Berkshire.",
+                },
+                {
+                    q: "What is 'The Proms'?",
+                    o: [
+                        "An annual school dance",
+                        "An eight-week summer season of daily orchestral classical music concerts",
+                        "A contemporary art exhibition",
+                        "A famous horse race",
+                    ],
+                    a: 1,
+                    ex: "The Proms is an eight-week summer season of daily orchestral classical music concerts, mostly held at the Royal Albert Hall in London.",
+                },
+                {
+                    q: "Which TWO are famous British artists?",
+                    o: [
+                        "David Hockney",
+                        "Henry Moore",
+                        "Wolfgang Amadeus Mozart",
+                        "Gustav Klimt",
+                    ],
+                    a: [0, 1],
+                    ex: "David Hockney (painter) and Henry Moore (sculptor) are highly famous British artists.",
+                },
+                {
+                    q: "Who is the author of the Harry Potter book series?",
+                    o: [
+                        "Jane Austen",
+                        "J.K. Rowling",
+                        "Agatha Christie",
+                        "Mary Shelley",
+                    ],
+                    a: 1,
+                    ex: "J.K. Rowling is the British author who wrote the incredibly successful Harry Potter series.",
+                },
+                {
+                    q: "Which national park is located in Wales?",
+                    o: [
+                        "The Lake District",
+                        "The Peak District",
+                        "Snowdonia",
+                        "Loch Lomond",
+                    ],
+                    a: 2,
+                    ex: "Snowdonia is a stunning National Park located in North Wales.",
+                },
+                {
+                    q: "Where is the Eden Project located?",
+                    o: ["London", "Cornwall", "Scotland", "Northern Ireland"],
+                    a: 1,
+                    ex: "The Eden Project, featuring massive biomes housing plants from around the world, is located in Cornwall.",
+                },
+
+                // Government, Law & Citizen Responsibilities
+                {
+                    q: "At what age are you eligible to vote in a UK General Election?",
+                    o: ["16", "17", "18", "21"],
+                    a: 2,
+                    ex: "You must be aged 18 or over to vote in a UK General Election.",
+                },
+                {
+                    q: "What is a jury made up of in England, Wales, and Northern Ireland?",
+                    o: [
+                        "12 members of the public",
+                        "15 members of the public",
+                        "3 judges",
+                        "A panel of police officers",
+                    ],
+                    a: 0,
+                    ex: "In England, Wales, and Northern Ireland, a jury is made up of 12 randomly selected members of the public (in Scotland it is 15).",
+                },
+                {
+                    q: "What do you need to apply for before you can start working in the UK?",
+                    o: [
+                        "A driver's licence",
+                        "A National Insurance (NI) number",
+                        "A passport",
+                        "A voter registration card",
+                    ],
+                    a: 1,
+                    ex: "You must have a National Insurance (NI) number to work in the UK, which ensures your tax and contributions are recorded properly.",
+                },
+                {
+                    q: "Which TWO of these must a dog wear in public?",
+                    o: [
+                        "A muzzle",
+                        "A collar with the owner's name and address",
+                        "A high-visibility jacket",
+                        "A microchip",
+                    ],
+                    a: [1, 3],
+                    ex: "By law, dogs in public must wear a collar showing the owner's name and address, and they must be microchipped.",
+                },
+                {
+                    q: "What is the speed limit for cars and motorcycles on dual carriageways and motorways in the UK?",
+                    o: ["50 mph", "60 mph", "70 mph", "80 mph"],
+                    a: 2,
+                    ex: "The national speed limit on dual carriageways and motorways is 70 mph (112 km/h) for cars and motorcycles.",
+                },
+                {
+                    q: "What are the two 'Houses' of the UK Parliament?",
+                    o: [
+                        "House of Commons and House of Lords",
+                        "House of Representatives and Senate",
+                        "House of Assembly and House of Peers",
+                        "House of Commons and House of Monarchs",
+                    ],
+                    a: 0,
+                    ex: "The UK Parliament consists of two houses: the House of Commons (elected MPs) and the House of Lords (appointed peers).",
+                },
+                {
+                    q: "Who chairs the debates in the House of Commons?",
+                    o: [
+                        "The Prime Minister",
+                        "The Monarch",
+                        "The Speaker",
+                        "The Chief Whip",
+                    ],
+                    a: 2,
+                    ex: "The Speaker is the chief officer of the House of Commons, remaining politically neutral to chair debates fairly.",
+                },
+                {
+                    q: "What is the 'Cabinet' in the UK government?",
+                    o: [
+                        "The room where the PM sleeps",
+                        "A committee of senior government ministers",
+                        "The group of opposition leaders",
+                        "The civil servants who run departments",
+                    ],
+                    a: 1,
+                    ex: "The Cabinet is a committee made up of approximately 20 senior government ministers, chosen by the Prime Minister.",
+                },
+                {
+                    q: "Which TWO areas are devolved to the Scottish Parliament and Welsh Senedd?",
+                    o: ["Defence", "Education", "Foreign Affairs", "Health"],
+                    a: [1, 3],
+                    ex: "Health and Education are devolved matters. Defence and Foreign Affairs are reserved to the UK government in Westminster.",
+                },
+                {
+                    q: "What is the maximum limit for the 'small claims' procedure in England and Wales?",
+                    o: ["£3,000", "£5,000", "£10,000", "£20,000"],
+                    a: 2,
+                    ex: "The small claims procedure in the County Court is used for claims of less than £10,000 in England and Wales.",
+                },
+                {
+                    q: "In which court are minor criminal cases usually dealt with in England, Wales, and Northern Ireland?",
+                    o: [
+                        "The High Court",
+                        "The Crown Court",
+                        "The Magistrates' Court",
+                        "The Supreme Court",
+                    ],
+                    a: 2,
+                    ex: "The Magistrates' Court deals with minor criminal cases. More serious cases go to the Crown Court.",
+                },
+                {
+                    q: "Is forced marriage legal in the UK?",
+                    o: [
+                        "Yes, if both families agree",
+                        "Yes, for certain religious groups",
+                        "No, it is a criminal offence",
+                        "Yes, if they are over 18",
+                    ],
+                    a: 2,
+                    ex: "Forced marriage (where one or both parties do not or cannot consent) is completely illegal and a criminal offence in the UK. This is different from an arranged marriage.",
+                },
+                {
+                    q: "Which TWO of these are fundamental principles of British life?",
+                    o: [
+                        "Intolerance of other faiths",
+                        "Rule of law",
+                        "Individual liberty",
+                        "Owning a car",
+                    ],
+                    a: [1, 2],
+                    ex: "The fundamental principles include democracy, the rule of law, individual liberty, tolerance, and participation in community life.",
+                },
+                {
+                    q: "How often are UK General Elections typically held?",
+                    o: [
+                        "Every 3 years",
+                        "Every 4 years",
+                        "Every 5 years",
+                        "Every 6 years",
+                    ],
+                    a: 2,
+                    ex: "Under normal circumstances, UK General Elections are held at least every five years.",
+                },
+                {
+                    q: "Who is the patron saint of Ireland?",
+                    o: ["St George", "St David", "St Patrick", "St Andrew"],
+                    a: 2,
+                    ex: "St Patrick is the patron saint of Ireland. (George=England, David=Wales, Andrew=Scotland).",
+                },
+                {
+                    q: "What is the capital of Scotland?",
+                    o: ["Glasgow", "Edinburgh", "Aberdeen", "Dundee"],
+                    a: 1,
+                    ex: "Edinburgh is the capital city of Scotland, and it hosts the Scottish Parliament.",
+                },
+                {
+                    q: "What is the capital of Wales?",
+                    o: ["Swansea", "Newport", "Cardiff", "Bangor"],
+                    a: 2,
+                    ex: "Cardiff is the capital city of Wales, and it hosts the Senedd (Welsh Parliament).",
+                },
+                {
+                    q: "What is the name of the building where the UK Parliament sits?",
+                    o: [
+                        "Buckingham Palace",
+                        "The Palace of Westminster",
+                        "Tower of London",
+                        "Windsor Castle",
+                    ],
+                    a: 1,
+                    ex: "The UK Parliament sits at the Palace of Westminster in London.",
+                },
+                {
+                    q: "Which famous monument was built in prehistoric Britain?",
+                    o: [
+                        "Hadrian's Wall",
+                        "Stonehenge",
+                        "The Tower of London",
+                        "Offa's Dyke",
+                    ],
+                    a: 1,
+                    ex: "Stonehenge, located in Wiltshire, is a famous prehistoric monument built in the Stone and Bronze Ages.",
+                },
+                {
+                    q: "Who defeated King Richard III at the Battle of Bosworth Field?",
+                    o: [
+                        "Henry Tudor (Henry VII)",
+                        "William the Conqueror",
+                        "Oliver Cromwell",
+                        "King John",
+                    ],
+                    a: 0,
+                    ex: "In 1485, Henry Tudor defeated Richard III at the Battle of Bosworth Field, ending the Wars of the Roses and establishing the Tudor dynasty.",
+                },
+                {
+                    q: "What is the Church of England?",
+                    o: [
+                        "A Catholic church",
+                        "The official state church of England",
+                        "A branch of the Methodist church",
+                        "A completely independent charity",
+                    ],
+                    a: 1,
+                    ex: "The Church of England is the official state (established) church in England. The monarch is its Supreme Governor.",
+                },
+                {
+                    q: "Which TWO things are true about Volunteering in the UK?",
+                    o: [
+                        "It is mandatory for all citizens",
+                        "It helps the local community",
+                        "You get paid a high salary for it",
+                        "It can help you get new skills",
+                    ],
+                    a: [1, 3],
+                    ex: "Volunteering is unpaid work that is highly valued in the UK. It helps the community and allows individuals to gain new skills and experiences.",
+                },
+                {
+                    q: "What is the National Citizen Service (NCS)?",
+                    o: [
+                        "A mandatory military draft",
+                        "A programme for 15 to 17-year-olds to enjoy outdoor activities and community service",
+                        "A tax scheme",
+                        "A retirement fund for civil servants",
+                    ],
+                    a: 1,
+                    ex: "The NCS is a voluntary programme designed to give 15 to 17-year-olds the chance to enjoy outdoor activities, develop skills, and take part in a community project.",
+                },
+                {
+                    q: "Where do UK residents generally register to use health services?",
+                    o: [
+                        "At a local police station",
+                        "At a local General Practitioner (GP) surgery",
+                        "At the local council office",
+                        "At the post office",
+                    ],
+                    a: 1,
+                    ex: "Most people register with a local doctor, known as a General Practitioner (GP), for their primary healthcare needs under the NHS.",
+                },
+                {
+                    q: "If you wish to buy alcohol in a pub or shop, what age must you be?",
+                    o: ["16", "18", "21", "25"],
+                    a: 1,
+                    ex: "You must be 18 or over to buy alcohol in a pub, off-licence, or supermarket in the UK.",
+                },
+                {
+                    q: "Which TWO are duties of a UK citizen?",
+                    o: [
+                        "Look after yourself and your family",
+                        "Own a home",
+                        "Respect and obey the law",
+                        "Travel abroad once a year",
+                    ],
+                    a: [0, 2],
+                    ex: "The core responsibilities of living in the UK include respecting the law, looking after yourself and your family, and treating others with fairness.",
+                },
+
+                // --- NEW BATCH: 100 Additional Questions (History, Geography, Culture, Government) ---
+
+                // History (Ancient & Medieval)
+                {
+                    q: "What is the name of the famous tapestry that commemorates the Battle of Hastings?",
+                    o: [
+                        "The London Tapestry",
+                        "The Bayeux Tapestry",
+                        "The Norman Tapestry",
+                        "The Hastings Tapestry",
+                    ],
+                    a: 1,
+                    ex: "The Bayeux Tapestry is a massive piece of embroidery (nearly 70 metres long) that documents the events leading up to the Battle of Hastings in 1066.",
+                },
+                {
+                    q: "Where did the Vikings originally come from?",
+                    o: [
+                        "France and Spain",
+                        "Denmark and Norway",
+                        "Germany and Poland",
+                        "Italy and Greece",
+                    ],
+                    a: 1,
+                    ex: "The Vikings, who first visited Britain in AD 789 to raid coastal towns, came from Denmark and Norway.",
+                },
+                {
+                    q: "What is the Magna Carta also known as?",
+                    o: [
+                        "The Great Charter",
+                        "The Bill of Rights",
+                        "The Freedom Act",
+                        "The Royal Decree",
+                    ],
+                    a: 0,
+                    ex: "The Magna Carta translates to 'The Great Charter'. It was established in 1215 to limit the power of the King.",
+                },
+                {
+                    q: "What was the capital of England during the Roman period?",
+                    o: ["York", "Winchester", "Londinium (London)", "Bath"],
+                    a: 2,
+                    ex: "Londinium, modern-day London, was established by the Romans and served as their capital in Britain.",
+                },
+                {
+                    q: "Which King successfully united the Anglo-Saxon kingdoms?",
+                    o: [
+                        "King Harold",
+                        "King Alfred the Great",
+                        "King Cnut",
+                        "King Richard I",
+                    ],
+                    a: 1,
+                    ex: "The Anglo-Saxon kingdoms united under King Alfred the Great, who was instrumental in defeating the Viking invasions.",
+                },
+                {
+                    q: "The Wars of the Roses was fought between which two houses?",
+                    o: [
+                        "Tudor and Stuart",
+                        "Lancaster and York",
+                        "Plantagenet and Tudor",
+                        "Windsor and Hanover",
+                    ],
+                    a: 1,
+                    ex: "The Wars of the Roses was a series of civil wars fought between the House of Lancaster (red rose) and the House of York (white rose).",
+                },
+
+                // History (Tudors, Stuarts, Enlightenment)
+                {
+                    q: "How many wives did King Henry VIII have?",
+                    o: ["Four", "Five", "Six", "Seven"],
+                    a: 2,
+                    ex: "King Henry VIII famously had six wives: Catherine of Aragon, Anne Boleyn, Jane Seymour, Anne of Cleves, Catherine Howard, and Catherine Parr.",
+                },
+                {
+                    q: "Who was the father of Queen Elizabeth I?",
+                    o: ["Henry VII", "Henry VIII", "Edward VI", "James I"],
+                    a: 1,
+                    ex: "Queen Elizabeth I was the daughter of King Henry VIII and his second wife, Anne Boleyn.",
+                },
+                {
+                    q: "What was the name of the ship Sir Francis Drake used to sail around the world?",
+                    o: [
+                        "The Mayflower",
+                        "HMS Victory",
+                        "The Golden Hind",
+                        "The Beagle",
+                    ],
+                    a: 2,
+                    ex: "Sir Francis Drake famously circumnavigated the globe in his ship, the Golden Hind, during the reign of Elizabeth I.",
+                },
+                {
+                    q: "What group of people sailed on the Mayflower in 1620?",
+                    o: [
+                        "The Romans",
+                        "The Normans",
+                        "The Pilgrims (Puritans)",
+                        "The Huguenots",
+                    ],
+                    a: 2,
+                    ex: "A group of English Puritans, commonly known as the Pilgrims, sailed to America on the Mayflower to escape religious persecution.",
+                },
+                {
+                    q: "Which King was executed by Parliament in 1649?",
+                    o: ["James I", "Charles I", "Charles II", "James II"],
+                    a: 1,
+                    ex: "Following his defeat in the English Civil War, King Charles I was tried for treason and executed in 1649.",
+                },
+                {
+                    q: "What was the 'Restoration' in 1660?",
+                    o: [
+                        "The rebuilding of London after the Great Fire",
+                        "The return of the monarchy with Charles II",
+                        "The signing of a peace treaty with France",
+                        "The creation of the NHS",
+                    ],
+                    a: 1,
+                    ex: "The Restoration refers to the event in 1660 when Parliament invited Charles II to return from exile and take the throne, restoring the monarchy after England's time as a republic.",
+                },
+                {
+                    q: "In what year did the Great Fire of London occur?",
+                    o: ["1666", "1066", "1415", "1805"],
+                    a: 0,
+                    ex: "The Great Fire of London started in a bakery in Pudding Lane in 1666, destroying much of the city, including St Paul's Cathedral.",
+                },
+                {
+                    q: "Who is generally considered to be the first Prime Minister of the UK?",
+                    o: [
+                        "Winston Churchill",
+                        "Sir Robert Walpole",
+                        "William Pitt the Younger",
+                        "Benjamin Disraeli",
+                    ],
+                    a: 1,
+                    ex: "Sir Robert Walpole, who served from 1721 to 1742, is historically recognized as the first Prime Minister.",
+                },
+                {
+                    q: "What significant event in 1707 united the parliaments of England and Scotland?",
+                    o: [
+                        "The Magna Carta",
+                        "The Bill of Rights",
+                        "The Act of Union",
+                        "The Emancipation Act",
+                    ],
+                    a: 2,
+                    ex: "The Act of Union in 1707 politically united England (which included Wales) and Scotland into a single kingdom known as Great Britain.",
+                },
+
+                // History (19th & 20th Centuries)
+                {
+                    q: "Which famous author wrote 'Pride and Prejudice'?",
+                    o: [
+                        "Mary Shelley",
+                        "Jane Austen",
+                        "Charlotte Brontë",
+                        "Virginia Woolf",
+                    ],
+                    a: 1,
+                    ex: "Jane Austen was a highly celebrated novelist of the 18th and 19th centuries, famous for works like 'Pride and Prejudice' and 'Emma'.",
+                },
+                {
+                    q: "The Battle of Trafalgar (1805) was fought against the fleets of which two nations?",
+                    o: [
+                        "Germany and Italy",
+                        "France and Spain",
+                        "Russia and Prussia",
+                        "USA and France",
+                    ],
+                    a: 1,
+                    ex: "At the Battle of Trafalgar, the British Royal Navy, led by Admiral Nelson, defeated the combined fleets of France and Spain.",
+                },
+                {
+                    q: "Who was the great British Admiral who died securing victory at the Battle of Trafalgar?",
+                    o: [
+                        "The Duke of Wellington",
+                        "Sir Francis Drake",
+                        "Admiral Horatio Nelson",
+                        "Captain James Cook",
+                    ],
+                    a: 2,
+                    ex: "Admiral Lord Horatio Nelson was fatally wounded during the Battle of Trafalgar, but his tactics secured a decisive British victory.",
+                },
+                {
+                    q: "What nickname was given to Arthur Wellesley after his military successes, including Waterloo?",
+                    o: [
+                        "The Iron Duke",
+                        "The Lionheart",
+                        "The Great Protector",
+                        "The Bulldog",
+                    ],
+                    a: 0,
+                    ex: "Arthur Wellesley, the Duke of Wellington, who defeated Napoleon at Waterloo, was famously known as the 'Iron Duke'.",
+                },
+                {
+                    q: "Emmeline Pankhurst was a leading figure in which movement?",
+                    o: [
+                        "The abolition of slavery",
+                        "The suffragette movement (votes for women)",
+                        "The trade union movement",
+                        "The campaign for free healthcare",
+                    ],
+                    a: 1,
+                    ex: "Emmeline Pankhurst founded the Women's Social and Political Union (WSPU) and led the suffragette movement demanding voting rights for women.",
+                },
+                {
+                    q: "The Boer War (1899-1902) was fought by the British in which region?",
+                    o: ["India", "South Africa", "Canada", "Australia"],
+                    a: 1,
+                    ex: "The Boer War was a conflict between the British Empire and the Boers (settlers of Dutch descent) in South Africa.",
+                },
+                {
+                    q: "Who was the British monarch during the First World War?",
+                    o: [
+                        "Queen Victoria",
+                        "Edward VII",
+                        "George V",
+                        "George VI",
+                    ],
+                    a: 2,
+                    ex: "King George V was the reigning British monarch throughout the First World War (1914-1918).",
+                },
+                {
+                    q: "In what year did ALL women over the age of 21 finally get the right to vote in the UK?",
+                    o: ["1918", "1928", "1945", "1969"],
+                    a: 1,
+                    ex: "While women over 30 got the vote in 1918, it wasn't until 1928 that the voting age for women was lowered to 21, matching that of men.",
+                },
+                {
+                    q: "Who was the Prime Minister who famously declared 'peace for our time' before the outbreak of WWII?",
+                    o: [
+                        "Winston Churchill",
+                        "Clement Attlee",
+                        "Neville Chamberlain",
+                        "Harold Macmillan",
+                    ],
+                    a: 2,
+                    ex: "Neville Chamberlain, hoping to avoid war, negotiated with Hitler and declared 'peace for our time', but war broke out shortly after when Germany invaded Poland.",
+                },
+                {
+                    q: "What term describes the sustained bombing campaign against British cities by Nazi Germany during WWII?",
+                    o: ["The Blitz", "D-Day", "The Somme", "The Cold War"],
+                    a: 0,
+                    ex: "'The Blitz' refers to the heavy, frequent bombing of London and other British cities by the German Luftwaffe during 1940 and 1941.",
+                },
+                {
+                    q: "Which political party won a landslide victory in 1945 and established the Welfare State and NHS?",
+                    o: [
+                        "The Conservative Party",
+                        "The Labour Party",
+                        "The Liberal Democrats",
+                        "The Green Party",
+                    ],
+                    a: 1,
+                    ex: "The Labour Party, led by Clement Attlee, won the 1945 election and introduced widespread social reforms, including the National Health Service (NHS).",
+                },
+                {
+                    q: "In what year did the UK officially join the European Economic Community (EEC), the predecessor to the EU?",
+                    o: ["1945", "1957", "1973", "1992"],
+                    a: 2,
+                    ex: "The UK joined the European Economic Community (EEC) in 1973 under Prime Minister Edward Heath.",
+                },
+                {
+                    q: "Margaret Thatcher, the UK's first female Prime Minister, was the leader of which political party?",
+                    o: ["Labour", "Liberal Democrats", "Conservative", "UKIP"],
+                    a: 2,
+                    ex: "Margaret Thatcher led the Conservative Party and served as Prime Minister from 1979 to 1990.",
+                },
+
+                // Geography
+                {
+                    q: "What is the highest mountain in Scotland (and the UK)?",
+                    o: [
+                        "Snowdon",
+                        "Scafell Pike",
+                        "Ben Nevis",
+                        "Slieve Donard",
+                    ],
+                    a: 2,
+                    ex: "Ben Nevis, located in the Scottish Highlands, is the highest mountain in both Scotland and the entire UK.",
+                },
+                {
+                    q: "What is the largest lake (by surface area) in the UK?",
+                    o: [
+                        "Loch Ness",
+                        "Loch Lomond",
+                        "Windermere",
+                        "Lough Neagh",
+                    ],
+                    a: 3,
+                    ex: "Lough Neagh in Northern Ireland is the largest freshwater lake in the UK by surface area.",
+                },
+                {
+                    q: "What is the capital city of Wales?",
+                    o: ["Swansea", "Cardiff", "Newport", "Bangor"],
+                    a: 1,
+                    ex: "Cardiff is the capital city of Wales and the home of the Senedd (the Welsh Parliament).",
+                },
+                {
+                    q: "The Lake District, a famous National Park, is located in which English region?",
+                    o: [
+                        "The South West",
+                        "The North East",
+                        "The North West",
+                        "The Midlands",
+                    ],
+                    a: 2,
+                    ex: "The Lake District National Park is located in Cumbria, in the North West of England.",
+                },
+                {
+                    q: "What is the official name of the country commonly referred to as the UK?",
+                    o: [
+                        "Great Britain and Northern Ireland",
+                        "The United Kingdom of Great Britain and Northern Ireland",
+                        "The British Isles",
+                        "England, Scotland, Wales, and Ireland",
+                    ],
+                    a: 1,
+                    ex: "The full, official name of the country is the United Kingdom of Great Britain and Northern Ireland.",
+                },
+                {
+                    q: "The term 'Great Britain' refers exclusively to which group of countries?",
+                    o: [
+                        "England and Wales",
+                        "England, Scotland, and Wales",
+                        "England, Scotland, Wales, and Northern Ireland",
+                        "The entire British Isles",
+                    ],
+                    a: 1,
+                    ex: "Great Britain consists only of England, Scotland, and Wales. The 'UK' includes Northern Ireland as well.",
+                },
+                {
+                    q: "Which UK city is globally renowned for hosting the 'Fringe' arts and comedy festival every August?",
+                    o: ["Manchester", "London", "Edinburgh", "Glasgow"],
+                    a: 2,
+                    ex: "The Edinburgh Festival Fringe in Scotland is the world's largest arts and media festival.",
+                },
+                {
+                    q: "Where is the Giant's Causeway, a remarkable area of interlocking basalt columns, located?",
+                    o: ["Scotland", "Wales", "England", "Northern Ireland"],
+                    a: 3,
+                    ex: "The Giant's Causeway is a famous natural landmark and UNESCO World Heritage site located on the north coast of Northern Ireland.",
+                },
+
+                // Culture & Arts
+                {
+                    q: "Who wrote the famous plays 'Hamlet', 'Macbeth', and 'Romeo and Juliet'?",
+                    o: [
+                        "Charles Dickens",
+                        "Geoffrey Chaucer",
+                        "William Shakespeare",
+                        "Oscar Wilde",
+                    ],
+                    a: 2,
+                    ex: "William Shakespeare is widely considered the greatest playwright in the English language.",
+                },
+                {
+                    q: "What is the national flower of Scotland?",
+                    o: [
+                        "The Rose",
+                        "The Daffodil",
+                        "The Thistle",
+                        "The Shamrock",
+                    ],
+                    a: 2,
+                    ex: "The Thistle is the prickly national flower and emblem of Scotland.",
+                },
+                {
+                    q: "What is the national flower of Wales?",
+                    o: [
+                        "The Rose",
+                        "The Daffodil",
+                        "The Thistle",
+                        "The Shamrock",
+                    ],
+                    a: 1,
+                    ex: "The Daffodil is the brightly coloured national flower of Wales.",
+                },
+                {
+                    q: "On what date is St George's Day (the patron saint of England) celebrated?",
+                    o: ["1 March", "17 March", "23 April", "30 November"],
+                    a: 2,
+                    ex: "St George's Day is celebrated in England on 23 April.",
+                },
+                {
+                    q: "On what date is Halloween celebrated in the UK?",
+                    o: ["31 October", "5 November", "14 February", "1 April"],
+                    a: 0,
+                    ex: "Halloween, a festival with ancient Celtic roots, is celebrated on 31 October.",
+                },
+                {
+                    q: "What event is commemorated on 5 November with fireworks and bonfires?",
+                    o: [
+                        "The end of WWII",
+                        "The Queen's Birthday",
+                        "The failure of the Gunpowder Plot (Guy Fawkes Night)",
+                        "The signing of the Magna Carta",
+                    ],
+                    a: 2,
+                    ex: "Bonfire Night (or Guy Fawkes Night) on 5 November celebrates the failure of the 1605 plot to blow up Parliament.",
+                },
+                {
+                    q: "What food is traditionally eaten in the UK on Shrove Tuesday?",
+                    o: ["Roast beef", "Haggis", "Pancakes", "Fish and chips"],
+                    a: 2,
+                    ex: "Shrove Tuesday, the day before Lent begins, is commonly known as Pancake Day.",
+                },
+                {
+                    q: "What is a 'pub' short for?",
+                    o: [
+                        "Public Bar",
+                        "Public House",
+                        "Public Building",
+                        "Public Hub",
+                    ],
+                    a: 1,
+                    ex: "A pub is short for 'Public House', and they have been an important part of UK social life for centuries.",
+                },
+                {
+                    q: "What is the name of the UK's longest-running television soap opera?",
+                    o: [
+                        "EastEnders",
+                        "Emmerdale",
+                        "Coronation Street",
+                        "Hollyoaks",
+                    ],
+                    a: 2,
+                    ex: "Coronation Street, which first aired in 1960, is the longest-running TV soap opera in the world.",
+                },
+                {
+                    q: "Which famous British film director made classic thrillers like 'The 39 Steps' and 'Psycho'?",
+                    o: [
+                        "Ridley Scott",
+                        "Christopher Nolan",
+                        "Alfred Hitchcock",
+                        "Danny Boyle",
+                    ],
+                    a: 2,
+                    ex: "Sir Alfred Hitchcock was a pioneering British film director known as the 'Master of Suspense'.",
+                },
+                {
+                    q: "Which prestigious prize is awarded annually to a British or Irish author for the best original full-length novel?",
+                    o: [
+                        "The Nobel Prize in Literature",
+                        "The Booker Prize",
+                        "The Turner Prize",
+                        "The Mercury Prize",
+                    ],
+                    a: 1,
+                    ex: "The Booker Prize is a highly prestigious literary award given for the best novel written in English and published in the UK or Ireland.",
+                },
+                {
+                    q: "What is the 'Turner Prize' awarded for?",
+                    o: [
+                        "Classical music",
+                        "Contemporary visual art",
+                        "Literature",
+                        "Film directing",
+                    ],
+                    a: 1,
+                    ex: "The Turner Prize is a highly publicized annual award presented to a British visual artist, usually for contemporary art.",
+                },
+
+                // Sports
+                {
+                    q: "Where is the world's oldest and most prestigious tennis tournament held?",
+                    o: ["Lord's", "Wembley", "Wimbledon", "Twickenham"],
+                    a: 2,
+                    ex: "The Championships, Wimbledon, is held annually in London and is the oldest tennis tournament in the world.",
+                },
+                {
+                    q: "The 'Ashes' is a famous Test cricket competition played between England and which other country?",
+                    o: ["India", "South Africa", "West Indies", "Australia"],
+                    a: 3,
+                    ex: "The Ashes is a historic and fiercely contested cricket series played between England and Australia.",
+                },
+                {
+                    q: "In which UK country did the modern game of golf originate?",
+                    o: ["England", "Wales", "Northern Ireland", "Scotland"],
+                    a: 3,
+                    ex: "The modern game of golf was developed in Scotland in the 15th century, and St Andrews is known as the 'home of golf'.",
+                },
+                {
+                    q: "The Six Nations is an annual international tournament in which sport?",
+                    o: ["Football", "Cricket", "Rugby Union", "Ice Hockey"],
+                    a: 2,
+                    ex: "The Six Nations Championship is an international rugby union tournament featuring England, France, Ireland, Italy, Scotland, and Wales.",
+                },
+                {
+                    q: "Which UK city successfully hosted the Olympic and Paralympic Games in 2012?",
+                    o: ["Manchester", "Birmingham", "London", "Glasgow"],
+                    a: 2,
+                    ex: "London hosted the 2012 Summer Olympics, making it the first city to host the modern Games three times.",
+                },
+
+                // Government, Law, & Society
+                {
+                    q: "How old must you be to vote in a UK parliamentary (General) election?",
+                    o: ["16", "18", "21", "25"],
+                    a: 1,
+                    ex: "You must be aged 18 or over to vote in a General Election in the UK.",
+                },
+                {
+                    q: "Who is the official Head of State of the United Kingdom?",
+                    o: [
+                        "The Prime Minister",
+                        "The Archbishop of Canterbury",
+                        "The Monarch",
+                        "The Speaker of the House",
+                    ],
+                    a: 2,
+                    ex: "The Monarch (the King or Queen) is the Head of State, while the Prime Minister is the Head of Government.",
+                },
+                {
+                    q: "In which building does the UK Parliament hold its debates and make laws?",
+                    o: [
+                        "Buckingham Palace",
+                        "10 Downing Street",
+                        "The Palace of Westminster",
+                        "The Tower of London",
+                    ],
+                    a: 2,
+                    ex: "The UK Parliament meets at the Palace of Westminster, which is also commonly known as the Houses of Parliament.",
+                },
+                {
+                    q: "Under normal circumstances, what is the maximum time allowed between UK General Elections?",
+                    o: ["4 years", "5 years", "6 years", "7 years"],
+                    a: 1,
+                    ex: "By law, a UK General Election must be held at least every five years.",
+                },
+                {
+                    q: "After a General Election, who forms the new government?",
+                    o: [
+                        "The party that the Monarch prefers",
+                        "The party with the most Members of Parliament (MPs) elected to the House of Commons",
+                        "The party with the most votes in London",
+                        "The party chosen by the House of Lords",
+                    ],
+                    a: 1,
+                    ex: "The political party that wins the most seats (MPs) in the House of Commons usually forms the government.",
+                },
+                {
+                    q: "In the UK Parliament, what is 'The Opposition'?",
+                    o: [
+                        "People who protest outside Parliament",
+                        "The House of Lords",
+                        "The largest political party that is NOT in government",
+                        "The media",
+                    ],
+                    a: 2,
+                    ex: "The Opposition is the largest political party in the House of Commons that is not part of the government. Their role is to challenge government policies.",
+                },
+                {
+                    q: "What title is given to the person who keeps order and chairs debates in the House of Commons?",
+                    o: [
+                        "The Chief Whip",
+                        "The Prime Minister",
+                        "The Chancellor",
+                        "The Speaker",
+                    ],
+                    a: 3,
+                    ex: "The Speaker is an MP elected by other MPs to act as the politically neutral chair during debates in the House of Commons.",
+                },
+                {
+                    q: "Members of the House of Lords are commonly referred to as what?",
+                    o: ["MPs", "Peers", "Ministers", "Councillors"],
+                    a: 1,
+                    ex: "Members of the House of Lords are known as 'Peers' (e.g., life peers, hereditary peers).",
+                },
+                {
+                    q: "How many Members of Parliament (MPs) are there in the House of Commons?",
+                    o: ["500", "650", "750", "1000"],
+                    a: 1,
+                    ex: "The UK is divided into 650 parliamentary constituencies, and voters in each area elect one MP, meaning there are 650 MPs in total.",
+                },
+                {
+                    q: "What is a parliamentary 'constituency'?",
+                    o: [
+                        "A new law",
+                        "A voting system",
+                        "A specific geographical area represented by a single MP",
+                        "A committee of ministers",
+                    ],
+                    a: 2,
+                    ex: "A constituency is the specific local area that an MP represents in the House of Commons.",
+                },
+                {
+                    q: "What is the primary role of the Chancellor of the Exchequer?",
+                    o: [
+                        "Managing foreign affairs",
+                        "Managing the economy and national finances",
+                        "Overseeing the police force",
+                        "Managing healthcare",
+                    ],
+                    a: 1,
+                    ex: "The Chancellor of the Exchequer is the senior minister responsible for the nation's economy, taxes, and budget.",
+                },
+                {
+                    q: "The Home Secretary is a senior government minister responsible for which of the following?",
+                    o: [
+                        "Schools and universities",
+                        "Hospitals and the NHS",
+                        "Police, immigration, and national security",
+                        "Roads and transport",
+                    ],
+                    a: 2,
+                    ex: "The Home Office, led by the Home Secretary, deals with internal matters such as crime, policing, and immigration.",
+                },
+                {
+                    q: "What is the highest court of appeal in the UK for civil matters (and criminal matters in England, Wales, and NI)?",
+                    o: [
+                        "The High Court",
+                        "The Crown Court",
+                        "The Magistrates' Court",
+                        "The Supreme Court",
+                    ],
+                    a: 3,
+                    ex: "The Supreme Court is the highest court in the UK, established to hear the most complex and important legal appeals.",
+                },
+                {
+                    q: "In England, Wales, and Northern Ireland, how many randomly selected citizens make up a standard criminal jury?",
+                    o: ["9", "10", "12", "15"],
+                    a: 2,
+                    ex: "A jury in a Crown Court trial in England, Wales, and Northern Ireland consists of 12 members of the public.",
+                },
+                {
+                    q: "In Scotland, how many citizens make up a standard criminal jury?",
+                    o: ["12", "13", "14", "15"],
+                    a: 3,
+                    ex: "Unlike the rest of the UK, the Scottish legal system uses a jury of 15 people for criminal trials.",
+                },
+                {
+                    q: "What is the purpose of a National Insurance (NI) number?",
+                    o: [
+                        "It acts as a passport",
+                        "It gives you free access to public transport",
+                        "It ensures your tax and national insurance contributions are recorded against your name",
+                        "It is required to buy a house",
+                    ],
+                    a: 2,
+                    ex: "Everyone who works in the UK needs a National Insurance number to make sure their tax and contributions are accurately tracked.",
+                },
+                {
+                    q: "What does the tax system abbreviation 'PAYE' stand for?",
+                    o: [
+                        "Pay All Your Earnings",
+                        "Pay As You Earn",
+                        "Pay And Year End",
+                        "Personal Account Yield Estimate",
+                    ],
+                    a: 1,
+                    ex: "PAYE stands for 'Pay As You Earn'. It is the system where your employer automatically deducts your income tax directly from your wages before you receive them.",
+                },
+                {
+                    q: "Who is required by law to complete a 'Self Assessment' tax return?",
+                    o: [
+                        "Only people earning over £100,000",
+                        "Everyone in the UK",
+                        "Self-employed people",
+                        "Only politicians",
+                    ],
+                    a: 2,
+                    ex: "If you are self-employed, your tax is not automatically deducted via PAYE, so you must fill out a Self Assessment tax return each year.",
+                },
+                {
+                    q: "What is the age of criminal responsibility in England, Wales, and Northern Ireland?",
+                    o: ["10", "12", "14", "16"],
+                    a: 0,
+                    ex: "In England, Wales, and Northern Ireland, a child aged 10 or older can be arrested and taken to court if they commit a crime.",
+                },
+                {
+                    q: "Are 'forced marriages' legal in the UK?",
+                    o: [
+                        "Yes, if it is part of a cultural tradition",
+                        "Yes, but only if both parties are over 18",
+                        "No, it is a criminal offence",
+                        "Yes, if the parents consent",
+                    ],
+                    a: 2,
+                    ex: "A forced marriage (where one or both parties do not or cannot consent) is completely illegal and is a serious criminal offence in the UK. This is different from a legal arranged marriage.",
+                },
+                {
+                    q: "Is it legal to discriminate against a person in the workplace based on their religion or belief?",
+                    o: [
+                        "Yes, if the employer has a different religion",
+                        "No, it is strictly illegal",
+                        "Yes, but only in small businesses",
+                        "Yes, if the other employees agree",
+                    ],
+                    a: 1,
+                    ex: "Under UK law (The Equality Act), it is strictly illegal to discriminate against anyone because of their race, religion, gender, disability, or sexuality.",
+                },
+                {
+                    q: "What does the political abbreviation 'MP' stand for?",
+                    o: [
+                        "Minister of Parliament",
+                        "Member of Parliament",
+                        "Major Politician",
+                        "Master of Policy",
+                    ],
+                    a: 1,
+                    ex: "MP stands for Member of Parliament. They are the elected representatives who sit in the House of Commons.",
+                },
+                {
+                    q: "What does the abbreviation 'MSP' stand for in Scottish politics?",
+                    o: [
+                        "Minister of Scottish Policy",
+                        "Member of the Scottish Parliament",
+                        "Major Scottish Politician",
+                        "Master of Scottish Parliament",
+                    ],
+                    a: 1,
+                    ex: "Members elected to the devolved Scottish Parliament at Holyrood are known as MSPs.",
+                },
+                {
+                    q: "What title is given to the leader of the devolved Welsh Government?",
+                    o: [
+                        "The Prime Minister of Wales",
+                        "The Welsh President",
+                        "The First Minister of Wales",
+                        "The Secretary of State for Wales",
+                    ],
+                    a: 2,
+                    ex: "The leader of the Welsh Government is called the First Minister of Wales.",
+                },
+                {
+                    q: "What is a 'bank holiday' in the UK?",
+                    o: [
+                        "A day when only banks are open",
+                        "A public holiday where banks and many other businesses close for the day",
+                        "A day when you get a bonus from the bank",
+                        "A day specifically for banking staff",
+                    ],
+                    a: 1,
+                    ex: "Bank holidays are public holidays recognised across the UK. Banks, schools, and many businesses close for the day.",
+                },
+                {
+                    q: "What number should you dial in a genuine emergency to reach the police, fire, or ambulance service in the UK?",
+                    o: ["911", "311", "999 (or 112)", "101"],
+                    a: 2,
+                    ex: "In a real emergency, you should call 999 (the UK's main emergency number) or 112 (the European emergency number, which also works in the UK).",
+                },
+                {
+                    q: "Who are 'magistrates' in the UK legal system?",
+                    o: [
+                        "Highly paid senior judges",
+                        "Police officers who make arrests",
+                        "Unpaid members of the local community who decide minor criminal cases",
+                        "Lawyers who defend criminals",
+                    ],
+                    a: 2,
+                    ex: "Magistrates (or Justices of the Peace) are unpaid, trained members of the public who hear minor criminal cases in their local area.",
+                },
+                {
+                    q: "Which TWO of the following are civil law matters rather than criminal law?",
+                    o: [
+                        "Burglary",
+                        "Divorce",
+                        "Murder",
+                        "Disputes about faulty goods",
+                    ],
+                    a: [1, 3],
+                    ex: "Civil law covers disputes between individuals or organizations, such as divorce, debt, or faulty goods. Criminal law covers offenses against the state, like theft or violence.",
+                },
+                {
+                    q: "Which TWO of the following statements about the UK police are true?",
+                    o: [
+                        "Police officers must obey the law themselves",
+                        "The police are controlled by the military",
+                        "Police forces are independent of the government",
+                        "Police officers can make up their own laws",
+                    ],
+                    a: [0, 2],
+                    ex: "In the UK, the police are public servants who are independent of the government. They must act according to the law and can be prosecuted if they break it.",
+                },
+                {
+                    q: "Which TWO courts deal with criminal cases in Scotland?",
+                    o: [
+                        "The Crown Court",
+                        "The Justice of the Peace Court",
+                        "The High Court of Justiciary",
+                        "The Magistrates' Court",
+                    ],
+                    a: [1, 2],
+                    ex: "In Scotland, minor criminal cases go to the Justice of the Peace Court, and serious crimes go to the High Court of Justiciary.",
+                },
+                {
+                    q: "If you have a minor civil dispute (e.g., someone owes you a small amount of money), which procedure is the simplest and cheapest way to resolve it?",
+                    o: [
+                        "Hiring an expensive lawyer",
+                        "The small claims procedure",
+                        "Calling the police",
+                        "Going to the Supreme Court",
+                    ],
+                    a: 1,
+                    ex: "The small claims procedure is an informal and inexpensive way of settling minor civil disputes without needing a lawyer.",
+                },
+                {
+                    q: "Which of the following describes the role of the 'Whips' in Parliament?",
+                    o: [
+                        "They clean the House of Commons",
+                        "They act as bodyguards for the Prime Minister",
+                        "They ensure that MPs from their party vote according to the party's official policy",
+                        "They count the votes during general elections",
+                    ],
+                    a: 2,
+                    ex: "Whips are MPs appointed by their party to maintain discipline and ensure that their fellow MPs vote the way the party leadership wants them to.",
+                },
+                {
+                    q: "What is the official report that records everything said in Parliament called?",
+                    o: [
+                        "The Domesday Book",
+                        "The Magna Carta",
+                        "Hansard",
+                        "The Westminster Gazette",
+                    ],
+                    a: 2,
+                    ex: "Hansard is the official, daily printed and online report of all parliamentary debates and proceedings.",
+                },
+                {
+                    q: "Which TWO of the following are core values that citizens and residents of the UK are expected to respect?",
+                    o: [
+                        "Intolerance of other religions",
+                        "Democracy",
+                        "Rule of law",
+                        "Refusing to pay taxes",
+                    ],
+                    a: [1, 2],
+                    ex: "The core principles of British life include democracy, the rule of law, individual liberty, and mutual respect and tolerance of those with different faiths and beliefs.",
+                },
+                {
+                    q: "Which of the following statements about volunteering in the UK is true?",
+                    o: [
+                        "It is mandatory for all adults under 30",
+                        "It is heavily taxed by the government",
+                        "It is unpaid work that helps the community and can provide new skills",
+                        "It is only allowed for retired people",
+                    ],
+                    a: 2,
+                    ex: "Volunteering is a highly valued tradition in the UK. It is unpaid, voluntary, and an excellent way to support local communities while gaining experience.",
+                },
+                {
+                    q: "What must you do to legally drive a car on public roads in the UK?",
+                    o: [
+                        "Have a valid driving licence and motor insurance",
+                        "Be at least 21 years old",
+                        "Pay a fee to the local police station",
+                        "Have a university degree",
+                    ],
+                    a: 0,
+                    ex: "To drive a car or motorcycle in the UK, you must be at least 17, hold a valid driving licence, and have valid motor insurance.",
+                },
+                {
+                    q: "If your car is over three years old, what test must it pass every year to ensure it is safe to drive?",
+                    o: [
+                        "The Driving Theory Test",
+                        "The MOT test",
+                        "The emissions waiver",
+                        "The DVLA check",
+                    ],
+                    a: 1,
+                    ex: "Vehicles over three years old must pass an annual Ministry of Transport (MOT) test to prove they meet road safety and environmental standards.",
+                },
+                {
+                    q: "In the UK, what is a 'Quango' (Non-Departmental Public Body)?",
+                    o: [
+                        "A type of public transport in London",
+                        "An independent organization that has a role in government processes but is not a government department",
+                        "A secret committee of MPs",
+                        "A local council in Wales",
+                    ],
+                    a: 1,
+                    ex: "Quangos are independent bodies that provide advice, regulate industries, or deliver services on behalf of the government.",
+                },
+                {
+                    q: "Which TWO organizations protect citizens against faulty goods or poor services?",
+                    o: [
+                        "Trading Standards",
+                        "The Secret Intelligence Service (MI6)",
+                        "The Citizens Advice Bureau",
+                        "The Ministry of Defence",
+                    ],
+                    a: [0, 2],
+                    ex: "If you have issues with goods or services, you can get help and advice from the Citizens Advice Bureau or local Trading Standards offices.",
+                },
+                {
+                    q: "Which historical document, created in 1689, confirmed the rights of Parliament and the limits of the King's power?",
+                    o: [
+                        "The Magna Carta",
+                        "The Bill of Rights",
+                        "The Emancipation Act",
+                        "The Act of Union",
+                    ],
+                    a: 1,
+                    ex: "The Bill of Rights (1689) was a crucial step in establishing a constitutional monarchy, clearly defining the powers of Parliament over the monarch.",
+                },
+            ];
+
+            // --- Spaced Repetition (SM-2) Logic ---
+            function getSM2(qText) {
+                const data =
+                    JSON.parse(localStorage.getItem("ukTestSm2")) || {};
+                // n: repetitions in a row, ef: ease factor, i: interval (days), next: timestamp, attempts: total tries, correct: total correct
+                return (
+                    data[qText] || {
+                        n: 0,
+                        ef: 2.5,
+                        i: 0,
+                        next: 0,
+                        attempts: 0,
+                        correct: 0,
+                    }
+                );
+            }
+
+            function saveSM2(qText, sm2Data) {
+                const data =
+                    JSON.parse(localStorage.getItem("ukTestSm2")) || {};
+                data[qText] = sm2Data;
+                localStorage.setItem("ukTestSm2", JSON.stringify(data));
+                updateGlobalAccuracy();
+            }
+
+            function updateGlobalAccuracy() {
+                const data =
+                    JSON.parse(localStorage.getItem("ukTestSm2")) || {};
+                let totalAttempts = 0;
+                let totalCorrect = 0;
+
+                for (const key in data) {
+                    totalAttempts += data[key].attempts || 0;
+                    totalCorrect += data[key].correct || 0;
+                }
+
+                const accuracyEl = document.getElementById("global-accuracy");
+                if (accuracyEl) {
+                    if (totalAttempts === 0) {
+                        accuracyEl.textContent = "0%";
+                    } else {
+                        const pct = Math.round(
+                            (totalCorrect / totalAttempts) * 100,
+                        );
+                        accuracyEl.textContent = pct + "%";
+                    }
+                }
+            }
+
+            function calculateSM2(sm2, quality) {
+                let { n, ef, i, next } = sm2;
+
+                if (quality >= 3) {
+                    if (n === 0) i = 1;
+                    else if (n === 1) i = 6;
+                    else i = Math.round(i * ef);
+                    n++;
+                } else {
+                    n = 0;
+                    i = 1; // Reset interval
+                }
+
+                // Adjust ease factor
+                ef = ef + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+                if (ef < 1.3) ef = 1.3;
+
+                // Calculate next review timestamp (quality < 3 means review very soon, else scale by days)
+                const delayMs =
+                    quality < 3 ? 60 * 1000 : i * 24 * 60 * 60 * 1000;
+                next = Date.now() + delayMs;
+
+                return { n, ef, i, next };
+            }
+
+            let sessionQueue = [];
+            let firstTryScore = 0;
+            let initialQuestionsCount = 24; // Set to official test length
+            let answered = false;
+            let currentQuestion = null;
+            let selectedOptions = []; // Track selections for multiple-choice questions
+            let currentDisplayOptions = []; // Track shuffled options for mapping original indices
+
+            const container = document.getElementById("quiz-container");
+            const feedback = document.getElementById("feedback-container");
+            const nextBtn = document.getElementById("next-btn");
+            const restartBtn = document.getElementById("restart-btn");
+            const scoreEl = document.getElementById("score");
+
+            function startSession() {
+                // Load SM2 data and sort so past-due questions come first
+                // Also prioritize those with lower historical accuracy
+                const allWithSM2 = questions.map((q) => {
+                    const sm2Data = getSM2(q.q);
+                    const accuracy =
+                        sm2Data.attempts > 0
+                            ? sm2Data.correct / sm2Data.attempts
+                            : 0;
+                    return {
+                        ...q,
+                        sm2: sm2Data,
+                        accuracy: accuracy,
+                        isFirstTry: true,
+                    };
+                });
+
+                allWithSM2.sort((a, b) => {
+                    if (a.sm2.next !== b.sm2.next) {
+                        return a.sm2.next - b.sm2.next; // Overdue first
+                    }
+                    return a.accuracy - b.accuracy; // Lowest accuracy first
+                });
+
+                // Limit session to exact test length (24 questions)
+                sessionQueue = allWithSM2.slice(0, 24);
+                initialQuestionsCount = sessionQueue.length;
+                firstTryScore = 0;
+                scoreEl.textContent = firstTryScore;
+                restartBtn.classList.add("hidden");
+
+                updateGlobalAccuracy();
+                render();
+            }
+
+            function render() {
+                if (sessionQueue.length === 0) {
+                    showResults();
+                    return;
+                }
+
+                answered = false;
+                selectedOptions = [];
+                currentQuestion = sessionQueue[0];
+                const isMulti = Array.isArray(currentQuestion.a);
+
+                currentDisplayOptions = currentQuestion.o.map(
+                    (text, originalIndex) => ({ text, originalIndex }),
+                );
+                for (let i = currentDisplayOptions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [currentDisplayOptions[i], currentDisplayOptions[j]] = [
+                        currentDisplayOptions[j],
+                        currentDisplayOptions[i],
+                    ];
+                }
+
+                nextBtn.classList.add("hidden");
+                feedback.classList.add("hidden");
+
+                container.innerHTML = `
+                <div class="mb-4 flex justify-between items-center text-sm">
+                    <span class="text-slate-500 font-medium">Question: ${initialQuestionsCount - sessionQueue.length + 1} / ${initialQuestionsCount}</span>
+                    <span class="text-blue-700 bg-blue-100 px-3 py-1 rounded-full font-semibold flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Test Active
+                    </span>
+                </div>
+                <h2 class="text-xl font-semibold mb-6">${currentQuestion.q}</h2>
+                ${isMulti ? `<p class="text-sm font-semibold text-blue-600 mb-4 uppercase tracking-wide bg-blue-50 inline-block px-3 py-1 rounded-lg">Select ${currentQuestion.a.length} answers</p>` : ""}
+                <div class="space-y-3">
+                    ${currentDisplayOptions
+                        .map(
+                            (optObj, i) => `
+                        <button onclick="handleOptionClick(${i})" class="w-full text-left p-4 border rounded-xl hover:bg-slate-50 transition-all option-btn flex justify-between items-center">
+                            <span>${optObj.text}</span>
+                            ${isMulti ? `<div class="w-6 h-6 border-2 rounded-md flex-shrink-0 checkbox-indicator flex items-center justify-center transition-colors"></div>` : ""}
+                        </button>
+                    `,
+                        )
+                        .join("")}
+                </div>
+                ${isMulti ? `<button id="submit-multi-btn" onclick="checkMulti()" class="mt-6 w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-opacity" disabled>Check Answers</button>` : ""}
+            `;
+            }
+
+            function handleOptionClick(idx) {
+                if (answered) return;
+                const isMulti = Array.isArray(currentQuestion.a);
+
+                if (!isMulti) {
+                    checkSingle(idx);
+                } else {
+                    toggleOption(idx);
+                }
+            }
+
+            function toggleOption(idx) {
+                const btn = document.querySelectorAll(".option-btn")[idx];
+                const checkbox = btn.querySelector(".checkbox-indicator");
+                const idxInArray = selectedOptions.indexOf(idx);
+
+                if (idxInArray > -1) {
+                    selectedOptions.splice(idxInArray, 1);
+                    btn.classList.remove("bg-blue-50", "border-blue-400");
+                    if (checkbox) {
+                        checkbox.classList.remove(
+                            "bg-blue-600",
+                            "border-blue-600",
+                        );
+                        checkbox.innerHTML = "";
+                    }
+                } else {
+                    if (selectedOptions.length < currentQuestion.a.length) {
+                        selectedOptions.push(idx);
+                        btn.classList.add("bg-blue-50", "border-blue-400");
+                        if (checkbox) {
+                            checkbox.classList.add(
+                                "bg-blue-600",
+                                "border-blue-600",
+                            );
+                            checkbox.innerHTML = `<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>`;
+                        }
+                    }
+                }
+
+                const submitBtn = document.getElementById("submit-multi-btn");
+                if (submitBtn) {
+                    submitBtn.disabled =
+                        selectedOptions.length !== currentQuestion.a.length;
+                }
+            }
+
+            function processResult(isCorrect, buttons) {
+                const questionText = currentQuestion.q;
+                let qStats = getSM2(questionText);
+
+                // Track total attempts and correct answers for accuracy tracking (only count first try of session)
+                if (currentQuestion.isFirstTry) {
+                    qStats.attempts = (qStats.attempts || 0) + 1;
+                    if (isCorrect) {
+                        qStats.correct = (qStats.correct || 0) + 1;
+                    }
+                }
+
+                if (isCorrect) {
+                    if (currentQuestion.isFirstTry) {
+                        firstTryScore++;
+                        scoreEl.textContent = firstTryScore;
+                    }
+
+                    const acc = Math.round(
+                        ((qStats.correct || 0) / (qStats.attempts || 1)) * 100,
+                    );
+                    feedback.innerHTML = `<p class="font-bold text-green-700">Correct!</p>
+                <p class="text-xs font-semibold text-slate-500 mb-2">Historical Accuracy on this question: ${acc}%</p>
+                <p class="text-sm mt-1">${currentQuestion.ex}</p>`;
+                    feedback.classList.remove("border-red-200", "bg-red-50");
+                    feedback.classList.add("border-green-200", "bg-green-50");
+
+                    currentQuestion.sm2 = calculateSM2(currentQuestion.sm2, 4);
+                    currentQuestion.sm2.attempts = qStats.attempts;
+                    currentQuestion.sm2.correct = qStats.correct;
+                    saveSM2(currentQuestion.q, currentQuestion.sm2);
+
+                    sessionQueue.shift();
+                } else {
+                    const acc = Math.round(
+                        ((qStats.correct || 0) / (qStats.attempts || 1)) * 100,
+                    );
+                    feedback.innerHTML = `<p class="font-bold text-red-700">Incorrect.</p>
+                <p class="text-xs font-semibold text-slate-500 mb-2">Historical Accuracy on this question: ${acc}%</p>
+                <p class="text-sm mt-2">${currentQuestion.ex}</p>`;
+                    feedback.classList.remove(
+                        "border-green-200",
+                        "bg-green-50",
+                    );
+                    feedback.classList.add("border-red-200", "bg-red-50");
+
+                    currentQuestion.sm2 = calculateSM2(currentQuestion.sm2, 1);
+                    currentQuestion.sm2.attempts = qStats.attempts;
+                    currentQuestion.sm2.correct = qStats.correct;
+                    saveSM2(currentQuestion.q, currentQuestion.sm2);
+
+                    // Remove from current session instead of pushing to back
+                    sessionQueue.shift();
+                }
+
+                feedback.classList.remove("hidden");
+                nextBtn.classList.remove("hidden");
+
+                const submitBtn = document.getElementById("submit-multi-btn");
+                if (submitBtn) submitBtn.classList.add("hidden");
+            }
+
+            function checkSingle(idx) {
+                answered = true;
+                const buttons = document.querySelectorAll(".option-btn");
+
+                const originalIdx = currentDisplayOptions[idx].originalIndex;
+                const isCorrect = originalIdx === currentQuestion.a;
+                const correctRenderedIdx = currentDisplayOptions.findIndex(
+                    (opt) => opt.originalIndex === currentQuestion.a,
+                );
+
+                if (isCorrect) {
+                    buttons[idx].classList.add("correct");
+                } else {
+                    buttons[idx].classList.add("incorrect");
+                    buttons[correctRenderedIdx].classList.add("correct");
+                }
+
+                processResult(isCorrect, buttons);
+            }
+
+            function checkMulti() {
+                answered = true;
+                const buttons = document.querySelectorAll(".option-btn");
+
+                const correctAnswers = [...currentQuestion.a].sort();
+                const selectedOriginals = selectedOptions
+                    .map(
+                        (renderedIdx) =>
+                            currentDisplayOptions[renderedIdx].originalIndex,
+                    )
+                    .sort();
+                const isCorrect =
+                    JSON.stringify(correctAnswers) ===
+                    JSON.stringify(selectedOriginals);
+
+                selectedOptions.forEach((renderedIdx) => {
+                    const origIdx =
+                        currentDisplayOptions[renderedIdx].originalIndex;
+                    if (currentQuestion.a.includes(origIdx)) {
+                        buttons[renderedIdx].classList.add("correct");
+                        buttons[renderedIdx].classList.remove(
+                            "bg-blue-50",
+                            "border-blue-400",
+                        );
+                    } else {
+                        buttons[renderedIdx].classList.add("incorrect");
+                        buttons[renderedIdx].classList.remove(
+                            "bg-blue-50",
+                            "border-blue-400",
+                        );
+                    }
+                });
+
+                currentQuestion.a.forEach((origIdx) => {
+                    const renderedIdx = currentDisplayOptions.findIndex(
+                        (opt) => opt.originalIndex === origIdx,
+                    );
+                    if (!selectedOptions.includes(renderedIdx)) {
+                        buttons[renderedIdx].classList.add("correct");
+                    }
+                });
+
+                processResult(isCorrect, buttons);
+            }
+
+            nextBtn.addEventListener("click", render);
+
+            restartBtn.addEventListener("click", startSession);
+
+            function showResults() {
+                nextBtn.classList.add("hidden");
+                const requiredToPass = Math.ceil(initialQuestionsCount * 0.75);
+                const passed = firstTryScore >= requiredToPass;
+
+                const icon = passed
+                    ? '<div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg></div>'
+                    : '<div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>';
+
+                const message = passed
+                    ? `<h2 class="text-3xl font-bold mb-2 text-green-700">Test Passed!</h2><p class="text-slate-600 mb-6">Congratulations, you met the 75% requirement.</p>`
+                    : `<h2 class="text-3xl font-bold mb-2 text-red-700">Test Failed</h2><p class="text-slate-600 mb-6">You need 75% to pass the official test.</p>`;
+
+                container.innerHTML = `
+                <div class="text-center py-10 fade-in">
+                    ${icon}
+                    ${message}
+                    <div class="text-4xl font-black mb-2">${firstTryScore} / ${initialQuestionsCount}</div>
+                    <p class="text-xl text-slate-500 mb-8 font-medium">Score: ${Math.round((firstTryScore / initialQuestionsCount) * 100)}%</p>
+                    <div class="bg-blue-50 text-blue-800 text-sm p-4 rounded-lg max-w-md mx-auto text-left">
+                        <strong>Progress Saved.</strong> The Spaced Repetition algorithm has recorded your weak points. They will be prioritized in your next mock test.
+                    </div>
+                </div>
+            `;
+                restartBtn.classList.remove("hidden");
+                restartBtn.textContent = "Start New Mock Test";
+            }
+
+            // Initialize app
+            startSession();
+        </script>
+    </body>
+</html>
