@@ -11,43 +11,12 @@
         />
     </head>
     <body class="min-h-screen text-ink">
-        <div id="app" class="w-full max-w-xl mx-auto px-4 py-6 sm:py-10">
-            <div id="header" class="mb-5 flex flex-col gap-3">
-                <h1 class="text-xl font-semibold tracking-tight">
-                    Life in the UK Prep
-                </h1>
-                <div class="flex gap-2 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-                    <div
-                        class="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2"
-                        title="Total questions in the bank"
-                    >
-                        <div class="text-base font-semibold tabular" id="total-questions">
-                            0
-                        </div>
-                        <div class="text-[11px] text-muted">Bank</div>
-                    </div>
-                    <div
-                        class="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2"
-                        title="All-time overall accuracy"
-                    >
-                        <div class="text-base font-semibold tabular text-accent" id="global-accuracy">
-                            0%
-                        </div>
-                        <div class="text-[11px] text-muted">Accuracy</div>
-                    </div>
-                    <div
-                        class="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2"
-                        title="Score on first attempt"
-                    >
-                        <div class="text-base font-semibold tabular" id="score">
-                            0
-                        </div>
-                        <div class="text-[11px] text-muted">First Try</div>
-                    </div>
-                </div>
-            </div>
+        <div id="app" class="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-5">
+            <h1 class="order-1 text-xl font-semibold tracking-tight">
+                Life in the UK Prep
+            </h1>
 
-            <div class="bg-surface rounded-2xl border border-line p-5 sm:p-7">
+            <div class="order-2 sm:order-3 bg-surface rounded-2xl border border-line p-5 sm:p-7">
                 <div id="quiz-container" class="fade-in">
                     <!-- Question rendered here -->
                 </div>
@@ -69,6 +38,36 @@
                     >
                         Start Again
                     </button>
+                </div>
+            </div>
+
+            <div class="order-3 sm:order-2 flex gap-2 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div
+                    class="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2"
+                    title="Total questions in the bank"
+                >
+                    <div class="text-base font-semibold tabular" id="total-questions">
+                        0
+                    </div>
+                    <div class="text-[11px] text-muted">Bank</div>
+                </div>
+                <div
+                    class="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2"
+                    title="All-time overall accuracy"
+                >
+                    <div class="text-base font-semibold tabular text-accent" id="global-accuracy">
+                        0%
+                    </div>
+                    <div class="text-[11px] text-muted">Accuracy</div>
+                </div>
+                <div
+                    class="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2"
+                    title="Score on first attempt"
+                >
+                    <div class="text-base font-semibold tabular" id="score">
+                        0
+                    </div>
+                    <div class="text-[11px] text-muted">First Try</div>
                 </div>
             </div>
         </div>
