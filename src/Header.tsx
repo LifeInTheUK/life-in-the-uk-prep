@@ -1,7 +1,11 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+"use client";
 
-export default function Layout() {
-    const { pathname } = useLocation();
+import type { ReactNode } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+export default function Header({ children }: { children: ReactNode }) {
+    const pathname = usePathname();
     const isLanding = pathname === "/";
     const isQuizPage = pathname === "/test";
 
@@ -9,13 +13,13 @@ export default function Layout() {
         <div className="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-5">
             <div className="order-1 flex items-center justify-between">
                 <Link
-                    to="/"
+                    href="/"
                     className="text-2xl font-semibold tracking-tight text-accent"
                 >
                     Life in the UK Prep
                 </Link>
                 <Link
-                    to="/stats"
+                    href="/stats"
                     className="flex-shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors"
                     title="Your progress"
                     aria-label="Your progress"
@@ -36,11 +40,11 @@ export default function Layout() {
                 </Link>
             </div>
 
-            <Outlet />
+            {children}
 
             {!isLanding && !isQuizPage && (
                 <Link
-                    to="/test"
+                    href="/test"
                     className="order-3 sm:order-2 self-start inline-flex items-center gap-2 px-3 py-2 rounded-full border border-line bg-surface text-sm font-medium text-ink hover:border-accent hover:text-accent transition-colors"
                 >
                     <svg
@@ -75,7 +79,7 @@ export default function Layout() {
                         <div className="text-[11px] text-muted">Bank</div>
                     </div>
                     <Link
-                        to="/review"
+                        href="/review"
                         className="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2 hover:border-accent transition-colors"
                         title="Review your correct and incorrect answers"
                     >
