@@ -14,17 +14,16 @@ let currentQuestion: SessionQuestion | null = null;
 let selectedOptions: number[] = []; // Track selections for multiple-choice questions
 let currentDisplayOptions: { text: string; originalIndex: number }[] = []; // Track shuffled options for mapping original indices
 
-console.log(
-  `Session size: ${SESSION_SIZE}, total questions: ${questions.length}`,
-);
-const container = document.getElementById("quiz-container") as HTMLElement;
-const feedback = document.getElementById("feedback-container") as HTMLElement;
-const nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
-const restartBtn = document.getElementById("restart-btn") as HTMLButtonElement;
-const scoreEl = document.getElementById("score") as HTMLElement;
-const totalQuestionsEl = document.getElementById(
-  "total-questions",
-) as HTMLElement;
+// Queried lazily inside initQuiz() rather than at module load time, since
+// these nodes are rendered by React (QuizPage/Layout) and don't exist yet
+// when this module is first imported.
+let container: HTMLElement;
+let feedback: HTMLElement;
+let nextBtn: HTMLButtonElement;
+let restartBtn: HTMLButtonElement;
+let scoreEl: HTMLElement;
+let totalQuestionsEl: HTMLElement;
+let keydownListenerAttached = false;
 
 const ENTER_KBD = `<kbd class="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">↵</kbd>`;
 
@@ -230,7 +229,10 @@ function toggleOption(idx: number): void {
   }
 }
 
-function processResult(isCorrect: boolean): void {
+function processResult(
+  isCorrect: boolean,
+  selected: number | number[],
+): void {
   const question = currentQuestion!;
   let qStats = getSM2(question.id);
 
@@ -263,6 +265,8 @@ function processResult(isCorrect: boolean): void {
     question.sm2 = calculateSM2(question.sm2, 4);
     question.sm2.attempts = qStats.attempts;
     question.sm2.correct = qStats.correct;
+    question.sm2.lastCorrect = true;
+    question.sm2.lastSelected = selected;
     saveSM2(question.id, question.sm2);
 
     sessionQueue.shift();
@@ -282,6 +286,8 @@ function processResult(isCorrect: boolean): void {
     question.sm2 = calculateSM2(question.sm2, 1);
     question.sm2.attempts = qStats.attempts;
     question.sm2.correct = qStats.correct;
+    question.sm2.lastCorrect = false;
+    question.sm2.lastSelected = selected;
     saveSM2(question.id, question.sm2);
 
     // Remove from current session instead of pushing to back
@@ -324,7 +330,7 @@ function checkSingle(idx: number): void {
     buttons[correctRenderedIdx].classList.add("correct");
   }
 
-  processResult(isCorrect);
+  processResult(isCorrect, originalIdx);
 }
 
 function checkMulti(): void {
@@ -358,7 +364,7 @@ function checkMulti(): void {
     }
   });
 
-  processResult(isCorrect);
+  processResult(isCorrect, selectedOriginals);
 }
 
 function showResults(): void {
@@ -401,6 +407,15 @@ function showResults(): void {
 }
 
 export function initQuiz(): void {
+  container = document.getElementById("quiz-container") as HTMLElement;
+  feedback = document.getElementById("feedback-container") as HTMLElement;
+  nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
+  restartBtn = document.getElementById("restart-btn") as HTMLButtonElement;
+  scoreEl = document.getElementById("score") as HTMLElement;
+  totalQuestionsEl = document.getElementById(
+    "total-questions",
+  ) as HTMLElement;
+
   totalQuestionsEl.textContent = String(questions.length);
 
   container.addEventListener("click", (e) => {
@@ -420,39 +435,42 @@ export function initQuiz(): void {
   nextBtn.addEventListener("click", render);
   restartBtn.addEventListener("click", startSession);
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key >= "1" && e.key <= "9") {
-      const optionButtons =
-        document.querySelectorAll<HTMLButtonElement>(".option-btn");
-      const idx = Number(e.key) - 1;
-      if (idx < optionButtons.length) {
-        e.preventDefault();
-        optionButtons[idx].click();
+  if (!keydownListenerAttached) {
+    keydownListenerAttached = true;
+    document.addEventListener("keydown", (e) => {
+      if (e.key >= "1" && e.key <= "9") {
+        const optionButtons =
+          document.querySelectorAll<HTMLButtonElement>(".option-btn");
+        const idx = Number(e.key) - 1;
+        if (idx < optionButtons.length) {
+          e.preventDefault();
+          optionButtons[idx].click();
+        }
+        return;
       }
-      return;
-    }
 
-    if (e.key === "Enter" || e.key === " ") {
-      // A focused button already handles Enter/Space natively;
-      // only step in when the key press isn't targeting one.
-      if (document.activeElement instanceof HTMLButtonElement) return;
+      if (e.key === "Enter" || e.key === " ") {
+        // A focused button already handles Enter/Space natively;
+        // only step in when the key press isn't targeting one.
+        if (document.activeElement instanceof HTMLButtonElement) return;
 
-      const submitBtn = document.getElementById(
-        "submit-multi-btn",
-      ) as HTMLButtonElement | null;
+        const submitBtn = document.getElementById(
+          "submit-multi-btn",
+        ) as HTMLButtonElement | null;
 
-      if (!nextBtn.classList.contains("hidden")) {
-        e.preventDefault();
-        nextBtn.click();
-      } else if (!restartBtn.classList.contains("hidden")) {
-        e.preventDefault();
-        restartBtn.click();
-      } else if (submitBtn && !submitBtn.disabled) {
-        e.preventDefault();
-        submitBtn.click();
+        if (!nextBtn.classList.contains("hidden")) {
+          e.preventDefault();
+          nextBtn.click();
+        } else if (!restartBtn.classList.contains("hidden")) {
+          e.preventDefault();
+          restartBtn.click();
+        } else if (submitBtn && !submitBtn.disabled) {
+          e.preventDefault();
+          submitBtn.click();
+        }
       }
-    }
-  });
+    });
+  }
 
   if (!restoreSession()) {
     startSession();

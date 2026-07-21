@@ -13,6 +13,8 @@ export interface SM2Data {
     next: number;
     attempts: number;
     correct: number;
+    lastCorrect?: boolean;
+    lastSelected?: number | number[];
 }
 
 export interface SessionQuestion extends Question {
