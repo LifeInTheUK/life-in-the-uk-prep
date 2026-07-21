@@ -2,14 +2,18 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 
 export default function Layout() {
     const { pathname } = useLocation();
-    const isHome = pathname === "/";
+    const isLanding = pathname === "/";
+    const isQuizPage = pathname === "/test";
 
     return (
         <div className="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-5">
             <div className="order-1 flex items-center justify-between">
-                <h1 className="text-2xl font-semibold tracking-tight text-accent">
+                <Link
+                    to="/"
+                    className="text-2xl font-semibold tracking-tight text-accent"
+                >
                     Life in the UK Prep
-                </h1>
+                </Link>
                 <Link
                     to="/stats"
                     className="flex-shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors"
@@ -34,9 +38,9 @@ export default function Layout() {
 
             <Outlet />
 
-            {!isHome && (
+            {!isLanding && !isQuizPage && (
                 <Link
-                    to="/"
+                    to="/test"
                     className="order-3 sm:order-2 self-start inline-flex items-center gap-2 px-3 py-2 rounded-full border border-line bg-surface text-sm font-medium text-ink hover:border-accent hover:text-accent transition-colors"
                 >
                     <svg
@@ -56,7 +60,7 @@ export default function Layout() {
                 </Link>
             )}
 
-            {isHome && (
+            {isQuizPage && (
                 <div className="order-3 sm:order-2 flex gap-2 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
                     <div
                         className="flex flex-col items-center justify-center flex-1 min-w-[84px] rounded-xl bg-surface border border-line py-2"
