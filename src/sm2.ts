@@ -26,23 +26,29 @@ export function saveSM2(id: number, sm2Data: SM2Data): void {
     updateGlobalAccuracy();
 }
 
-export function updateGlobalAccuracy(): void {
+export function getAggregateStats(): { attempts: number; correct: number } {
     const data: Record<number, SM2Data> =
         JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
-    let totalAttempts = 0;
-    let totalCorrect = 0;
+    let attempts = 0;
+    let correct = 0;
 
     for (const key in data) {
-        totalAttempts += data[key].attempts || 0;
-        totalCorrect += data[key].correct || 0;
+        attempts += data[key].attempts || 0;
+        correct += data[key].correct || 0;
     }
+
+    return { attempts, correct };
+}
+
+export function updateGlobalAccuracy(): void {
+    const { attempts, correct } = getAggregateStats();
 
     const accuracyEl = document.getElementById("global-accuracy");
     if (accuracyEl) {
-        if (totalAttempts === 0) {
+        if (attempts === 0) {
             accuracyEl.textContent = "0%";
         } else {
-            const pct = Math.round((totalCorrect / totalAttempts) * 100);
+            const pct = Math.round((correct / attempts) * 100);
             accuracyEl.textContent = pct + "%";
         }
     }

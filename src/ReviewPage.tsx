@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { questions } from "./questions";
 import { getSM2 } from "./sm2";
 import type { Question, SM2Data } from "./types";
@@ -90,15 +89,7 @@ export default function ReviewPage() {
 
     return (
         <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Review answers</h2>
-                <Link
-                    to="/"
-                    className="text-sm font-medium text-accent hover:text-accent-dark"
-                >
-                    Back to test
-                </Link>
-            </div>
+            <h2 className="text-lg font-semibold">Review answers</h2>
 
             {attempted.length === 0 ? (
                 <p className="text-sm text-muted">

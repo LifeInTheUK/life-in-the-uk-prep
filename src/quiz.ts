@@ -1,6 +1,7 @@
 import type { Question, SessionQuestion } from "./types";
 import { questions } from "./questions";
 import { getSM2, saveSM2, updateGlobalAccuracy, calculateSM2 } from "./sm2";
+import { addResult } from "./history";
 
 // Official test length is 24 questions; override with VITE_SESSION_SIZE
 // (e.g. in .env.development) to use a shorter session while developing.
@@ -369,6 +370,7 @@ function checkMulti(): void {
 
 function showResults(): void {
   clearSession();
+  addResult(firstTryScore, initialQuestionsCount);
   nextBtn.classList.add("hidden");
   feedback.classList.add("hidden");
   const requiredToPass = Math.ceil(initialQuestionsCount * 0.75);
