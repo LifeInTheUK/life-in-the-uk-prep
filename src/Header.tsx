@@ -74,7 +74,7 @@ export default function Header({ children }: { children: ReactNode }) {
       {!isLanding && !isQuizPage && (
         <Link
           href="/test"
-          className="order-3 sm:order-2 self-start inline-flex items-center gap-2 px-3 py-2 rounded-full border border-line bg-surface text-sm font-medium text-ink hover:border-accent hover:text-accent transition-colors"
+          className="order-2 self-start inline-flex items-center gap-2 px-3 py-2 rounded-full border border-line bg-surface text-sm font-medium text-ink hover:border-accent hover:text-accent transition-colors"
         >
           <svg
             className="w-4 h-4"
@@ -94,7 +94,7 @@ export default function Header({ children }: { children: ReactNode }) {
       )}
 
       {isQuizPage && (
-        <div className="order-3 sm:order-2 flex gap-2 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="order-2 flex gap-2 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <Link
             href="/questions"
             className="flex flex-col items-center justify-center flex-1 min-w-21 rounded-xl bg-surface border border-line py-2 hover:border-accent transition-colors"

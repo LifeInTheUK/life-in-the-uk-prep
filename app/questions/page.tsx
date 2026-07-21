@@ -26,7 +26,7 @@ export default async function QuestionsPage({
   const pageQuestions = questions.slice(start, start + PAGE_SIZE);
 
   return (
-    <div className="order-2 sm:order-3 flex flex-col gap-5 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
+    <div className="order-3 flex flex-col gap-5 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
       <div>
         <h2 className="text-lg font-semibold">Question Bank</h2>
         <p className="text-xs text-muted mt-1">

@@ -91,7 +91,7 @@ export default function ReviewPage() {
   const shown = tab === "incorrect" ? incorrect : correct;
 
   return (
-    <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
+    <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
       <h2 className="text-lg font-semibold">Review answers</h2>
 
       {attempted.length === 0 ? (
