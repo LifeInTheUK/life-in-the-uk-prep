@@ -51,6 +51,16 @@ export default function HomePage() {
                 {hasSession ? "Continue Test" : "Start Test"}
             </Link>
 
+            {hasSession && (
+                <Link
+                    href="/test"
+                    onClick={() => sessionStorage.removeItem("ukTestSession")}
+                    className="w-full bg-ink hover:bg-slate-700 active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
+                >
+                    Start New Test
+                </Link>
+            )}
+
             <div className="grid grid-cols-3 gap-2 tabular">
                 <div className="rounded-xl border border-line bg-surface p-3 text-center">
                     <div className="text-xl font-semibold">
