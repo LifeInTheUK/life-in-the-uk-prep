@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Inter } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
 import Header from "@/src/Header";
 import "@/src/style.css";
 
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html lang="en">
             <body className={`${inter.className} min-h-screen text-ink`}>
-                <Header>{children}</Header>
+                <SessionProvider>
+                    <Header>{children}</Header>
+                </SessionProvider>
             </body>
         </html>
     );

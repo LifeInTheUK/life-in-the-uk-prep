@@ -3,11 +3,13 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 export default function Header({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLanding = pathname === "/";
   const isQuizPage = pathname === "/test";
+  const { data: session } = useSession();
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-5">
@@ -18,26 +20,51 @@ export default function Header({ children }: { children: ReactNode }) {
         >
           Life in the UK Prep
         </Link>
-        <Link
-          href="/stats"
-          className="shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors"
-          title="Your progress"
-          aria-label="Your progress"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex items-center gap-2">
+          {session?.user ? (
+            <button
+              onClick={() => signOut()}
+              className="text-xs font-medium text-muted hover:text-ink transition-colors"
+            >
+              Sign out
+            </button>
+          ) : (
+            <button
+              onClick={() => signIn("google")}
+              className="text-xs font-medium text-muted hover:text-ink transition-colors"
+            >
+              Sign in
+            </button>
+          )}
+          <Link
+            href="/stats"
+            className="shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors overflow-hidden"
+            title="Your progress"
+            aria-label="Your progress"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-        </Link>
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            )}
+          </Link>
+        </div>
       </div>
 
       {children}
