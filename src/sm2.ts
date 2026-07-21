@@ -1,4 +1,5 @@
 import type { SM2Data } from "./types";
+import { getAuthState } from "./authState";
 
 const STORAGE_KEY = "ukTestSm2ById";
 
@@ -24,6 +25,30 @@ export function saveSM2(id: number, sm2Data: SM2Data): void {
     data[id] = sm2Data;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     updateGlobalAccuracy();
+
+    if (getAuthState()) {
+        fetch("/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, sm2Data }),
+        }).catch(() => {});
+    }
+}
+
+export async function pullProgressFromServer(): Promise<void> {
+    try {
+        const res = await fetch("/api/progress");
+        if (!res.ok) return;
+        const serverData: Record<number, SM2Data> = await res.json();
+
+        const localData: Record<number, SM2Data> =
+            JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
+        const merged = { ...localData, ...serverData };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        updateGlobalAccuracy();
+    } catch {
+        // Silent — background sync, never blocks the app.
+    }
 }
 
 export function getAggregateStats(): { attempts: number; correct: number } {
