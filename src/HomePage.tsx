@@ -49,6 +49,25 @@ export default function HomePage() {
         </p>
       </div>
 
+      <a
+        href="https://buymeacoffee.com/andrewsonn5"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-between gap-3 p-4 rounded-xl border border-line bg-surface hover:border-accent transition-colors"
+      >
+        <div>
+          <p className="text-sm font-medium">Enjoying the app?</p>
+          <p className="text-xs text-muted">
+            Buy me a coffee to help keep it free and ad-free.
+          </p>
+        </div>
+        <img
+          src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+          alt="Buy Me A Coffee"
+          className="h-9 flex-shrink-0"
+        />
+      </a>
+
       <Link
         href="/test"
         className="w-full bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
