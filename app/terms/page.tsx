@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
     return (
-        <div className="order-2 sm:order-3 flex flex-col gap-5 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7 text-sm text-muted leading-relaxed">
+        <div className="order-2 sm:order-3 flex flex-col gap-5 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7 text-sm text-muted leading-relaxed">
             <div>
                 <h2 className="text-lg font-semibold text-ink mb-1">
                     Terms and Conditions

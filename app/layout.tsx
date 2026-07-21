@@ -52,9 +52,24 @@ export const metadata: Metadata = {
     },
 };
 
+const THEME_INIT_SCRIPT = `
+(function () {
+    try {
+        var stored = localStorage.getItem("theme");
+        var isDark =
+            stored === "dark" ||
+            (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (isDark) document.documentElement.classList.add("dark");
+    } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html lang="en">
+            <head>
+                <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+            </head>
             <body className={`${inter.className} min-h-screen text-ink`}>
                 <SessionProvider>
                     <AuthSync />

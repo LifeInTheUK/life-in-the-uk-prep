@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
     --font-sans: "Inter", ui-sans-serif, sans-serif;
 
@@ -14,6 +16,20 @@
     --color-good-soft: #dcfce7;
     --color-bad: #dc2626;
     --color-bad-soft: #fee2e2;
+}
+
+.dark {
+    --color-bg: #0f1115;
+    --color-surface: #1a1d24;
+    --color-line: #2a2e37;
+    --color-ink: #f1f2f4;
+    --color-muted: #9099a8;
+    --color-accent: #818cf8;
+    --color-accent-dark: #6366f1;
+    --color-good: #34d399;
+    --color-good-soft: rgba(16, 185, 129, 0.15);
+    --color-bad: #f87171;
+    --color-bad-soft: rgba(248, 113, 113, 0.15);
 }
 
 body {

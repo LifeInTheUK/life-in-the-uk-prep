@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signIn, signOut } from "next-auth/react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Header({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -20,7 +21,8 @@ export default function Header({ children }: { children: ReactNode }) {
         >
           Life in the UK Prep
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
           {session?.user ? (
             <button
               onClick={() => signOut()}

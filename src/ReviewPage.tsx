@@ -19,7 +19,7 @@ interface Attempted {
 function ReviewRow({ question, sm2 }: Attempted) {
   const isCorrect = sm2.lastCorrect;
   return (
-    <li className="border border-line rounded-xl bg-surface overflow-hidden transition-shadow hover:shadow-md hover:shadow-slate-200/60">
+    <li className="border border-line rounded-xl bg-surface overflow-hidden transition-shadow hover:shadow-md hover:shadow-slate-200/60 dark:hover:shadow-none">
       <details className="group">
         <summary className="flex items-center justify-between gap-3 p-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
           <span className="flex items-center gap-3 min-w-0 min-h-10">
@@ -91,7 +91,7 @@ export default function ReviewPage() {
   const shown = tab === "incorrect" ? incorrect : correct;
 
   return (
-    <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
+    <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
       <h2 className="text-lg font-semibold">Review answers</h2>
 
       {attempted.length === 0 ? (

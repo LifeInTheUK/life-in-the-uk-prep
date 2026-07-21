@@ -9,7 +9,7 @@ export default function QuizPage() {
     }, []);
 
     return (
-        <div className="order-2 sm:order-3 flex flex-col sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
+        <div className="order-2 sm:order-3 flex flex-col sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
             <div id="quiz-container" className="order-1 fade-in">
                 {/* Question rendered here */}
             </div>
@@ -26,7 +26,7 @@ export default function QuizPage() {
                 </button>
                 <button
                     id="restart-btn"
-                    className="hidden w-full sm:w-auto bg-ink hover:bg-slate-700 active:scale-[0.98] text-white font-medium text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+                    className="hidden w-full sm:w-auto bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-white font-medium text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
                     Start Again
                     <kbd className="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">

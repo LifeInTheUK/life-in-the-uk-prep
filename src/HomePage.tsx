@@ -37,7 +37,7 @@ export default function HomePage() {
   const hasTests = testsCompleted > 0;
 
   return (
-    <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
+    <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
       <div>
         <h2 className="text-xl font-semibold mb-1">
           Prepare for the Life in the UK Test
@@ -79,7 +79,7 @@ export default function HomePage() {
         <Link
           href="/test"
           onClick={() => sessionStorage.removeItem("ukTestSession")}
-          className="w-full bg-ink hover:bg-slate-700 active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
+          className="w-full bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
         >
           Start New Test
         </Link>
