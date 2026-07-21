@@ -163,10 +163,10 @@ function render(): void {
                         (optObj, i) => `
                         <button data-idx="${i}" role="${isMulti ? "checkbox" : "radio"}" aria-checked="false" class="group w-full text-left p-4 border border-line rounded-xl hover:border-accent hover:bg-accent/5 active:bg-accent/10 active:scale-[0.98] transition-all option-btn flex justify-between items-center gap-3">
                             <span class="flex items-center gap-3">
-                                <kbd class="hidden sm:inline text-sm font-mono font-medium tabular-nums text-muted/80 tracking-tight flex-shrink-0">[${i + 1}]</kbd>
+                                <kbd class="hidden sm:inline text-sm font-mono font-medium tabular-nums text-muted/80 tracking-tight shrink-0">[${i + 1}]</kbd>
                                 <span>${optObj.text}</span>
                             </span>
-                            ${isMulti ? `<div class="w-5 h-5 border-2 flex-shrink-0 checkbox-indicator flex items-center justify-center transition-colors"></div>` : ""}
+                            ${isMulti ? `<div class="w-5 h-5 border-2 shrink-0 checkbox-indicator flex items-center justify-center transition-colors"></div>` : ""}
                         </button>
                     `,
                       )
@@ -230,10 +230,7 @@ function toggleOption(idx: number): void {
   }
 }
 
-function processResult(
-  isCorrect: boolean,
-  selected: number | number[],
-): void {
+function processResult(isCorrect: boolean, selected: number | number[]): void {
   const question = currentQuestion!;
   let qStats = getSM2(question.id);
 
@@ -414,9 +411,7 @@ export function initQuiz(): void {
   nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
   restartBtn = document.getElementById("restart-btn") as HTMLButtonElement;
   scoreEl = document.getElementById("score") as HTMLElement;
-  totalQuestionsEl = document.getElementById(
-    "total-questions",
-  ) as HTMLElement;
+  totalQuestionsEl = document.getElementById("total-questions") as HTMLElement;
 
   totalQuestionsEl.textContent = String(questions.length);
 

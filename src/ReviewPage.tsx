@@ -6,148 +6,139 @@ import { getSM2 } from "./sm2";
 import type { Question, SM2Data } from "./types";
 
 function formatAnswer(o: string[], a: number | number[] | undefined): string {
-    if (a === undefined) return "—";
-    if (Array.isArray(a)) return a.map((i) => o[i]).join(", ");
-    return o[a];
+  if (a === undefined) return "—";
+  if (Array.isArray(a)) return a.map((i) => o[i]).join(", ");
+  return o[a];
 }
 
 interface Attempted {
-    question: Question;
-    sm2: SM2Data;
+  question: Question;
+  sm2: SM2Data;
 }
 
 function ReviewRow({ question, sm2 }: Attempted) {
-    const isCorrect = sm2.lastCorrect;
-    return (
-        <li className="border border-line rounded-xl bg-surface overflow-hidden transition-shadow hover:shadow-md hover:shadow-slate-200/60">
-            <details className="group">
-                <summary className="flex items-center justify-between gap-3 p-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
-                    <span className="flex items-center gap-3 min-w-0 min-h-10">
-                        <span
-                            className={`inline-flex items-center gap-1.5 text-xs font-semibold flex-shrink-0 ${isCorrect ? "text-good" : "text-bad"}`}
-                        >
-                            {isCorrect ? "Correct" : "Incorrect"}
-                        </span>
-                        <span className="text-sm font-medium line-clamp-2">
-                            {question.q}
-                        </span>
-                    </span>
-                    <svg
-                        className="w-4 h-4 text-muted flex-shrink-0 transition-transform group-open:rotate-180"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 9l-7 7-7-7"
-                        />
-                    </svg>
-                </summary>
-                <div className="px-4 pb-4 pt-1 border-t border-line">
-                    <p className="text-sm font-medium mt-3 mb-2">
-                        {question.q}
-                    </p>
-                    <p className="text-xs text-muted tabular mb-2">
-                        {sm2.correct}/{sm2.attempts} correct overall
-                    </p>
-                    {!isCorrect && (
-                        <p className="text-xs text-muted mb-1">
-                            Your answer:{" "}
-                            <span className="text-bad">
-                                {formatAnswer(question.o, sm2.lastSelected)}
-                            </span>
-                        </p>
-                    )}
-                    <p className="text-xs text-muted mb-2">
-                        Correct answer:{" "}
-                        <span className="text-good">
-                            {formatAnswer(question.o, question.a)}
-                        </span>
-                    </p>
-                    <p className="text-sm text-muted leading-relaxed">
-                        {question.ex}
-                    </p>
-                </div>
-            </details>
-        </li>
-    );
+  const isCorrect = sm2.lastCorrect;
+  return (
+    <li className="border border-line rounded-xl bg-surface overflow-hidden transition-shadow hover:shadow-md hover:shadow-slate-200/60">
+      <details className="group">
+        <summary className="flex items-center justify-between gap-3 p-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-3 min-w-0 min-h-10">
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold shrink-0 ${isCorrect ? "text-good" : "text-bad"}`}
+            >
+              {isCorrect ? "Correct" : "Incorrect"}
+            </span>
+            <span className="text-sm font-medium line-clamp-2">
+              {question.q}
+            </span>
+          </span>
+          <svg
+            className="w-4 h-4 text-muted shrink-0 transition-transform group-open:rotate-180"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </summary>
+        <div className="px-4 pb-4 pt-1 border-t border-line">
+          <p className="text-sm font-medium mt-3 mb-2">{question.q}</p>
+          <p className="text-xs text-muted tabular mb-2">
+            {sm2.correct}/{sm2.attempts} correct overall
+          </p>
+          {!isCorrect && (
+            <p className="text-xs text-muted mb-1">
+              Your answer:{" "}
+              <span className="text-bad">
+                {formatAnswer(question.o, sm2.lastSelected)}
+              </span>
+            </p>
+          )}
+          <p className="text-xs text-muted mb-2">
+            Correct answer:{" "}
+            <span className="text-good">
+              {formatAnswer(question.o, question.a)}
+            </span>
+          </p>
+          <p className="text-sm text-muted leading-relaxed">{question.ex}</p>
+        </div>
+      </details>
+    </li>
+  );
 }
 
 export default function ReviewPage() {
-    const [attempted, setAttempted] = useState<Attempted[]>([]);
-    const [tab, setTab] = useState<"incorrect" | "correct">("incorrect");
+  const [attempted, setAttempted] = useState<Attempted[]>([]);
+  const [tab, setTab] = useState<"incorrect" | "correct">("incorrect");
 
-    useEffect(() => {
-        const loaded = questions
-            .map((question) => ({ question, sm2: getSM2(question.id) }))
-            .filter((a) => a.sm2.attempts > 0);
-        setAttempted(loaded);
-        if (loaded.filter((a) => a.sm2.lastCorrect === false).length === 0) {
-            setTab("correct");
-        }
-    }, []);
+  useEffect(() => {
+    const loaded = questions
+      .map((question) => ({ question, sm2: getSM2(question.id) }))
+      .filter((a) => a.sm2.attempts > 0);
+    setAttempted(loaded);
+    if (loaded.filter((a) => a.sm2.lastCorrect === false).length === 0) {
+      setTab("correct");
+    }
+  }, []);
 
-    const incorrect = attempted.filter((a) => a.sm2.lastCorrect === false);
-    const correct = attempted.filter((a) => a.sm2.lastCorrect === true);
-    const shown = tab === "incorrect" ? incorrect : correct;
+  const incorrect = attempted.filter((a) => a.sm2.lastCorrect === false);
+  const correct = attempted.filter((a) => a.sm2.lastCorrect === true);
+  const shown = tab === "incorrect" ? incorrect : correct;
 
-    return (
-        <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
-            <h2 className="text-lg font-semibold">Review answers</h2>
+  return (
+    <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
+      <h2 className="text-lg font-semibold">Review answers</h2>
 
-            {attempted.length === 0 ? (
-                <p className="text-sm text-muted">
-                    You haven't answered any questions yet — start a test to build
-                    up your review list.
-                </p>
-            ) : (
-                <>
-                    <div
-                        className="flex gap-2 border-b border-line"
-                        role="tablist"
-                    >
-                        <button
-                            role="tab"
-                            aria-selected={tab === "incorrect"}
-                            onClick={() => setTab("incorrect")}
-                            className={`px-3 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-                                tab === "incorrect"
-                                    ? "text-bad border-bad"
-                                    : "text-muted border-transparent hover:text-ink"
-                            }`}
-                        >
-                            Incorrect ({incorrect.length})
-                        </button>
-                        <button
-                            role="tab"
-                            aria-selected={tab === "correct"}
-                            onClick={() => setTab("correct")}
-                            className={`px-3 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-                                tab === "correct"
-                                    ? "text-good border-good"
-                                    : "text-muted border-transparent hover:text-ink"
-                            }`}
-                        >
-                            Correct ({correct.length})
-                        </button>
-                    </div>
+      {attempted.length === 0 ? (
+        <p className="text-sm text-muted">
+          You haven't answered any questions yet — start a test to build up your
+          review list.
+        </p>
+      ) : (
+        <>
+          <div className="flex gap-2 border-b border-line" role="tablist">
+            <button
+              role="tab"
+              aria-selected={tab === "incorrect"}
+              onClick={() => setTab("incorrect")}
+              className={`px-3 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+                tab === "incorrect"
+                  ? "text-bad border-bad"
+                  : "text-muted border-transparent hover:text-ink"
+              }`}
+            >
+              Incorrect ({incorrect.length})
+            </button>
+            <button
+              role="tab"
+              aria-selected={tab === "correct"}
+              onClick={() => setTab("correct")}
+              className={`px-3 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
+                tab === "correct"
+                  ? "text-good border-good"
+                  : "text-muted border-transparent hover:text-ink"
+              }`}
+            >
+              Correct ({correct.length})
+            </button>
+          </div>
 
-                    {shown.length === 0 ? (
-                        <p className="text-sm text-muted">
-                            Nothing here yet.
-                        </p>
-                    ) : (
-                        <ul className="flex flex-col gap-3">
-                            {shown.map((a) => (
-                                <ReviewRow key={a.question.id} {...a} />
-                            ))}
-                        </ul>
-                    )}
-                </>
-            )}
-        </div>
-    );
+          {shown.length === 0 ? (
+            <p className="text-sm text-muted">Nothing here yet.</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {shown.map((a) => (
+                <ReviewRow key={a.question.id} {...a} />
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
