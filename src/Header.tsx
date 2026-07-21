@@ -129,6 +129,15 @@ export default function Header({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
+
+      <div className="order-4 flex justify-center gap-4 text-[11px] text-muted">
+        <Link href="/privacy" className="hover:text-ink transition-colors">
+          Privacy Policy
+        </Link>
+        <Link href="/terms" className="hover:text-ink transition-colors">
+          Terms and Conditions
+        </Link>
+      </div>
     </div>
   );
 }

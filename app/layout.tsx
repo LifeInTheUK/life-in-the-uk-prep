@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SessionProvider } from "next-auth/react";
 import Header from "@/src/Header";
 import AuthSync from "@/src/AuthSync";
+import CookieBanner from "@/src/CookieBanner";
 import "@/src/style.css";
 
 const inter = Inter({
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                     <Header>{children}</Header>
                 </SessionProvider>
                 <Analytics />
+                <CookieBanner />
             </body>
         </html>
     );
