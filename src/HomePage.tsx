@@ -10,12 +10,14 @@ interface HomeStats {
     hasSession: boolean;
     accuracy: number;
     testsCompleted: number;
+    hasAttempts: boolean;
 }
 
 const DEFAULT_STATS: HomeStats = {
     hasSession: false,
     accuracy: 0,
     testsCompleted: 0,
+    hasAttempts: false,
 };
 
 export default function HomePage() {
@@ -27,20 +29,23 @@ export default function HomePage() {
             hasSession: !!sessionStorage.getItem("ukTestSession"),
             accuracy: attempts > 0 ? Math.round((correct / attempts) * 100) : 0,
             testsCompleted: getHistory().length,
+            hasAttempts: attempts > 0,
         });
     }, []);
 
-    const { hasSession, accuracy, testsCompleted } = stats;
+    const { hasSession, accuracy, testsCompleted, hasAttempts } = stats;
+    const hasTests = testsCompleted > 0;
 
     return (
         <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
             <div>
                 <h2 className="text-xl font-semibold mb-1">
-                    Ready to practice?
+                    Prepare for the Life in the UK Test
                 </h2>
                 <p className="text-sm text-muted">
-                    Spaced-repetition questions drawn from the official Life in
-                    the UK test material.
+                    Free practice questions covering UK history, culture,
+                    government and traditions — with spaced repetition to
+                    help you focus on what you don't know yet.
                 </p>
             </div>
 
@@ -69,9 +74,7 @@ export default function HomePage() {
                     <div className="text-[11px] text-muted">Bank</div>
                 </div>
                 <div className="rounded-xl border border-line bg-surface p-3 text-center">
-                    <div className="text-xl font-semibold text-accent">
-                        {accuracy}%
-                    </div>
+                    <div className="text-xl font-semibold">{accuracy}%</div>
                     <div className="text-[11px] text-muted">Accuracy</div>
                 </div>
                 <div className="rounded-xl border border-line bg-surface p-3 text-center">
@@ -82,45 +85,147 @@ export default function HomePage() {
                 </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-                <Link
-                    href="/review"
-                    className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
-                >
-                    Review answers
-                    <svg
-                        className="w-4 h-4 text-muted"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 5l7 7-7 7"
-                        />
-                    </svg>
-                </Link>
-                <Link
-                    href="/stats"
-                    className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
-                >
-                    Your progress
-                    <svg
-                        className="w-4 h-4 text-muted"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M9 5l7 7-7 7"
-                        />
-                    </svg>
-                </Link>
+            {(hasAttempts || hasTests) && (
+                <div className="flex flex-col gap-2">
+                    {hasAttempts && (
+                        <Link
+                            href="/review"
+                            className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
+                        >
+                            Review answers
+                            <svg
+                                className="w-4 h-4 text-muted"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M9 5l7 7-7 7"
+                                />
+                            </svg>
+                        </Link>
+                    )}
+                    {hasTests && (
+                        <Link
+                            href="/stats"
+                            className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
+                        >
+                            Your progress
+                            <svg
+                                className="w-4 h-4 text-muted"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M9 5l7 7-7 7"
+                                />
+                            </svg>
+                        </Link>
+                    )}
+                </div>
+            )}
+
+            <div className="flex flex-col gap-4 pt-4 border-t border-line">
+                <h3 className="text-sm font-semibold">How it works</h3>
+
+                <div className="flex gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium">
+                            Real practice questions
+                        </p>
+                        <p className="text-xs text-muted leading-relaxed">
+                            {questions.length} multiple-choice questions
+                            modeled on the official Life in the UK handbook,
+                            including the trickier "select two" style
+                            questions.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                        </svg>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium">
+                            Weak spots come back sooner
+                        </p>
+                        <p className="text-xs text-muted leading-relaxed">
+                            A spaced-repetition schedule reorders questions so
+                            ones you get wrong resurface again soon, while
+                            ones you know well fade further out.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="flex gap-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
+                        <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            />
+                        </svg>
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium">
+                            Review answers and track progress
+                        </p>
+                        <p className="text-xs text-muted leading-relaxed">
+                            See every question you've gotten right or wrong,
+                            with the correct answer and explanation, and
+                            watch your scores improve over time.
+                        </p>
+                    </div>
+                </div>
+
+                <p className="text-xs text-muted">
+                    Free to use, works without an account, and syncs your
+                    progress across devices if you sign in. Not affiliated
+                    with the Home Office — always check official study
+                    material before your real test.
+                </p>
             </div>
         </div>
     );

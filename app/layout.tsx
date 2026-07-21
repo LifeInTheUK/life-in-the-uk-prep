@@ -13,8 +13,43 @@ const inter = Inter({
     weight: ["400", "500", "600", "700"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const TITLE = "Life in the UK Test Prep";
+const DESCRIPTION =
+    "Free practice test for the UK's Life in the UK citizenship test. Spaced-repetition questions drawn from the official study material, with progress tracking and review.";
+
 export const metadata: Metadata = {
-    title: "Life in the UK Test Prep",
+    metadataBase: new URL(SITE_URL),
+    title: {
+        default: TITLE,
+        template: `%s — ${TITLE}`,
+    },
+    description: DESCRIPTION,
+    keywords: [
+        "Life in the UK test",
+        "Life in the UK practice test",
+        "UK citizenship test",
+        "British citizenship test practice",
+        "Life in the UK questions",
+        "settlement test UK",
+    ],
+    robots: {
+        index: true,
+        follow: true,
+    },
+    openGraph: {
+        title: TITLE,
+        description: DESCRIPTION,
+        url: SITE_URL,
+        siteName: TITLE,
+        locale: "en_GB",
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: TITLE,
+        description: DESCRIPTION,
+    },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
