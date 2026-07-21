@@ -1,13 +1,36 @@
-import { Link } from "react-router-dom";
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { questions } from "./questions";
 import { getAggregateStats } from "./sm2";
 import { getHistory } from "./history";
 
+interface HomeStats {
+    hasSession: boolean;
+    accuracy: number;
+    testsCompleted: number;
+}
+
+const DEFAULT_STATS: HomeStats = {
+    hasSession: false,
+    accuracy: 0,
+    testsCompleted: 0,
+};
+
 export default function HomePage() {
-    const hasSession = !!sessionStorage.getItem("ukTestSession");
-    const { attempts, correct } = getAggregateStats();
-    const accuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
-    const testsCompleted = getHistory().length;
+    const [stats, setStats] = useState<HomeStats>(DEFAULT_STATS);
+
+    useEffect(() => {
+        const { attempts, correct } = getAggregateStats();
+        setStats({
+            hasSession: !!sessionStorage.getItem("ukTestSession"),
+            accuracy: attempts > 0 ? Math.round((correct / attempts) * 100) : 0,
+            testsCompleted: getHistory().length,
+        });
+    }, []);
+
+    const { hasSession, accuracy, testsCompleted } = stats;
 
     return (
         <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 py-2 sm:p-7">
@@ -22,7 +45,7 @@ export default function HomePage() {
             </div>
 
             <Link
-                to="/test"
+                href="/test"
                 className="w-full bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
             >
                 {hasSession ? "Continue Test" : "Start Test"}
@@ -51,7 +74,7 @@ export default function HomePage() {
 
             <div className="flex flex-col gap-2">
                 <Link
-                    to="/review"
+                    href="/review"
                     className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
                 >
                     Review answers
@@ -70,7 +93,7 @@ export default function HomePage() {
                     </svg>
                 </Link>
                 <Link
-                    to="/stats"
+                    href="/stats"
                     className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
                 >
                     Your progress

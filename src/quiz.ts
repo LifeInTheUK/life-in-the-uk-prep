@@ -3,9 +3,9 @@ import { questions } from "./questions";
 import { getSM2, saveSM2, updateGlobalAccuracy, calculateSM2 } from "./sm2";
 import { addResult } from "./history";
 
-// Official test length is 24 questions; override with VITE_SESSION_SIZE
+// Official test length is 24 questions; override with NEXT_PUBLIC_SESSION_SIZE
 // (e.g. in .env.development) to use a shorter session while developing.
-const SESSION_SIZE = Number(import.meta.env.VITE_SESSION_SIZE) || 24;
+const SESSION_SIZE = Number(process.env.NEXT_PUBLIC_SESSION_SIZE) || 24;
 
 let sessionQueue: SessionQuestion[] = [];
 let firstTryScore = 0;

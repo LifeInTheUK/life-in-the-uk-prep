@@ -1,4 +1,7 @@
-import { getHistory } from "./history";
+"use client";
+
+import { useEffect, useState } from "react";
+import { getHistory, type TestResult } from "./history";
 import { getAggregateStats } from "./sm2";
 
 const PASS_THRESHOLD = 0.75;
@@ -14,8 +17,15 @@ function scoreToY(pct: number): number {
 }
 
 export default function StatsPage() {
-    const history = getHistory();
-    const { attempts, correct } = getAggregateStats();
+    const [history, setHistory] = useState<TestResult[]>([]);
+    const [aggregate, setAggregate] = useState({ attempts: 0, correct: 0 });
+
+    useEffect(() => {
+        setHistory(getHistory());
+        setAggregate(getAggregateStats());
+    }, []);
+
+    const { attempts, correct } = aggregate;
     const overallAccuracy =
         attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
 

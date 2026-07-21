@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { questions } from "./questions";
 import { getSM2 } from "./sm2";
 import type { Question, SM2Data } from "./types";
@@ -75,16 +77,21 @@ function ReviewRow({ question, sm2 }: Attempted) {
 }
 
 export default function ReviewPage() {
-    const attempted: Attempted[] = questions
-        .map((question) => ({ question, sm2: getSM2(question.id) }))
-        .filter((a) => a.sm2.attempts > 0);
+    const [attempted, setAttempted] = useState<Attempted[]>([]);
+    const [tab, setTab] = useState<"incorrect" | "correct">("incorrect");
+
+    useEffect(() => {
+        const loaded = questions
+            .map((question) => ({ question, sm2: getSM2(question.id) }))
+            .filter((a) => a.sm2.attempts > 0);
+        setAttempted(loaded);
+        if (loaded.filter((a) => a.sm2.lastCorrect === false).length === 0) {
+            setTab("correct");
+        }
+    }, []);
 
     const incorrect = attempted.filter((a) => a.sm2.lastCorrect === false);
     const correct = attempted.filter((a) => a.sm2.lastCorrect === true);
-
-    const [tab, setTab] = useState<"incorrect" | "correct">(
-        incorrect.length > 0 ? "incorrect" : "correct",
-    );
     const shown = tab === "incorrect" ? incorrect : correct;
 
     return (
