@@ -3,6 +3,12 @@ import { getSM2, saveSM2, updateGlobalAccuracy, calculateSM2 } from "./sm2";
 import { addResult } from "./history";
 import { topicLabel } from "./topics";
 import { SESSION_SIZE } from "./config";
+import {
+  hasReported,
+  markReported,
+  submitFeedback,
+  type FeedbackCategory,
+} from "./feedback";
 
 let questions: Question[] = [];
 
@@ -34,6 +40,93 @@ let totalQuestionsEl: HTMLElement;
 let keydownListenerAttached = false;
 
 const ENTER_KBD = `<kbd class="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">↵</kbd>`;
+
+const REPORT_CATEGORIES: { value: FeedbackCategory; label: string }[] = [
+  { value: "typo", label: "Typo / spelling" },
+  { value: "wrong_info", label: "Wrong or outdated info" },
+  { value: "confusing", label: "Confusing wording" },
+  { value: "duplicate", label: "Duplicate question" },
+];
+
+function reportButtonHtml(questionId: number): string {
+  if (hasReported(questionId)) return "";
+  return `<button type="button" data-report-btn="${questionId}" aria-label="Report an issue with this question" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-muted hover:text-bad hover:bg-bad-soft transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v18M3 4h13l-2 4 2 4H3"></path></svg>
+    </button>`;
+}
+
+function showReportModal(questionId: number): void {
+  let selected: FeedbackCategory | null = null;
+
+  const overlay = document.createElement("div");
+  overlay.className =
+    "fixed inset-0 bg-ink/40 flex items-center justify-center p-4 z-50";
+  overlay.innerHTML = `
+        <div class="bg-surface border border-line rounded-xl p-5 w-full max-w-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold">Report a problem</h3>
+                <button type="button" data-report-close aria-label="Close" class="text-muted hover:text-ink">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="space-y-2 mb-4">
+                ${REPORT_CATEGORIES.map(
+                  (c) =>
+                    `<button type="button" data-report-category="${c.value}" class="w-full text-left text-sm p-3 border border-line rounded-lg hover:border-accent hover:bg-accent/5 transition-colors">${c.label}</button>`,
+                ).join("")}
+            </div>
+            <button type="button" data-report-submit disabled class="w-full bg-accent hover:bg-accent-dark text-white font-medium text-sm py-2.5 px-4 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all">Submit</button>
+        </div>
+    `;
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  const submitBtn = overlay.querySelector(
+    "[data-report-submit]",
+  ) as HTMLButtonElement;
+
+  overlay.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+
+    if (target === overlay || target.closest("[data-report-close]")) {
+      close();
+      return;
+    }
+
+    const categoryBtn = target.closest(
+      "[data-report-category]",
+    ) as HTMLElement | null;
+    if (categoryBtn) {
+      selected = categoryBtn.dataset.reportCategory as FeedbackCategory;
+      overlay
+        .querySelectorAll("[data-report-category]")
+        .forEach((btn) =>
+          btn.classList.remove("border-accent", "bg-accent/5"),
+        );
+      categoryBtn.classList.add("border-accent", "bg-accent/5");
+      submitBtn.disabled = false;
+      return;
+    }
+
+    if (target.closest("[data-report-submit]") && selected) {
+      submitBtn.disabled = true;
+      submitFeedback(questionId, selected).then((ok) => {
+        if (ok) markReported(questionId);
+        overlay.querySelector(".space-y-2")!.innerHTML = "";
+        submitBtn.classList.add("hidden");
+        const heading = overlay.querySelector("h3")!;
+        heading.textContent = ok
+          ? "Thanks — reported"
+          : "Something went wrong, try again later";
+        setTimeout(close, 1200);
+      });
+      const reportBtn = document.querySelector(
+        `[data-report-btn="${questionId}"]`,
+      );
+      reportBtn?.remove();
+    }
+  });
+}
 
 const SESSION_STORAGE_KEY = "ukTestSession";
 
@@ -266,7 +359,10 @@ function processResult(isCorrect: boolean, selected: number | number[]): void {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                         Correct
                     </span>
-                    <span class="text-xs text-muted tabular">${acc}% historical</span>
+                    <span class="flex items-center gap-2 text-xs text-muted tabular">
+                        ${acc}% historical
+                        ${reportButtonHtml(question.id)}
+                    </span>
                 </div>
                 <p class="text-sm text-muted leading-relaxed">${question.ex}</p>`;
 
@@ -287,7 +383,10 @@ function processResult(isCorrect: boolean, selected: number | number[]): void {
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                         Incorrect
                     </span>
-                    <span class="text-xs text-muted tabular">${acc}% historical</span>
+                    <span class="flex items-center gap-2 text-xs text-muted tabular">
+                        ${acc}% historical
+                        ${reportButtonHtml(question.id)}
+                    </span>
                 </div>
                 <p class="text-sm text-muted leading-relaxed">${question.ex}</p>`;
 
@@ -445,6 +544,15 @@ export async function initQuiz(): Promise<void> {
 
   nextBtn.addEventListener("click", render);
   restartBtn.addEventListener("click", startSession);
+
+  feedback.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest(
+      "[data-report-btn]",
+    ) as HTMLElement | null;
+    if (btn) {
+      showReportModal(Number(btn.dataset.reportBtn));
+    }
+  });
 
   if (!keydownListenerAttached) {
     keydownListenerAttached = true;

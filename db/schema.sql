@@ -31,3 +31,14 @@ CREATE TABLE IF NOT EXISTS history (
 );
 
 CREATE INDEX IF NOT EXISTS history_user_id_idx ON history(user_id);
+
+CREATE TABLE IF NOT EXISTS feedback (
+  id BIGSERIAL PRIMARY KEY,
+  question_id INTEGER NOT NULL REFERENCES questions(id),
+  user_id TEXT,
+  category TEXT NOT NULL,
+  created_at BIGINT NOT NULL,
+  UNIQUE (user_id, question_id)
+);
+
+CREATE INDEX IF NOT EXISTS feedback_question_id_idx ON feedback(question_id);

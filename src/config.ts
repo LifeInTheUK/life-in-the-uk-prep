@@ -9,6 +9,10 @@ export const DATABASE_URL = process.env.DATABASE_URL!;
 export const NEON_AUTH_BASE_URL = process.env.NEON_AUTH_BASE_URL!;
 export const NEON_AUTH_COOKIE_SECRET = process.env.NEON_AUTH_COOKIE_SECRET!;
 
+// Optional — feedback-report notifications are skipped (silently) if unset.
+export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+export const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
