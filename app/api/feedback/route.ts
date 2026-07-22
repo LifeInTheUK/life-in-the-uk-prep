@@ -6,21 +6,37 @@ import { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } from "@/src/config";
 const CATEGORIES = ["typo", "wrong_info", "confusing", "duplicate"] as const;
 type Category = (typeof CATEGORIES)[number];
 
-function notifyTelegram(
+async function notifyTelegram(
   questionId: number,
   category: Category,
   questionText: string,
-): void {
-  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+): Promise<void> {
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.warn(
+      "[feedback] Telegram notify skipped — TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set",
+    );
+    return;
+  }
 
   const text = `New question feedback\nQuestion #${questionId}: ${questionText}\nCategory: ${category}`;
-  fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
-  }).catch(() => {
-    // Best-effort — never block or fail the feedback submission on this.
-  });
+  try {
+    const res = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text }),
+      },
+    );
+    const body = await res.text();
+    if (!res.ok) {
+      console.error(`[feedback] Telegram notify failed: ${res.status} ${body}`);
+    } else {
+      console.log("[feedback] Telegram notify sent");
+    }
+  } catch (err) {
+    console.error("[feedback] Telegram notify threw", err);
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -46,7 +62,7 @@ export async function POST(request: NextRequest) {
     SELECT question FROM questions WHERE id = ${questionId}
   `;
   if (question) {
-    notifyTelegram(questionId, category, question.question);
+    await notifyTelegram(questionId, category, question.question);
   }
 
   return NextResponse.json({ ok: true });
