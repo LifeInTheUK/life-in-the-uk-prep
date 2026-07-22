@@ -2,12 +2,13 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Header({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isLanding = pathname === "/";
   const isQuizPage = pathname === "/test";
   const { data: session } = authClient.useSession();
@@ -41,10 +42,10 @@ export default function Header({ children }: { children: ReactNode }) {
             </button>
           )}
           <Link
-            href="/stats"
+            href="/profile"
             className="shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors overflow-hidden"
-            title="Your progress"
-            aria-label="Your progress"
+            title="Your profile"
+            aria-label="Your profile"
           >
             {session?.user?.image ? (
               <img
@@ -74,8 +75,8 @@ export default function Header({ children }: { children: ReactNode }) {
       {children}
 
       {!isLanding && !isQuizPage && (
-        <Link
-          href="/test"
+        <button
+          onClick={() => router.back()}
           className="order-2 self-start inline-flex items-center gap-2 px-3 py-2 rounded-full border border-line bg-surface text-sm font-medium text-ink hover:border-accent hover:text-accent transition-colors"
         >
           <svg
@@ -91,8 +92,8 @@ export default function Header({ children }: { children: ReactNode }) {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Back to test
-        </Link>
+          Back
+        </button>
       )}
 
       {isQuizPage && (

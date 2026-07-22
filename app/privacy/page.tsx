@@ -27,7 +27,10 @@ export default function PrivacyPage() {
                     answers, spaced-repetition scheduling data, and test
                     history are stored in your browser's local storage. If
                     you sign in, this data is also synced to our database so
-                    it follows you across devices.
+                    it follows you across devices. If you later delete your
+                    account, this synced data is kept in anonymized form for
+                    aggregate statistics, unless you separately request full
+                    erasure.
                 </p>
                 <p>
                     <strong className="text-ink">Account information.</strong>{" "}
@@ -73,8 +76,20 @@ export default function PrivacyPage() {
                 </h3>
                 <p>
                     You can use the app fully without signing in — in that
-                    case, nothing leaves your browser. If you've signed in
-                    and want your synced data deleted, email us at{" "}
+                    case, nothing leaves your browser. If you've signed in,
+                    you can permanently delete your account at any time from
+                    your{" "}
+                    <a
+                        href="/profile"
+                        className="text-accent hover:text-accent-dark underline"
+                    >
+                        Profile page
+                    </a>
+                    . This removes your sign-in and personal details (name,
+                    email, profile photo). Your quiz progress and test
+                    history stay in our database, no longer linked to your
+                    identity, so we can keep aggregate statistics — if you'd
+                    like that data fully erased too, email us at{" "}
                     <a
                         href="mailto:contact@sonnyweb.mailer.me"
                         className="text-accent hover:text-accent-dark underline"

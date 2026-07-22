@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import StatsPage from "@/src/StatsPage";
+import ProfilePage from "@/src/ProfilePage";
 
 export const metadata: Metadata = {
-    title: "Your Progress",
+    title: "Your Profile",
     robots: { index: false, follow: true },
 };
 
 export default function Page() {
-    return <StatsPage />;
+    return <ProfilePage />;
 }

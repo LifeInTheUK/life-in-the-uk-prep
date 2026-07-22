@@ -41,9 +41,9 @@ The app was migrated off `localStorage`/static-array/Vercel-KV storage onto Neon
 - `/` → `src/HomePage.tsx`
 - `/test` → `src/QuizPage.tsx`
 - `/review` → `src/ReviewPage.tsx`
-- `/stats` → `src/StatsPage.tsx`
+- `/profile` → `src/ProfilePage.tsx` (account info, progress stats + chart, self-service account deletion — signed-in only, redirects to `/` if signed out)
 - `/questions` → question bank browser (topic-chip filtering + live fuzzy search via `src/SearchBox.tsx`, paginated)
-- `app/layout.tsx` renders `src/AuthSync.tsx` (no-UI component that syncs Neon Auth session state into `src/authState.ts` and triggers `pullProgressFromServer()`/`pullHistoryFromServer()` on sign-in) and `src/Header.tsx` (shared header: logo, sign-in/out via `authClient` from `lib/auth/client.ts`, avatar link to `/stats`, contextual back-link/stats-row per route via `usePathname()`). No context provider wrapper needed — Neon Auth's client hooks (`authClient.useSession()`) don't require one.
+- `app/layout.tsx` renders `src/AuthSync.tsx` (no-UI component that syncs Neon Auth session state into `src/authState.ts` and triggers `pullProgressFromServer()`/`pullHistoryFromServer()` on sign-in) and `src/Header.tsx` (shared header: logo, sign-in/out via `authClient` from `lib/auth/client.ts`, avatar link to `/profile`, contextual back-link/stats-row per route via `usePathname()`). No context provider wrapper needed — Neon Auth's client hooks (`authClient.useSession()`) don't require one.
 
 ### The `quiz.ts` imperative DOM bridge
 
@@ -59,7 +59,7 @@ Session state (`sessionQueue`, `firstTryScore`, etc.) lives in module-level vari
 
 Each question tracks `{ n, ef, i, next, attempts, correct, lastCorrect?, lastSelected? }` in `localStorage` (key `ukTestSm2ById`, keyed by question id). `startSession()` in `quiz.ts` sorts the question bank by `next` (overdue first) then by historical accuracy (weakest first) before slicing to session length — this is the prioritization logic that makes practice sessions adaptive. `getAggregateStats()`/`updateGlobalAccuracy()` derive the global accuracy shown in the header from the same store.
 
-`src/history.ts` separately logs each completed session's score to `localStorage` (key `ukTestHistory`, capped at 50 entries) — this feeds `StatsPage`'s time-series chart, distinct from the per-question SM-2 store.
+`src/history.ts` separately logs each completed session's score to `localStorage` (key `ukTestHistory`, capped at 50 entries) — this feeds `ProfilePage`'s time-series chart, distinct from the per-question SM-2 store.
 
 `localStorage` is still the primary store regardless of sign-in status — the app always works fully offline/unauthenticated. Signed-in users additionally sync through `/api/progress`/`/api/history`, which read/write the Postgres `progress`/`history` tables (`src/db.ts` + `lib/auth/server.ts`'s `auth.getSession()`). `progress.next`/`history.completed_at` are `BIGINT` columns and come back from `@neondatabase/serverless` as strings — always `Number(...)`-convert them; `history.completed_at` stores the client's own `Date.now()` value verbatim (not a DB-generated timestamp), since `pullHistoryFromServer()` dedupes by exact `timestamp` equality.
 

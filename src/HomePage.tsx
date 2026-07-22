@@ -134,7 +134,7 @@ export default function HomePage() {
           )}
           {hasTests && (
             <Link
-              href="/stats"
+              href="/profile"
               className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
             >
               Your progress
