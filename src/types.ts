@@ -4,6 +4,7 @@ export interface Question {
     o: string[];
     a: number | number[];
     ex: string;
+    topic?: string;
 }
 
 export interface SM2Data {

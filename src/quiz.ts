@@ -1,11 +1,17 @@
 import type { Question, SessionQuestion } from "./types";
-import { questions } from "./questions";
 import { getSM2, saveSM2, updateGlobalAccuracy, calculateSM2 } from "./sm2";
 import { addResult } from "./history";
+import { topicLabel } from "./topics";
+import { SESSION_SIZE } from "./config";
 
-// Official test length is 24 questions; override with NEXT_PUBLIC_SESSION_SIZE
-// (e.g. in .env.development) to use a shorter session while developing.
-const SESSION_SIZE = Number(process.env.NEXT_PUBLIC_SESSION_SIZE) || 24;
+let questions: Question[] = [];
+
+async function loadQuestions(): Promise<Question[]> {
+  if (questions.length > 0) return questions;
+  const res = await fetch("/api/questions");
+  questions = await res.json();
+  return questions;
+}
 
 let sessionQueue: SessionQuestion[] = [];
 let firstTryScore = 0;
@@ -159,6 +165,7 @@ function render(): void {
                         <div class="h-full bg-accent transition-all" style="width: ${progressPct}%"></div>
                     </div>
                 </div>
+                <span class="inline-block text-xs font-medium text-accent bg-accent/10 rounded-full px-2.5 py-1 mb-3">${topicLabel(currentQuestion.topic)}</span>
                 <h2 id="question-heading" class="text-lg sm:text-xl font-semibold leading-snug mb-5">${currentQuestion.q}</h2>
                 <div class="space-y-2" role="${isMulti ? "group" : "radiogroup"}" aria-labelledby="question-heading">
                     ${currentDisplayOptions
@@ -409,7 +416,9 @@ function showResults(): void {
   homeBtn.classList.remove("hidden");
 }
 
-export function initQuiz(): void {
+export async function initQuiz(): Promise<void> {
+  await loadQuestions();
+
   container = document.getElementById("quiz-container") as HTMLElement;
   feedback = document.getElementById("feedback-container") as HTMLElement;
   nextBtn = document.getElementById("next-btn") as HTMLButtonElement;

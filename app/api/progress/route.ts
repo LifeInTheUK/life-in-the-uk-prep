@@ -1,29 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/server";
+import { sql } from "@/src/db";
 import type { SM2Data } from "@/src/types";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.email) {
+  const { data: session } = await auth.getSession();
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  try {
-    const data =
-      (await kv.get<Record<number, SM2Data>>(
-        `progress:${session.user.email}`,
-      )) || {};
-    return NextResponse.json(data);
-  } catch {
-    // KV not configured (e.g. local dev without a Vercel KV store attached).
-    return NextResponse.json({});
+  const rows = await sql`
+    SELECT question_id, n, ef, i, next, attempts, correct, last_correct, last_selected
+    FROM progress
+    WHERE user_id = ${session.user.id}
+  `;
+
+  const data: Record<number, SM2Data> = {};
+  for (const row of rows) {
+    data[row.question_id] = {
+      n: row.n,
+      ef: row.ef,
+      i: row.i,
+      next: Number(row.next),
+      attempts: row.attempts,
+      correct: row.correct,
+      lastCorrect: row.last_correct ?? undefined,
+      lastSelected: row.last_selected ?? undefined,
+    };
   }
+  return NextResponse.json(data);
 }
 
 export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.email) {
+  const { data: session } = await auth.getSession();
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -32,14 +42,18 @@ export async function POST(request: NextRequest) {
     sm2Data: SM2Data;
   };
 
-  try {
-    const key = `progress:${session.user.email}`;
-    const existing = (await kv.get<Record<number, SM2Data>>(key)) || {};
-    existing[id] = sm2Data;
-    await kv.set(key, existing);
-    return NextResponse.json({ ok: true });
-  } catch {
-    // KV not configured — no-op, the client's localStorage write already succeeded.
-    return NextResponse.json({ ok: true });
-  }
+  await sql`
+    INSERT INTO progress (user_id, question_id, n, ef, i, next, attempts, correct, last_correct, last_selected)
+    VALUES (
+      ${session.user.id}, ${id}, ${sm2Data.n}, ${sm2Data.ef}, ${sm2Data.i}, ${sm2Data.next},
+      ${sm2Data.attempts}, ${sm2Data.correct}, ${sm2Data.lastCorrect ?? null},
+      ${sm2Data.lastSelected !== undefined ? JSON.stringify(sm2Data.lastSelected) : null}
+    )
+    ON CONFLICT (user_id, question_id) DO UPDATE SET
+      n = EXCLUDED.n, ef = EXCLUDED.ef, i = EXCLUDED.i, next = EXCLUDED.next,
+      attempts = EXCLUDED.attempts, correct = EXCLUDED.correct,
+      last_correct = EXCLUDED.last_correct, last_selected = EXCLUDED.last_selected
+  `;
+
+  return NextResponse.json({ ok: true });
 }

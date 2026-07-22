@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { questions } from "./questions";
 import { getAggregateStats } from "./sm2";
 import { getHistory } from "./history";
 
@@ -22,6 +21,7 @@ const DEFAULT_STATS: HomeStats = {
 
 export default function HomePage() {
   const [stats, setStats] = useState<HomeStats>(DEFAULT_STATS);
+  const [questionCount, setQuestionCount] = useState<number | null>(null);
 
   useEffect(() => {
     const { attempts, correct } = getAggregateStats();
@@ -31,6 +31,10 @@ export default function HomePage() {
       testsCompleted: getHistory().length,
       hasAttempts: attempts > 0,
     });
+
+    fetch("/api/questions/count")
+      .then((res) => res.json())
+      .then((data: { count: number }) => setQuestionCount(data.count));
   }, []);
 
   const { hasSession, accuracy, testsCompleted, hasAttempts } = stats;
@@ -91,7 +95,7 @@ export default function HomePage() {
           className="rounded-xl border border-line bg-surface p-3 text-center hover:border-accent transition-colors"
         >
           <div className="text-xl font-semibold tabular text-accent">
-            {questions.length}
+            {questionCount ?? "–"}
           </div>
           <div className="text-[11px] text-muted">Question Bank</div>
         </Link>
@@ -174,7 +178,7 @@ export default function HomePage() {
           <div>
             <p className="text-sm font-medium">Real practice questions</p>
             <p className="text-xs text-muted leading-relaxed">
-              {questions.length} multiple-choice questions modeled on the
+              {questionCount ?? "–"} multiple-choice questions modeled on the
               official Life in the UK handbook, including the trickier "select
               two" style questions.
             </p>

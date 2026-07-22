@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { questions } from "./questions";
 import { getSM2 } from "./sm2";
 import type { Question, SM2Data } from "./types";
 
@@ -72,23 +71,39 @@ function ReviewRow({ question, sm2 }: Attempted) {
   );
 }
 
+const PAGE_SIZE = 15;
+
 export default function ReviewPage() {
   const [attempted, setAttempted] = useState<Attempted[]>([]);
   const [tab, setTab] = useState<"incorrect" | "correct">("incorrect");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    const loaded = questions
-      .map((question) => ({ question, sm2: getSM2(question.id) }))
-      .filter((a) => a.sm2.attempts > 0);
-    setAttempted(loaded);
-    if (loaded.filter((a) => a.sm2.lastCorrect === false).length === 0) {
-      setTab("correct");
-    }
+    fetch("/api/questions")
+      .then((res) => res.json())
+      .then((qs: Question[]) => {
+        const loaded = qs
+          .map((question) => ({ question, sm2: getSM2(question.id) }))
+          .filter((a) => a.sm2.attempts > 0);
+        setAttempted(loaded);
+        if (loaded.filter((a) => a.sm2.lastCorrect === false).length === 0) {
+          setTab("correct");
+        }
+      });
   }, []);
 
   const incorrect = attempted.filter((a) => a.sm2.lastCorrect === false);
   const correct = attempted.filter((a) => a.sm2.lastCorrect === true);
   const shown = tab === "incorrect" ? incorrect : correct;
+  const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pageShown = shown.slice(pageStart, pageStart + PAGE_SIZE);
+
+  function selectTab(next: "incorrect" | "correct") {
+    setTab(next);
+    setPage(1);
+  }
 
   return (
     <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
@@ -105,7 +120,7 @@ export default function ReviewPage() {
             <button
               role="tab"
               aria-selected={tab === "incorrect"}
-              onClick={() => setTab("incorrect")}
+              onClick={() => selectTab("incorrect")}
               className={`px-3 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
                 tab === "incorrect"
                   ? "text-bad border-bad"
@@ -117,7 +132,7 @@ export default function ReviewPage() {
             <button
               role="tab"
               aria-selected={tab === "correct"}
-              onClick={() => setTab("correct")}
+              onClick={() => selectTab("correct")}
               className={`px-3 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors ${
                 tab === "correct"
                   ? "text-good border-good"
@@ -131,11 +146,63 @@ export default function ReviewPage() {
           {shown.length === 0 ? (
             <p className="text-sm text-muted">Nothing here yet.</p>
           ) : (
-            <ul className="flex flex-col gap-3">
-              {shown.map((a) => (
-                <ReviewRow key={a.question.id} {...a} />
-              ))}
-            </ul>
+            <>
+              <ul className="flex flex-col gap-3">
+                {pageShown.map((a) => (
+                  <ReviewRow key={a.question.id} {...a} />
+                ))}
+              </ul>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-dark disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                    Previous
+                  </button>
+                  <span className="text-xs text-muted">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-dark disabled:opacity-40 disabled:pointer-events-none"
+                  >
+                    Next
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

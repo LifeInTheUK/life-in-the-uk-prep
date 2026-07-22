@@ -1,43 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/server";
+import { sql } from "@/src/db";
 import type { TestResult } from "@/src/history";
 
 const MAX_ENTRIES = 50;
 
 export async function GET() {
-    const session = await auth();
-    if (!session?.user?.email) {
+    const { data: session } = await auth.getSession();
+    if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    try {
-        const data =
-            (await kv.get<TestResult[]>(`history:${session.user.email}`)) ||
-            [];
-        return NextResponse.json(data);
-    } catch {
-        // KV not configured (e.g. local dev without a Vercel KV store attached).
-        return NextResponse.json([]);
-    }
+    const rows = await sql`
+      SELECT score, total, completed_at
+      FROM history
+      WHERE user_id = ${session.user.id}
+      ORDER BY completed_at DESC
+      LIMIT ${MAX_ENTRIES}
+    `;
+
+    const data: TestResult[] = rows.map((row) => ({
+        timestamp: Number(row.completed_at),
+        score: row.score,
+        total: row.total,
+    }));
+    return NextResponse.json(data);
 }
 
 export async function POST(request: NextRequest) {
-    const session = await auth();
-    if (!session?.user?.email) {
+    const { data: session } = await auth.getSession();
+    if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const result = (await request.json()) as TestResult;
 
-    try {
-        const key = `history:${session.user.email}`;
-        const existing = (await kv.get<TestResult[]>(key)) || [];
-        existing.push(result);
-        await kv.set(key, existing.slice(-MAX_ENTRIES));
-        return NextResponse.json({ ok: true });
-    } catch {
-        // KV not configured — no-op, the client's localStorage write already succeeded.
-        return NextResponse.json({ ok: true });
-    }
+    await sql`
+      INSERT INTO history (user_id, score, total, completed_at)
+      VALUES (${session.user.id}, ${result.score}, ${result.total}, ${result.timestamp})
+    `;
+
+    return NextResponse.json({ ok: true });
 }

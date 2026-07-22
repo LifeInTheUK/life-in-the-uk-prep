@@ -1,27 +1,27 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth/client";
 import { setAuthState } from "./authState";
 import { pullProgressFromServer } from "./sm2";
 import { pullHistoryFromServer } from "./history";
 
 export default function AuthSync() {
-    const { data: session, status } = useSession();
-    const syncedForEmail = useRef<string | null>(null);
+    const { data: session, isPending } = authClient.useSession();
+    const syncedForUserId = useRef<string | null>(null);
 
     useEffect(() => {
-        if (status === "loading") return;
+        if (isPending) return;
 
-        const email = session?.user?.email ?? null;
-        setAuthState(email);
+        const userId = session?.user?.id ?? null;
+        setAuthState(userId);
 
-        if (email && syncedForEmail.current !== email) {
-            syncedForEmail.current = email;
+        if (userId && syncedForUserId.current !== userId) {
+            syncedForUserId.current = userId;
             pullProgressFromServer();
             pullHistoryFromServer();
         }
-    }, [status, session]);
+    }, [isPending, session]);
 
     return null;
 }

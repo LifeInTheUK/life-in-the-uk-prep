@@ -3,14 +3,14 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { authClient } from "@/lib/auth/client";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Header({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLanding = pathname === "/";
   const isQuizPage = pathname === "/test";
-  const { data: session } = useSession();
+  const { data: session } = authClient.useSession();
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-5">
@@ -25,14 +25,16 @@ export default function Header({ children }: { children: ReactNode }) {
           <ThemeToggle />
           {session?.user ? (
             <button
-              onClick={() => signOut()}
+              onClick={() => authClient.signOut()}
               className="text-xs font-medium text-muted hover:text-ink transition-colors"
             >
               Sign out
             </button>
           ) : (
             <button
-              onClick={() => signIn("google")}
+              onClick={() =>
+                authClient.signIn.social({ provider: "google", callbackURL: "/" })
+              }
               className="text-xs font-medium text-muted hover:text-ink transition-colors"
             >
               Sign in

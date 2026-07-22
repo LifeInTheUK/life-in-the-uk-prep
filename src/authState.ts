@@ -1,9 +1,9 @@
-let currentUserEmail: string | null = null;
+let currentUserId: string | null = null;
 
-export function setAuthState(email: string | null): void {
-    currentUserEmail = email;
+export function setAuthState(userId: string | null): void {
+    currentUserId = userId;
 }
 
 export function getAuthState(): string | null {
-    return currentUserEmail;
+    return currentUserId;
 }

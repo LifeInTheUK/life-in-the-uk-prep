@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
-import { SessionProvider } from "next-auth/react";
 import Header from "@/src/Header";
 import AuthSync from "@/src/AuthSync";
 import CookieBanner from "@/src/CookieBanner";
+import { SITE_URL } from "@/src/config";
 import "@/src/style.css";
 
 const inter = Inter({
@@ -13,7 +13,6 @@ const inter = Inter({
     weight: ["400", "500", "600", "700"],
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const TITLE = "Life in the UK Test Prep";
 const DESCRIPTION =
     "Free practice test for the UK's Life in the UK citizenship test. Spaced-repetition questions drawn from the official study material, with progress tracking and review.";
@@ -71,10 +70,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
             </head>
             <body className={`${inter.className} min-h-screen text-ink`}>
-                <SessionProvider>
-                    <AuthSync />
-                    <Header>{children}</Header>
-                </SessionProvider>
+                <AuthSync />
+                <Header>{children}</Header>
                 <Analytics />
                 <CookieBanner />
             </body>

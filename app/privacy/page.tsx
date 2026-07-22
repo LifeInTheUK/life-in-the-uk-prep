@@ -11,7 +11,7 @@ export default function PrivacyPage() {
                 <h2 className="text-lg font-semibold text-ink mb-1">
                     Privacy Policy
                 </h2>
-                <p className="text-xs text-muted">Last updated: 21 July 2026</p>
+                <p className="text-xs text-muted">Last updated: 22 July 2026</p>
             </div>
 
             <p>
@@ -32,8 +32,9 @@ export default function PrivacyPage() {
                 <p>
                     <strong className="text-ink">Account information.</strong>{" "}
                     If you sign in with Google, we receive your name, email
-                    address, and profile photo from Google. We use your
-                    email as the key to store your synced progress.
+                    address, and profile photo from Google, and use your
+                    Google account to identify you and link it to your
+                    synced progress.
                 </p>
                 <p>
                     <strong className="text-ink">Analytics.</strong> We use
@@ -47,7 +48,7 @@ export default function PrivacyPage() {
                 <h3 className="font-semibold text-ink">Cookies</h3>
                 <p>
                     We use one strictly necessary cookie, set by our
-                    authentication provider (Auth.js), to keep you signed
+                    authentication provider (Neon Auth), to keep you signed
                     in. This cookie is required for sign-in to function and
                     is not used for advertising or cross-site tracking.
                 </p>
@@ -60,8 +61,9 @@ export default function PrivacyPage() {
                 <p>
                     We don't sell or share your data with advertisers. Data
                     is processed by the service providers that operate the
-                    app: Google (sign-in) and Vercel (hosting, analytics,
-                    and database storage).
+                    app: Google (sign-in), Vercel (hosting and analytics),
+                    and Neon (database storage for synced progress and
+                    account data).
                 </p>
             </section>
 

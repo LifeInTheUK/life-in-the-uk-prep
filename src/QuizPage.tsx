@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { initQuiz } from "./quiz";
 
 export default function QuizPage() {
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    initQuiz();
+    initQuiz().then(() => setLoading(false));
   }, []);
 
   return (
     <div className="order-2 sm:order-3 flex flex-col sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
+      {loading && (
+        <p className="order-1 text-sm text-muted py-8 text-center">
+          Loading questions...
+        </p>
+      )}
       <div id="quiz-container" className="order-1 fade-in">
         {/* Question rendered here */}
       </div>
