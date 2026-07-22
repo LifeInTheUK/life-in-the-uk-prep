@@ -22,12 +22,14 @@ const DEFAULT_STATS: HomeStats = {
 export default function HomePage() {
   const [stats, setStats] = useState<HomeStats>(DEFAULT_STATS);
   const [questionCount, setQuestionCount] = useState<number | null>(null);
+  const [averageAccuracy, setAverageAccuracy] = useState<number | null>(null);
 
   useEffect(() => {
     const { attempts, correct } = getAggregateStats();
+    const accuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
     setStats({
       hasSession: !!sessionStorage.getItem("ukTestSession"),
-      accuracy: attempts > 0 ? Math.round((correct / attempts) * 100) : 0,
+      accuracy,
       testsCompleted: getHistory().length,
       hasAttempts: attempts > 0,
     });
@@ -35,10 +37,19 @@ export default function HomePage() {
     fetch("/api/questions/count")
       .then((res) => res.json())
       .then((data: { count: number }) => setQuestionCount(data.count));
+
+    if (attempts > 0) {
+      fetch(`/api/stats/global?accuracy=${accuracy}`)
+        .then((res) => res.json())
+        .then((data: { totalUsers: number; averageAccuracy: number }) => {
+          if (data.totalUsers > 0) setAverageAccuracy(data.averageAccuracy);
+        });
+    }
   }, []);
 
   const { hasSession, accuracy, testsCompleted, hasAttempts } = stats;
   const hasTests = testsCompleted > 0;
+  const delta = averageAccuracy !== null ? accuracy - averageAccuracy : null;
 
   return (
     <div className="order-2 sm:order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
@@ -119,6 +130,38 @@ export default function HomePage() {
               Review answers
               <svg
                 className="w-4 h-4 text-muted"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </Link>
+          )}
+          {hasAttempts && (
+            <Link
+              href="/stats"
+              className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
+            >
+              <span>
+                Your stats
+                {delta !== null && (
+                  <span className="block text-xs font-normal text-muted mt-0.5">
+                    {delta === 0
+                      ? "You're right at the average."
+                      : delta > 0
+                        ? `You're ${delta} points above the average user.`
+                        : `You're ${-delta} points below the average user.`}
+                  </span>
+                )}
+              </span>
+              <svg
+                className="w-4 h-4 text-muted shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
