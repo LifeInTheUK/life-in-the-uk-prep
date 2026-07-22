@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import Header from "@/src/Header";
 import AuthSync from "@/src/AuthSync";
 import CookieBanner from "@/src/CookieBanner";
+import { HeaderStatsProvider } from "@/src/headerStats";
 import { SITE_URL } from "@/src/config";
 import "@/src/style.css";
 
@@ -71,7 +72,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </head>
             <body className={`${inter.className} min-h-screen text-ink`}>
                 <AuthSync />
-                <Header>{children}</Header>
+                <HeaderStatsProvider>
+                    <Header>{children}</Header>
+                </HeaderStatsProvider>
                 <Analytics />
                 <CookieBanner />
             </body>

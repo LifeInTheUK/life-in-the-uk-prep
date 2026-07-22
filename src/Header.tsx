@@ -1,11 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 import ThemeToggle from "./ThemeToggle";
 import { GIT_COMMIT_SHA } from "./config";
+import { useHeaderStats } from "./headerStats";
+import { animateNumber } from "./animateNumber";
 
 export default function Header({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -13,6 +15,21 @@ export default function Header({ children }: { children: ReactNode }) {
   const isLanding = pathname === "/";
   const isQuizPage = pathname === "/test";
   const { data: session } = authClient.useSession();
+  const { totalQuestions, scoreCurrent, scoreTotal, animateScore } = useHeaderStats();
+
+  const scoreRef = useRef<HTMLDivElement>(null);
+  const prevScore = useRef(scoreCurrent);
+
+  useEffect(() => {
+    const el = scoreRef.current;
+    if (!el) return;
+    if (animateScore && prevScore.current !== scoreCurrent) {
+      animateNumber(el, scoreCurrent, (v) => `${v} / ${scoreTotal}`);
+    } else {
+      el.textContent = `${scoreCurrent} / ${scoreTotal}`;
+    }
+    prevScore.current = scoreCurrent;
+  }, [scoreCurrent, scoreTotal, animateScore]);
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-5">
@@ -106,11 +123,8 @@ export default function Header({ children }: { children: ReactNode }) {
             href="/questions"
             className="flex flex-col items-center justify-center flex-1 min-w-21 rounded-xl bg-surface border border-line py-2 hover:border-accent transition-colors"
           >
-            <div
-              className="text-base font-semibold tabular text-accent"
-              id="total-questions"
-            >
-              0
+            <div className="text-base font-semibold tabular text-accent">
+              {totalQuestions}
             </div>
             <div className="text-[11px] text-muted">Question Bank</div>
           </Link>
@@ -132,8 +146,8 @@ export default function Header({ children }: { children: ReactNode }) {
             className="flex flex-col items-center justify-center flex-1 min-w-21 rounded-xl bg-surface border border-line py-2"
             title="Correct answers this session"
           >
-            <div className="text-base font-semibold tabular" id="score">
-              0
+            <div className="text-base font-semibold tabular" ref={scoreRef}>
+              0 / 0
             </div>
             <div className="text-[11px] text-muted">Score</div>
           </div>

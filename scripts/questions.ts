@@ -1,4 +1,4 @@
-import type { Question } from "./types";
+import type { Question } from "../src/types";
 
 // The question bank now lives in Neon Postgres (see db/schema.sql), seeded
 // via scripts/migrate-questions.ts. This array is no longer the source of

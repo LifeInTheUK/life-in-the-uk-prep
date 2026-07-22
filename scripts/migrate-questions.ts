@@ -8,7 +8,7 @@
 // Routing this script through src/db.ts would force one or the other to
 // break. Self-contained means it works under both.
 import { neon } from "@neondatabase/serverless";
-import { questions } from "../src/questions.ts";
+import { questions } from "./questions.ts";
 
 const sql = neon(process.env.DATABASE_URL!);
 

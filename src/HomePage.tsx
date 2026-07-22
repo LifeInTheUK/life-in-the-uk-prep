@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAggregateStats } from "./sm2";
 import { getHistory } from "./history";
+import { SESSION_STORAGE_KEY } from "./quiz/session";
 
 interface HomeStats {
   hasSession: boolean;
@@ -28,7 +29,7 @@ export default function HomePage() {
     const { attempts, correct } = getAggregateStats();
     const accuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
     setStats({
-      hasSession: !!sessionStorage.getItem("ukTestSession"),
+      hasSession: !!sessionStorage.getItem(SESSION_STORAGE_KEY),
       accuracy,
       testsCompleted: getHistory().length,
       hasAttempts: attempts > 0,
@@ -93,7 +94,7 @@ export default function HomePage() {
       {hasSession && (
         <Link
           href="/test"
-          onClick={() => sessionStorage.removeItem("ukTestSession")}
+          onClick={() => sessionStorage.removeItem(SESSION_STORAGE_KEY)}
           className="w-full bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
         >
           Start New Test
