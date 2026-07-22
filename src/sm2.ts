@@ -1,5 +1,6 @@
 import type { SM2Data } from "./types";
 import { getAuthState } from "./authState";
+import { animateNumber } from "./animateNumber";
 
 const STORAGE_KEY = "ukTestSm2ById";
 
@@ -70,12 +71,8 @@ export function updateGlobalAccuracy(): void {
 
     const accuracyEl = document.getElementById("global-accuracy");
     if (accuracyEl) {
-        if (attempts === 0) {
-            accuracyEl.textContent = "0%";
-        } else {
-            const pct = Math.round((correct / attempts) * 100);
-            accuracyEl.textContent = pct + "%";
-        }
+        const pct = attempts === 0 ? 0 : Math.round((correct / attempts) * 100);
+        animateNumber(accuracyEl, pct, (v) => `${v}%`);
     }
 }
 

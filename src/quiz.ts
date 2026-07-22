@@ -9,6 +9,7 @@ import {
   submitFeedback,
   type FeedbackCategory,
 } from "./feedback";
+import { animateNumber } from "./animateNumber";
 
 let questions: Question[] = [];
 
@@ -287,7 +288,7 @@ function render(): void {
                       )
                       .join("")}
                 </div>
-                ${isMulti ? `<button id="submit-multi-btn" class="mt-5 w-full bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2" disabled>Check Answers <kbd class="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">↵</kbd></button>` : ""}
+                ${isMulti ? `<button id="submit-multi-btn" class="btn-shine mt-5 w-full bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2" disabled>Check Answers <kbd class="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">↵</kbd></button>` : ""}
             `;
 
   const reduceMotion = window.matchMedia(
@@ -360,14 +361,14 @@ function processResult(isCorrect: boolean, selected: number | number[]): void {
   if (isCorrect) {
     if (question.isFirstTry) {
       firstTryScore++;
-      scoreEl.textContent = `${firstTryScore} / ${initialQuestionsCount}`;
+      animateNumber(scoreEl, firstTryScore, (v) => `${v} / ${initialQuestionsCount}`);
     }
 
     const acc = Math.round(
       ((qStats.correct || 0) / (qStats.attempts || 1)) * 100,
     );
     feedback.innerHTML = `<div class="flex items-center justify-between gap-3 mb-2">
-                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-good">
+                    <span class="pop-in inline-flex items-center gap-1.5 text-sm font-semibold text-good">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                         Correct
                     </span>
@@ -391,7 +392,7 @@ function processResult(isCorrect: boolean, selected: number | number[]): void {
       ((qStats.correct || 0) / (qStats.attempts || 1)) * 100,
     );
     feedback.innerHTML = `<div class="flex items-center justify-between gap-3 mb-2">
-                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-bad">
+                    <span class="pop-in inline-flex items-center gap-1.5 text-sm font-semibold text-bad">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                         Incorrect
                     </span>
@@ -496,7 +497,7 @@ function showResults(): void {
   const scorePct = Math.round((firstTryScore / initialQuestionsCount) * 100);
 
   container.innerHTML = `
-                <div class="text-center py-6 fade-in">
+                <div class="relative overflow-hidden text-center py-6 fade-in">
                     <div class="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5 ${passed ? "bg-good-soft text-good" : "bg-bad-soft text-bad"}">
                         <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             ${
@@ -513,7 +514,7 @@ function showResults(): void {
                         : "You need 75% to pass the official test."
                     }</p>
                     <div class="flex items-center justify-center gap-2 mb-8 tabular">
-                        <span class="text-4xl font-bold">${firstTryScore}</span>
+                        <span id="result-score" class="text-4xl font-bold">0</span>
                         <span class="text-xl text-muted">/ ${initialQuestionsCount}</span>
                         <span class="text-sm text-muted border-l border-line pl-3 ml-1">${scorePct}%</span>
                     </div>
@@ -525,6 +526,29 @@ function showResults(): void {
   restartBtn.classList.remove("hidden");
   restartBtn.innerHTML = `Start New Test <kbd class="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">↵</kbd>`;
   homeBtn.classList.remove("hidden");
+
+  const resultScoreEl = document.getElementById("result-score")!;
+  animateNumber(resultScoreEl, firstTryScore, (v) => String(v), 700);
+
+  if (passed) {
+    launchConfetti(container.querySelector(".relative") as HTMLElement);
+  }
+}
+
+function launchConfetti(target: HTMLElement | null): void {
+  if (!target) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const colors = ["#4f46e5", "#16a34a", "#f59e0b", "#ec4899", "#818cf8"];
+  for (let i = 0; i < 24; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti-piece";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[i % colors.length];
+    piece.style.animationDelay = `${Math.random() * 0.2}s`;
+    target.appendChild(piece);
+    piece.addEventListener("animationend", () => piece.remove());
+  }
 }
 
 export async function initQuiz(): Promise<void> {
