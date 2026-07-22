@@ -22,6 +22,7 @@ let container: HTMLElement;
 let feedback: HTMLElement;
 let nextBtn: HTMLButtonElement;
 let restartBtn: HTMLButtonElement;
+let homeBtn: HTMLElement;
 let scoreEl: HTMLElement;
 let totalQuestionsEl: HTMLElement;
 let keydownListenerAttached = false;
@@ -67,6 +68,7 @@ function restoreSession(): boolean {
     initialQuestionsCount = stored.initialQuestionsCount;
     scoreEl.textContent = `${firstTryScore} / ${initialQuestionsCount}`;
     restartBtn.classList.add("hidden");
+    homeBtn.classList.add("hidden");
 
     updateGlobalAccuracy();
     render();
@@ -111,6 +113,7 @@ export function startSession(): void {
   firstTryScore = 0;
   scoreEl.textContent = `${firstTryScore} / ${initialQuestionsCount}`;
   restartBtn.classList.add("hidden");
+  homeBtn.classList.add("hidden");
 
   updateGlobalAccuracy();
   saveSession();
@@ -403,6 +406,7 @@ function showResults(): void {
             `;
   restartBtn.classList.remove("hidden");
   restartBtn.innerHTML = `Start New Test <kbd class="hidden sm:inline-flex items-center justify-center px-1.5 h-5 text-[11px] font-mono rounded border border-white/30 bg-white/10">↵</kbd>`;
+  homeBtn.classList.remove("hidden");
 }
 
 export function initQuiz(): void {
@@ -410,6 +414,7 @@ export function initQuiz(): void {
   feedback = document.getElementById("feedback-container") as HTMLElement;
   nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
   restartBtn = document.getElementById("restart-btn") as HTMLButtonElement;
+  homeBtn = document.getElementById("home-btn") as HTMLElement;
   scoreEl = document.getElementById("score") as HTMLElement;
   totalQuestionsEl = document.getElementById("total-questions") as HTMLElement;
 

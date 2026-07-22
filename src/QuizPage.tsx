@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { initQuiz } from "./quiz";
 
 export default function QuizPage() {
@@ -15,6 +16,13 @@ export default function QuizPage() {
       </div>
 
       <div id="navigation" className="order-2 sm:order-3 mt-6 flex justify-end">
+        <Link
+          id="home-btn"
+          href="/"
+          className="hidden mr-2 w-full sm:w-auto bg-surface border border-line hover:border-accent hover:text-accent active:scale-[0.98] text-ink font-medium text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
+        >
+          Go Home
+        </Link>
         <button
           id="next-btn"
           className="hidden w-full sm:w-auto bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-6 rounded-xl transition-all flex items-center justify-center gap-2"
