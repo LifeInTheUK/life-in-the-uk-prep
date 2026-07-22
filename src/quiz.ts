@@ -265,7 +265,9 @@ function render(): void {
                         ${isMulti ? `<span class="text-accent font-medium">Select ${(currentQuestion.a as number[]).length}</span>` : ""}
                     </div>
                     <div class="h-1.5 bg-line rounded-full overflow-hidden">
-                        <div class="h-full bg-accent transition-all" style="width: ${progressPct}%"></div>
+                        <div class="h-full rounded-full transition-all relative overflow-hidden" style="width: ${progressPct}%; background: linear-gradient(90deg, var(--color-accent-dark), var(--color-accent));">
+                            <div class="absolute inset-y-0 right-0 w-4 bg-gradient-to-l from-white/80 to-transparent"></div>
+                        </div>
                     </div>
                 </div>
                 <span class="inline-block text-xs font-medium text-accent bg-accent/10 rounded-full px-2.5 py-1 mb-3">${topicLabel(currentQuestion.topic)}</span>
