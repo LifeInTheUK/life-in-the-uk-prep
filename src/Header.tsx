@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 import ThemeToggle from "./ThemeToggle";
+import { GIT_COMMIT_SHA } from "./config";
 
 export default function Header({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -34,7 +35,10 @@ export default function Header({ children }: { children: ReactNode }) {
           ) : (
             <button
               onClick={() =>
-                authClient.signIn.social({ provider: "google", callbackURL: "/" })
+                authClient.signIn.social({
+                  provider: "google",
+                  callbackURL: "/",
+                })
               }
               className="text-xs font-medium text-muted hover:text-ink transition-colors"
             >
@@ -144,6 +148,11 @@ export default function Header({ children }: { children: ReactNode }) {
           Terms and Conditions
         </Link>
       </div>
+      {GIT_COMMIT_SHA && (
+        <div className="order-5 flex justify-center text-[10px] text-muted/60">
+          v.{GIT_COMMIT_SHA}
+        </div>
+      )}
     </div>
   );
 }

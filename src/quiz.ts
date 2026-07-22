@@ -72,7 +72,7 @@ function showReportModal(questionId: number): void {
             <div class="space-y-2 mb-4">
                 ${REPORT_CATEGORIES.map(
                   (c) =>
-                    `<button type="button" data-report-category="${c.value}" class="w-full text-left text-sm p-3 border border-line rounded-lg hover:border-accent hover:bg-accent/5 transition-colors">${c.label}</button>`,
+                    `<button type="button" data-report-category="${c.value}" class="w-full text-left text-sm p-3 border-2 border-line rounded-lg hover:border-accent transition-colors">${c.label}</button>`,
                 ).join("")}
             </div>
             <button type="button" data-report-submit disabled class="w-full bg-accent hover:bg-accent-dark text-white font-medium text-sm py-2.5 px-4 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all">Submit</button>
@@ -98,12 +98,22 @@ function showReportModal(questionId: number): void {
     ) as HTMLElement | null;
     if (categoryBtn) {
       selected = categoryBtn.dataset.reportCategory as FeedbackCategory;
-      overlay
-        .querySelectorAll("[data-report-category]")
-        .forEach((btn) =>
-          btn.classList.remove("border-accent", "bg-accent/5"),
+      overlay.querySelectorAll("[data-report-category]").forEach((btn) => {
+        btn.classList.remove(
+          "border-accent",
+          "bg-accent",
+          "text-white",
+          "font-semibold",
         );
-      categoryBtn.classList.add("border-accent", "bg-accent/5");
+        btn.classList.add("border-line");
+      });
+      categoryBtn.classList.remove("border-line");
+      categoryBtn.classList.add(
+        "border-accent",
+        "bg-accent",
+        "text-white",
+        "font-semibold",
+      );
       submitBtn.disabled = false;
       return;
     }

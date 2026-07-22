@@ -20,3 +20,8 @@ export const SITE_URL =
 // (e.g. in .env.development) to use a shorter session while developing.
 export const SESSION_SIZE =
   Number(process.env.NEXT_PUBLIC_SESSION_SIZE) || 24;
+
+// Short commit hash of the deployed build, empty outside Vercel (see next.config.ts).
+export const GIT_COMMIT_SHA = (
+  process.env.NEXT_PUBLIC_GIT_COMMIT_SHA || ""
+).slice(0, 7);
