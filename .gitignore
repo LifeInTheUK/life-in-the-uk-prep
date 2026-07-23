@@ -6,3 +6,6 @@ next-env.d.ts
 /docs
 .env
 .neon
+/playwright-report
+/test-results
+/blob-report
