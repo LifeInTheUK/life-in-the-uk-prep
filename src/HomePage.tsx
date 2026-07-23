@@ -3,12 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/client";
 import { useProgress } from "./progressContext";
 import { useHistoryState } from "./historyContext";
 import { useQuiz } from "./quiz/QuizContext";
+import SignInNudge from "./SignInNudge";
 
 export default function HomePage() {
   const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
   const { aggregate } = useProgress();
   const { history } = useHistoryState();
   const { state: quizState, restart } = useQuiz();
@@ -189,6 +192,21 @@ export default function HomePage() {
               </svg>
             </Link>
           )}
+          {!isPending && !session?.user && (hasAttempts || hasTests) ? (
+            <SignInNudge
+              title={`You've answered ${attempts} question${
+                attempts === 1 ? "" : "s"
+              } — don't lose this progress`}
+              body="You're not signed in, so your spaced-repetition progress and test history only live in this browser tab and disappear on refresh. Sign in to keep them, and unlock full stats on your profile."
+              callbackURL="/"
+            />
+          ) : (
+            <p className="text-xs text-muted">
+              Free to use, works without an account, and syncs your progress
+              across devices if you sign in. Not affiliated with the Home Office
+              — always check official study material before your real test.
+            </p>
+          )}
         </div>
       )}
 
@@ -273,12 +291,6 @@ export default function HomePage() {
             </p>
           </div>
         </div>
-
-        <p className="text-xs text-muted">
-          Free to use, works without an account, and syncs your progress across
-          devices if you sign in. Not affiliated with the Home Office — always
-          check official study material before your real test.
-        </p>
       </div>
     </div>
   );

@@ -41,7 +41,7 @@ The app was migrated off `localStorage`/static-array/Vercel-KV storage onto Neon
 - `/` → `src/HomePage.tsx`
 - `/test` → `src/QuizPage.tsx`
 - `/review` → `src/ReviewPage.tsx`
-- `/profile` → `src/ProfilePage.tsx` (account info, progress stats + chart, self-service account deletion — signed-in only, redirects to `/` if signed out)
+- `/profile` → `src/ProfilePage.tsx` (account info, progress stats + chart, self-service account deletion — signed-out visitors see a `src/SignInNudge.tsx` CTA in place of the stats, no redirect)
 - `/questions` → question bank browser (topic-chip filtering + live fuzzy search via `src/SearchBox.tsx`, paginated)
 - `app/layout.tsx` renders `src/AuthSync.tsx` (no-UI component that syncs Neon Auth session state into `src/authState.ts` and, via `useProgress()`/`useHistoryState()`, calls their `refreshFromServer()` on sign-in) and `src/Header.tsx` (shared header: logo, sign-in/out via `authClient` from `lib/auth/client.ts`, avatar link to `/profile`, contextual back-link/stats-row per route via `usePathname()`). Neon Auth's client hooks (`authClient.useSession()`) don't require a context provider, but `AuthSync` is rendered *inside* the app-state provider tree (see below) since it consumes those contexts.
 
@@ -84,3 +84,5 @@ Tailwind v4, wired through `@tailwindcss/postcss` (not the Vite plugin, since Ne
 ### Auth
 
 See "Neon migration" above for the full picture — in short: `lib/auth/server.ts` (`createNeonAuth()`) for server components/API routes via `auth.getSession()`, `lib/auth/client.ts` (`authClient`) for client components via `authClient.useSession()`/`authClient.signIn.social(...)`/`authClient.signOut()`, `app/api/auth/[...path]/route.ts` proxies everything to Neon's auth server. No `middleware.ts` exists and none is needed — every route works fully signed-out.
+
+`src/SignInNudge.tsx` is a small shared presentational CTA card (title/body/callbackURL props, calls `authClient.signIn.social`) used to nudge signed-out users toward signing in — shown in `src/HomePage.tsx` once a user has SM-2 attempts/history to lose, and in `src/ProfilePage.tsx` in place of its old signed-out redirect. `src/quiz/SignInPromptModal.tsx` is the same idea as a dismissible modal (backdrop-click or "Not now" to close, same chrome as `src/quiz/ReportModal.tsx`) — `src/QuizPage.tsx` shows it once per results screen when a signed-out user finishes a test (tracked via a `promptedRef`, reset whenever `state.phase` leaves `"results"` so it can fire again on the next test).

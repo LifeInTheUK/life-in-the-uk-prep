@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import { useHistoryState } from "./historyContext";
 import { useProgress } from "./progressContext";
 import ScoreChart from "./ScoreChart";
+import SignInNudge from "./SignInNudge";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -16,12 +17,6 @@ export default function ProfilePage() {
     const { aggregate } = useProgress();
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!isPending && !session?.user) {
-            router.replace("/");
-        }
-    }, [isPending, session, router]);
 
     async function handleDeleteAccount() {
         const confirmed = window.confirm(
@@ -41,10 +36,29 @@ export default function ProfilePage() {
         router.replace("/");
     }
 
-    if (isPending || !session?.user) {
+    if (isPending) {
         return (
             <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
                 <p className="text-sm text-muted">Loading...</p>
+            </div>
+        );
+    }
+
+    if (!session?.user) {
+        return (
+            <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
+                <h2 className="text-lg font-semibold">Profile</h2>
+                <SignInNudge
+                    title="Sign in to see your full profile"
+                    body="Track your accuracy trend over time, see your full test history, and compare your score against other learners — all synced across devices."
+                    callbackURL="/profile"
+                />
+                <Link
+                    href="/"
+                    className="self-start text-sm font-medium text-muted hover:text-ink transition-colors"
+                >
+                    Back to home
+                </Link>
             </div>
         );
     }

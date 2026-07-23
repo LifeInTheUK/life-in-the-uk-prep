@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { authClient } from "@/lib/auth/client";
 import { useQuiz } from "./quiz/QuizContext";
 import { canSubmitMulti, isMultiSelect } from "./quiz/derived";
 import QuestionCard from "./quiz/QuestionCard";
@@ -8,15 +9,30 @@ import OptionsList from "./quiz/OptionsList";
 import FeedbackPanel from "./quiz/FeedbackPanel";
 import NavigationBar from "./quiz/NavigationBar";
 import ResultsScreen from "./quiz/ResultsScreen";
+import SignInPromptModal from "./quiz/SignInPromptModal";
 
 function QuizPageInner() {
   const { state, start, selectOption, submitMulti, next, restart } = useQuiz();
+  const { data: session, isPending } = authClient.useSession();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const promptedRef = useRef(false);
 
   useEffect(() => {
     if (state.phase === "loading") start();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (state.phase !== "results") {
+      promptedRef.current = false;
+      return;
+    }
+    if (!isPending && !session?.user && !promptedRef.current) {
+      promptedRef.current = true;
+      setShowSignInPrompt(true);
+    }
+  }, [state.phase, isPending, session]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent): void {
@@ -76,6 +92,13 @@ function QuizPageInner() {
           />
         </div>
         <NavigationBar />
+        {showSignInPrompt && (
+          <SignInPromptModal
+            score={state.firstTryScore}
+            total={state.initialQuestionsCount}
+            onClose={() => setShowSignInPrompt(false)}
+          />
+        )}
       </>
     );
   }
