@@ -2,7 +2,11 @@ import { useReducer, useRef } from "react";
 import type { Question, SessionQuestion } from "../types";
 import type { SM2Data } from "../types";
 import { calculateSM2 } from "../sm2";
-import { SESSION_SIZE } from "../config";
+import {
+  SESSION_SIZE,
+  SESSION_NEW_RATIO,
+  SESSION_IMPROVE_RATIO,
+} from "../config";
 import { initialQuizState, quizReducer } from "./reducer";
 import { loadQuestions } from "./loadQuestions";
 import { useHeaderStats } from "../headerStats";
@@ -13,6 +17,25 @@ function isMultiQuestion(q: SessionQuestion): boolean {
   return Array.isArray(q.a);
 }
 
+function shuffle<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function byDueThenWeakest(a: SessionQuestion, b: SessionQuestion): number {
+  if (a.sm2.next !== b.sm2.next) return a.sm2.next - b.sm2.next; // overdue first
+  return a.accuracy - b.accuracy; // lowest accuracy first
+}
+
+// Sorting the whole bank by "overdue first" alone means unseen questions
+// (sm2.next === 0, always the smallest timestamp) come before every
+// previously-missed question, so review never surfaces until the entire bank
+// has been seen once. Instead, draw from three buckets every session — new /
+// answered-wrong-before / always-correct-so-far — at a fixed ratio, with a
+// shortfall fill (new -> improve -> correct) for when a bucket runs dry.
 function buildSessionQueue(
   questions: Question[],
   getSM2: (id: number) => SM2Data,
@@ -25,17 +48,48 @@ function buildSessionQueue(
 
   // Shuffle first so equal-priority questions (e.g. all unseen) come out in
   // random order instead of array order.
-  for (let i = allWithSM2.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [allWithSM2[i], allWithSM2[j]] = [allWithSM2[j], allWithSM2[i]];
+  shuffle(allWithSM2);
+
+  const newQ = allWithSM2.filter((q) => q.sm2.attempts === 0).sort(byDueThenWeakest);
+  const improveQ = allWithSM2
+    .filter((q) => q.sm2.attempts > 0 && q.sm2.correct < q.sm2.attempts)
+    .sort(byDueThenWeakest);
+  const correctQ = allWithSM2
+    .filter((q) => q.sm2.attempts > 0 && q.sm2.correct === q.sm2.attempts)
+    .sort(byDueThenWeakest);
+
+  const newCount = Math.round(SESSION_SIZE * SESSION_NEW_RATIO);
+  const improveCount = Math.round(SESSION_SIZE * SESSION_IMPROVE_RATIO);
+  const correctCount = SESSION_SIZE - newCount - improveCount;
+
+  const selected: SessionQuestion[] = [];
+  const usedIds = new Set<number>();
+  function take(pool: SessionQuestion[], count: number): void {
+    for (const q of pool) {
+      if (count <= 0) break;
+      if (usedIds.has(q.id)) continue;
+      selected.push(q);
+      usedIds.add(q.id);
+      count--;
+    }
   }
 
-  allWithSM2.sort((a, b) => {
-    if (a.sm2.next !== b.sm2.next) return a.sm2.next - b.sm2.next; // overdue first
-    return a.accuracy - b.accuracy; // lowest accuracy first
-  });
+  take(newQ, newCount);
+  take(improveQ, improveCount);
+  take(correctQ, correctCount);
 
-  return allWithSM2.slice(0, SESSION_SIZE);
+  if (selected.length < SESSION_SIZE) {
+    const shortfall = SESSION_SIZE - selected.length;
+    take(newQ, shortfall);
+  }
+  if (selected.length < SESSION_SIZE) {
+    take(improveQ, SESSION_SIZE - selected.length);
+  }
+  if (selected.length < SESSION_SIZE) {
+    take(correctQ, SESSION_SIZE - selected.length);
+  }
+
+  return shuffle(selected);
 }
 
 export interface QuizEngine {

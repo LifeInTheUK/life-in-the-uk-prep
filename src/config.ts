@@ -21,6 +21,13 @@ export const SITE_URL =
 export const SESSION_SIZE =
   Number(process.env.NEXT_PUBLIC_SESSION_SIZE) || 24;
 
+// Session mix: new questions / questions answered wrong at least once /
+// questions always answered correctly so far. Keeps review resurfacing from
+// session one instead of only after the whole bank has been seen.
+export const SESSION_NEW_RATIO = 0.8;
+export const SESSION_IMPROVE_RATIO = 0.15;
+export const SESSION_CORRECT_RATIO = 0.05;
+
 // Short commit hash of the deployed build, empty outside Vercel (see next.config.ts).
 export const GIT_COMMIT_SHA = (
   process.env.NEXT_PUBLIC_GIT_COMMIT_SHA || ""
