@@ -28,9 +28,16 @@ export default function QuestionCard({
         </div>
         <ProgressBar itemNo={itemNo} total={total} />
       </div>
-      <span className="inline-block text-xs font-medium text-accent bg-accent/10 rounded-full px-2.5 py-1 mb-3">
-        {topicLabel(question.topic)}
-      </span>
+      <div className="flex justify-between items-center gap-2 mb-3">
+        <span className="inline-block text-xs font-medium text-accent bg-accent/10 rounded-full px-2.5 py-1">
+          {topicLabel(question.topic)}
+        </span>
+        {question.sm2.attempts > 0 && (
+          <span className="inline-block text-xs font-medium text-muted bg-muted/10 rounded-full px-2.5 py-1 whitespace-nowrap">
+            {question.sm2.correct}/{question.sm2.attempts} correct
+          </span>
+        )}
+      </div>
       <h2 id="question-heading" className="text-lg sm:text-xl font-semibold leading-snug mb-5">
         {question.q}
       </h2>
