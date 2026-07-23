@@ -37,8 +37,22 @@ CREATE TABLE IF NOT EXISTS feedback (
   question_id INTEGER NOT NULL REFERENCES questions(id),
   user_id TEXT,
   category TEXT NOT NULL,
+  details TEXT,
+  ip TEXT,
   created_at BIGINT NOT NULL,
   UNIQUE (user_id, question_id)
 );
 
 CREATE INDEX IF NOT EXISTS feedback_question_id_idx ON feedback(question_id);
+
+-- Fixed-window counter for POST /api/feedback rate limiting, keyed on
+-- user_id if signed in else IP. A single atomic UPSERT (INSERT ... ON
+-- CONFLICT DO UPDATE) increments the count under Postgres's row lock, so
+-- concurrent requests from the same key can't race past the limit the way
+-- a separate SELECT-then-INSERT check could.
+CREATE TABLE IF NOT EXISTS feedback_rate_limits (
+  key TEXT NOT NULL,
+  window_start BIGINT NOT NULL,
+  count INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (key, window_start)
+);
