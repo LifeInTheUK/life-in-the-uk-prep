@@ -27,12 +27,6 @@ export interface QuizState {
 export type QuizAction =
   | { type: "QUESTIONS_LOADED"; total: number }
   | { type: "SESSION_STARTED"; queue: SessionQuestion[] }
-  | {
-      type: "SESSION_RESTORED";
-      queue: SessionQuestion[];
-      firstTryScore: number;
-      initialQuestionsCount: number;
-    }
   | { type: "OPTION_TOGGLED"; idx: number }
   | {
       type: "ANSWER_SUBMITTED";
@@ -42,9 +36,3 @@ export type QuizAction =
       };
     }
   | { type: "NEXT_REQUESTED" };
-
-export interface StoredSession {
-  sessionQueue: SessionQuestion[];
-  firstTryScore: number;
-  initialQuestionsCount: number;
-}

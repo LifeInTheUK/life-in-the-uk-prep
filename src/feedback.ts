@@ -2,7 +2,7 @@ const REPORTED_KEY = "ukTestReportedQuestions";
 
 export type FeedbackCategory = "typo" | "wrong_info" | "confusing" | "duplicate";
 
-function getReported(): number[] {
+export function getReported(): number[] {
     return JSON.parse(localStorage.getItem(REPORTED_KEY) || "null") || [];
 }
 
@@ -16,6 +16,10 @@ export function markReported(questionId: number): void {
         reported.push(questionId);
         localStorage.setItem(REPORTED_KEY, JSON.stringify(reported));
     }
+}
+
+export function clearReported(): void {
+    localStorage.removeItem(REPORTED_KEY);
 }
 
 export async function submitFeedback(

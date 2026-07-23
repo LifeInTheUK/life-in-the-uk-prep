@@ -6,6 +6,12 @@ import Header from "@/src/Header";
 import AuthSync from "@/src/AuthSync";
 import CookieBanner from "@/src/CookieBanner";
 import { HeaderStatsProvider } from "@/src/headerStats";
+import { ThemeProvider } from "@/src/themeContext";
+import { CookieConsentProvider } from "@/src/cookieConsentContext";
+import { ProgressProvider } from "@/src/progressContext";
+import { HistoryProvider } from "@/src/historyContext";
+import { FeedbackProvider } from "@/src/feedbackContext";
+import { QuizProvider } from "@/src/quiz/QuizContext";
 import { SITE_URL } from "@/src/config";
 import "@/src/style.css";
 
@@ -71,12 +77,24 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
             </head>
             <body className={`${inter.className} min-h-screen text-ink`}>
-                <AuthSync />
-                <HeaderStatsProvider>
-                    <Header>{children}</Header>
-                </HeaderStatsProvider>
-                <Analytics />
-                <CookieBanner />
+                <ThemeProvider>
+                    <CookieConsentProvider>
+                        <ProgressProvider>
+                            <HistoryProvider>
+                                <FeedbackProvider>
+                                    <HeaderStatsProvider>
+                                        <QuizProvider>
+                                            <AuthSync />
+                                            <Header>{children}</Header>
+                                        </QuizProvider>
+                                    </HeaderStatsProvider>
+                                </FeedbackProvider>
+                            </HistoryProvider>
+                        </ProgressProvider>
+                        <Analytics />
+                        <CookieBanner />
+                    </CookieConsentProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

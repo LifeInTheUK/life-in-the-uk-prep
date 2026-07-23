@@ -1,32 +1,7 @@
 import type { SM2Data } from "./types";
 import { getAuthState } from "./authState";
-import { animateNumber } from "./animateNumber";
 
-const STORAGE_KEY = "ukTestSm2ById";
-
-export function getSM2(id: number): SM2Data {
-    const data: Record<number, SM2Data> =
-        JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
-    // n: repetitions in a row, ef: ease factor, i: interval (days), next: timestamp, attempts: total tries, correct: total correct
-    return (
-        data[id] || {
-            n: 0,
-            ef: 2.5,
-            i: 0,
-            next: 0,
-            attempts: 0,
-            correct: 0,
-        }
-    );
-}
-
-export function saveSM2(id: number, sm2Data: SM2Data): void {
-    const data: Record<number, SM2Data> =
-        JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
-    data[id] = sm2Data;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    updateGlobalAccuracy();
-
+export function postProgress(id: number, sm2Data: SM2Data): void {
     if (getAuthState()) {
         fetch("/api/progress", {
             method: "POST",
@@ -36,43 +11,13 @@ export function saveSM2(id: number, sm2Data: SM2Data): void {
     }
 }
 
-export async function pullProgressFromServer(): Promise<void> {
+export async function fetchProgressFromServer(): Promise<Record<number, SM2Data>> {
     try {
         const res = await fetch("/api/progress");
-        if (!res.ok) return;
-        const serverData: Record<number, SM2Data> = await res.json();
-
-        const localData: Record<number, SM2Data> =
-            JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
-        const merged = { ...localData, ...serverData };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-        updateGlobalAccuracy();
+        if (!res.ok) return {};
+        return await res.json();
     } catch {
-        // Silent — background sync, never blocks the app.
-    }
-}
-
-export function getAggregateStats(): { attempts: number; correct: number } {
-    const data: Record<number, SM2Data> =
-        JSON.parse(localStorage.getItem(STORAGE_KEY) || "null") || {};
-    let attempts = 0;
-    let correct = 0;
-
-    for (const key in data) {
-        attempts += data[key].attempts || 0;
-        correct += data[key].correct || 0;
-    }
-
-    return { attempts, correct };
-}
-
-export function updateGlobalAccuracy(): void {
-    const { attempts, correct } = getAggregateStats();
-
-    const accuracyEl = document.getElementById("global-accuracy");
-    if (accuracyEl) {
-        const pct = attempts === 0 ? 0 : Math.round((correct / attempts) * 100);
-        animateNumber(accuracyEl, pct, (v) => `${v}%`);
+        return {};
     }
 }
 

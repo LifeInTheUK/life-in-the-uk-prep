@@ -4,16 +4,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
-import { getHistory, type TestResult } from "./history";
-import { getAggregateStats } from "./sm2";
+import { useHistoryState } from "./historyContext";
+import { useProgress } from "./progressContext";
 import ScoreChart from "./ScoreChart";
 
 export default function ProfilePage() {
     const router = useRouter();
     const { data: session, isPending } = authClient.useSession();
 
-    const [history, setHistory] = useState<TestResult[]>([]);
-    const [aggregate, setAggregate] = useState({ attempts: 0, correct: 0 });
+    const { history } = useHistoryState();
+    const { aggregate } = useProgress();
     const [isDeleting, setIsDeleting] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -22,11 +22,6 @@ export default function ProfilePage() {
             router.replace("/");
         }
     }, [isPending, session, router]);
-
-    useEffect(() => {
-        setHistory(getHistory());
-        setAggregate(getAggregateStats());
-    }, []);
 
     async function handleDeleteAccount() {
         const confirmed = window.confirm(

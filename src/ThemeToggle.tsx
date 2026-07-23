@@ -1,24 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useTheme } from "./themeContext";
 
 export default function ThemeToggle() {
-    const [isDark, setIsDark] = useState(false);
-
-    useEffect(() => {
-        setIsDark(document.documentElement.classList.contains("dark"));
-    }, []);
-
-    function toggle() {
-        const next = !isDark;
-        setIsDark(next);
-        document.documentElement.classList.toggle("dark", next);
-        localStorage.setItem("theme", next ? "dark" : "light");
-    }
+    const { isDark, toggleTheme } = useTheme();
 
     return (
         <button
-            onClick={toggle}
+            onClick={toggleTheme}
             aria-label="Toggle dark mode"
             title="Toggle dark mode"
             className="text-muted hover:text-ink transition-colors"

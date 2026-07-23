@@ -7,6 +7,7 @@ import { authClient } from "@/lib/auth/client";
 import ThemeToggle from "./ThemeToggle";
 import { GIT_COMMIT_SHA } from "./config";
 import { useHeaderStats } from "./headerStats";
+import { useProgress } from "./progressContext";
 import { animateNumber } from "./animateNumber";
 
 export default function Header({ children }: { children: ReactNode }) {
@@ -15,7 +16,13 @@ export default function Header({ children }: { children: ReactNode }) {
   const isLanding = pathname === "/";
   const isQuizPage = pathname === "/test";
   const { data: session } = authClient.useSession();
-  const { totalQuestions, scoreCurrent, scoreTotal, animateScore } = useHeaderStats();
+  const { totalQuestions, scoreCurrent, scoreTotal, animateScore } =
+    useHeaderStats();
+  const { aggregate } = useProgress();
+  const accuracyPct =
+    aggregate.attempts === 0
+      ? 0
+      : Math.round((aggregate.correct / aggregate.attempts) * 100);
 
   const scoreRef = useRef<HTMLDivElement>(null);
   const prevScore = useRef(scoreCurrent);
@@ -62,19 +69,47 @@ export default function Header({ children }: { children: ReactNode }) {
               Sign in
             </button>
           )}
-          <Link
-            href="/profile"
-            className="shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors overflow-hidden"
-            title="Your profile"
-            aria-label="Your profile"
-          >
-            {session?.user?.image ? (
-              <img
-                src={session.user.image}
-                alt=""
-                className="w-full h-full object-cover"
-              />
-            ) : (
+          {session?.user ? (
+            <Link
+              href="/profile"
+              className="shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors overflow-hidden"
+              title="Your profile"
+              aria-label="Your profile"
+            >
+              {session.user.image ? (
+                <img
+                  src={session.user.image}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              )}
+            </Link>
+          ) : (
+            <button
+              onClick={() =>
+                authClient.signIn.social({
+                  provider: "google",
+                  callbackURL: "/profile",
+                })
+              }
+              className="shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors overflow-hidden"
+              title="Sign in"
+              aria-label="Sign in"
+            >
               <svg
                 className="w-5 h-5"
                 fill="none"
@@ -88,8 +123,8 @@ export default function Header({ children }: { children: ReactNode }) {
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 />
               </svg>
-            )}
-          </Link>
+            </button>
+          )}
         </div>
       </div>
 
@@ -134,11 +169,8 @@ export default function Header({ children }: { children: ReactNode }) {
             className="flex flex-col items-center justify-center flex-1 min-w-21 rounded-xl bg-surface border border-line py-2 hover:border-accent transition-colors"
             title="Review your correct and incorrect answers"
           >
-            <div
-              className="text-base font-semibold tabular text-accent"
-              id="global-accuracy"
-            >
-              0%
+            <div className="text-base font-semibold tabular text-accent">
+              {accuracyPct}%
             </div>
             <div className="text-[11px] text-muted">Accuracy</div>
           </Link>

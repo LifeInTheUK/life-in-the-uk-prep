@@ -1,20 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-
-const CONSENT_KEY = "ukTestCookieConsent";
+import { useCookieConsent } from "./cookieConsentContext";
 
 export default function CookieBanner() {
-    const [visible, setVisible] = useState(false);
+    const { hasConsented, accept } = useCookieConsent();
 
-    useEffect(() => {
-        if (!localStorage.getItem(CONSENT_KEY)) {
-            setVisible(true);
-        }
-    }, []);
-
-    if (!visible) return null;
+    if (hasConsented) return null;
 
     return (
         <div className="fixed bottom-0 inset-x-0 z-50 bg-slate-800 text-white px-4 py-4 sm:py-3">
@@ -28,10 +20,7 @@ export default function CookieBanner() {
                     .
                 </p>
                 <button
-                    onClick={() => {
-                        localStorage.setItem(CONSENT_KEY, "accepted");
-                        setVisible(false);
-                    }}
+                    onClick={accept}
                     className="w-full sm:w-auto flex-shrink-0 bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-2 px-4 rounded-xl transition-all"
                 >
                     Accept

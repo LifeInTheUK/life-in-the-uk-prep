@@ -3,12 +3,14 @@
 import { useEffect, useRef } from "react";
 import { authClient } from "@/lib/auth/client";
 import { setAuthState } from "./authState";
-import { pullProgressFromServer } from "./sm2";
-import { pullHistoryFromServer } from "./history";
+import { useProgress } from "./progressContext";
+import { useHistoryState } from "./historyContext";
 
 export default function AuthSync() {
     const { data: session, isPending } = authClient.useSession();
     const syncedForUserId = useRef<string | null>(null);
+    const { refreshFromServer: refreshProgress } = useProgress();
+    const { refreshFromServer: refreshHistory } = useHistoryState();
 
     useEffect(() => {
         if (isPending) return;
@@ -18,9 +20,10 @@ export default function AuthSync() {
 
         if (userId && syncedForUserId.current !== userId) {
             syncedForUserId.current = userId;
-            pullProgressFromServer();
-            pullHistoryFromServer();
+            refreshProgress();
+            refreshHistory();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isPending, session]);
 
     return null;

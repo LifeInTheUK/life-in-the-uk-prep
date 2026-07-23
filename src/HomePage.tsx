@@ -2,39 +2,32 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getAggregateStats } from "./sm2";
-import { getHistory } from "./history";
-import { SESSION_STORAGE_KEY } from "./quiz/session";
-
-interface HomeStats {
-  hasSession: boolean;
-  accuracy: number;
-  testsCompleted: number;
-  hasAttempts: boolean;
-}
-
-const DEFAULT_STATS: HomeStats = {
-  hasSession: false,
-  accuracy: 0,
-  testsCompleted: 0,
-  hasAttempts: false,
-};
+import { useRouter } from "next/navigation";
+import { useProgress } from "./progressContext";
+import { useHistoryState } from "./historyContext";
+import { useQuiz } from "./quiz/QuizContext";
 
 export default function HomePage() {
-  const [stats, setStats] = useState<HomeStats>(DEFAULT_STATS);
+  const router = useRouter();
+  const { aggregate } = useProgress();
+  const { history } = useHistoryState();
+  const { state: quizState, restart } = useQuiz();
   const [questionCount, setQuestionCount] = useState<number | null>(null);
   const [averageAccuracy, setAverageAccuracy] = useState<number | null>(null);
 
-  useEffect(() => {
-    const { attempts, correct } = getAggregateStats();
-    const accuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
-    setStats({
-      hasSession: !!sessionStorage.getItem(SESSION_STORAGE_KEY),
-      accuracy,
-      testsCompleted: getHistory().length,
-      hasAttempts: attempts > 0,
-    });
+  const hasSession = quizState.phase === "active";
 
+  async function startNewTest() {
+    await restart();
+    router.push("/test");
+  }
+
+  const { attempts, correct } = aggregate;
+  const accuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
+  const testsCompleted = history.length;
+  const hasAttempts = attempts > 0;
+
+  useEffect(() => {
     fetch("/api/questions/count")
       .then((res) => res.json())
       .then((data: { count: number }) => setQuestionCount(data.count));
@@ -46,9 +39,9 @@ export default function HomePage() {
           if (data.totalUsers > 0) setAverageAccuracy(data.averageAccuracy);
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { hasSession, accuracy, testsCompleted, hasAttempts } = stats;
   const hasTests = testsCompleted > 0;
   const delta = averageAccuracy !== null ? accuracy - averageAccuracy : null;
 
@@ -92,13 +85,12 @@ export default function HomePage() {
       </Link>
 
       {hasSession && (
-        <Link
-          href="/test"
-          onClick={() => sessionStorage.removeItem(SESSION_STORAGE_KEY)}
+        <button
+          onClick={startNewTest}
           className="w-full bg-slate-800 hover:bg-slate-700 active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
         >
           Start New Test
-        </Link>
+        </button>
       )}
 
       <div className="grid grid-cols-3 gap-2 tabular">

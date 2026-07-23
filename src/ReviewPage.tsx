@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getSM2 } from "./sm2";
+import { useProgress } from "./progressContext";
 import type { Question, SM2Data } from "./types";
 
 function formatAnswer(o: string[], a: number | number[] | undefined): string {
@@ -77,6 +77,7 @@ export default function ReviewPage() {
   const [attempted, setAttempted] = useState<Attempted[]>([]);
   const [tab, setTab] = useState<"incorrect" | "correct">("incorrect");
   const [page, setPage] = useState(1);
+  const { getSM2 } = useProgress();
 
   useEffect(() => {
     fetch("/api/questions")

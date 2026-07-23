@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import type { LastResult } from "./types";
-import { hasReported } from "../feedback";
+import { useFeedbackState } from "../feedbackContext";
 import ReportModal from "./ReportModal";
 
 export default function FeedbackPanel({ lastResult }: { lastResult: LastResult }) {
   const [reportOpen, setReportOpen] = useState(false);
-  const [reported, setReported] = useState(() => hasReported(lastResult.questionId));
+  const { hasReported, markReported } = useFeedbackState();
+  const reported = hasReported(lastResult.questionId);
 
   return (
     <>
@@ -49,7 +50,7 @@ export default function FeedbackPanel({ lastResult }: { lastResult: LastResult }
       {reportOpen && (
         <ReportModal
           questionId={lastResult.questionId}
-          onSubmitted={() => setReported(true)}
+          onSubmitted={() => markReported(lastResult.questionId)}
           onClose={() => setReportOpen(false)}
         />
       )}

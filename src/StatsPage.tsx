@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getHistory, type TestResult } from "./history";
-import { getAggregateStats } from "./sm2";
+import { useHistoryState } from "./historyContext";
+import { useProgress } from "./progressContext";
 import ScoreChart from "./ScoreChart";
 
 interface GlobalStats {
@@ -20,21 +20,19 @@ function tierFor(accuracy: number): { label: string; className: string } {
 }
 
 export default function StatsPage() {
-    const [history, setHistory] = useState<TestResult[]>([]);
-    const [personalAccuracy, setPersonalAccuracy] = useState(0);
-    const [hasAttempts, setHasAttempts] = useState(false);
+    const { history } = useHistoryState();
+    const { aggregate } = useProgress();
     const [global, setGlobal] = useState<GlobalStats | null>(null);
 
-    useEffect(() => {
-        const { attempts, correct } = getAggregateStats();
-        const accuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
-        setHistory(getHistory());
-        setPersonalAccuracy(accuracy);
-        setHasAttempts(attempts > 0);
+    const { attempts, correct } = aggregate;
+    const personalAccuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
+    const hasAttempts = attempts > 0;
 
-        fetch(`/api/stats/global?accuracy=${accuracy}`)
+    useEffect(() => {
+        fetch(`/api/stats/global?accuracy=${personalAccuracy}`)
             .then((res) => res.json())
             .then(setGlobal);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const scores = history.map((h) => Math.round((h.score / h.total) * 100));

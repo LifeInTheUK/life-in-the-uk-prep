@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { markReported, submitFeedback, type FeedbackCategory } from "../feedback";
+import { submitFeedback, type FeedbackCategory } from "../feedback";
 
 const REPORT_CATEGORIES: { value: FeedbackCategory; label: string }[] = [
   { value: "typo", label: "Typo / spelling" },
@@ -34,7 +34,6 @@ export default function ReportModal({
     setStatus("submitting");
     const result = await submitFeedback(questionId, selected);
     if (result) {
-      markReported(questionId);
       onSubmitted();
     }
     setOk(result);

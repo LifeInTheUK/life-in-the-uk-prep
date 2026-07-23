@@ -45,22 +45,6 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
           : [],
       };
 
-    case "SESSION_RESTORED":
-      return {
-        ...state,
-        phase: "active",
-        sessionQueue: action.queue,
-        currentQuestion: action.queue[0] ?? null,
-        initialQuestionsCount: action.initialQuestionsCount,
-        firstTryScore: action.firstTryScore,
-        selectedOptions: [],
-        answered: false,
-        lastResult: null,
-        currentDisplayOptions: action.queue[0]
-          ? shuffledDisplayOptions(action.queue[0].o)
-          : [],
-      };
-
     case "OPTION_TOGGLED": {
       if (state.answered) return state;
       const current = state.currentQuestion;

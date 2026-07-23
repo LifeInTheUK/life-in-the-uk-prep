@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { QuizProvider, useQuiz } from "./quiz/QuizContext";
+import { useQuiz } from "./quiz/QuizContext";
+import { canSubmitMulti, isMultiSelect } from "./quiz/derived";
 import QuestionCard from "./quiz/QuestionCard";
 import OptionsList from "./quiz/OptionsList";
 import FeedbackPanel from "./quiz/FeedbackPanel";
@@ -9,8 +10,46 @@ import NavigationBar from "./quiz/NavigationBar";
 import ResultsScreen from "./quiz/ResultsScreen";
 
 function QuizPageInner() {
-  const { state, selectOption, submitMulti } = useQuiz();
+  const { state, start, selectOption, submitMulti, next, restart } = useQuiz();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (state.phase === "loading") start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent): void {
+      if (e.key >= "1" && e.key <= "9") {
+        const idx = Number(e.key) - 1;
+        if (idx < state.currentDisplayOptions.length) {
+          e.preventDefault();
+          selectOption(idx);
+        }
+        return;
+      }
+
+      if (e.key === "Enter" || e.key === " ") {
+        // A focused button already handles Enter/Space natively; only step
+        // in when the key press isn't targeting one, to avoid double-firing.
+        if (document.activeElement instanceof HTMLButtonElement) return;
+
+        if (state.phase === "active" && state.answered) {
+          e.preventDefault();
+          next();
+        } else if (state.phase === "results") {
+          e.preventDefault();
+          restart();
+        } else if (isMultiSelect(state) && canSubmitMulti(state)) {
+          e.preventDefault();
+          submitMulti();
+        }
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [state, selectOption, submitMulti, next, restart]);
 
   useEffect(() => {
     if (!state.currentQuestion) return;
@@ -83,9 +122,7 @@ function QuizPageInner() {
 export default function QuizPage() {
   return (
     <div className="order-2 sm:order-3 flex flex-col sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
-      <QuizProvider>
-        <QuizPageInner />
-      </QuizProvider>
+      <QuizPageInner />
     </div>
   );
 }

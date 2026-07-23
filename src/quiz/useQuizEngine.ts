@@ -1,18 +1,22 @@
-import { useEffect, useReducer } from "react";
+import { useReducer, useRef } from "react";
 import type { Question, SessionQuestion } from "../types";
-import { getSM2, saveSM2, updateGlobalAccuracy, calculateSM2 } from "../sm2";
-import { addResult } from "../history";
+import type { SM2Data } from "../types";
+import { calculateSM2 } from "../sm2";
 import { SESSION_SIZE } from "../config";
 import { initialQuizState, quizReducer } from "./reducer";
-import { clearSession, loadStoredSession, saveSession } from "./session";
 import { loadQuestions } from "./loadQuestions";
 import { useHeaderStats } from "../headerStats";
+import { useProgress } from "../progressContext";
+import { useHistoryState } from "../historyContext";
 
 function isMultiQuestion(q: SessionQuestion): boolean {
   return Array.isArray(q.a);
 }
 
-function buildSessionQueue(questions: Question[]): SessionQuestion[] {
+function buildSessionQueue(
+  questions: Question[],
+  getSM2: (id: number) => SM2Data,
+): SessionQuestion[] {
   const allWithSM2: SessionQuestion[] = questions.map((q) => {
     const sm2Data = getSM2(q.id);
     const accuracy = sm2Data.attempts > 0 ? sm2Data.correct / sm2Data.attempts : 0;
@@ -36,6 +40,7 @@ function buildSessionQueue(questions: Question[]): SessionQuestion[] {
 
 export interface QuizEngine {
   state: ReturnType<typeof quizReducer>;
+  start: () => Promise<void>;
   selectOption: (renderedIdx: number) => void;
   submitMulti: () => void;
   next: () => void;
@@ -45,40 +50,28 @@ export interface QuizEngine {
 export function useQuizEngine(): QuizEngine {
   const [state, dispatch] = useReducer(quizReducer, initialQuizState);
   const { setTotalQuestions, setScore } = useHeaderStats();
+  const { getSM2, recordAnswer } = useProgress();
+  const { recordResult } = useHistoryState();
 
-  useEffect(() => {
-    let ignore = false;
+  // useQuizEngine lives above the /test route (mounted once in app/layout.tsx)
+  // so its state survives navigating away and back. This guard makes start()
+  // idempotent — called from QuizPage's mount effect, it must only actually
+  // build a session the first time, both to avoid clobbering an in-progress
+  // session on remount and to survive React Strict Mode's double-invoke.
+  const startedRef = useRef(false);
 
-    (async () => {
-      const qs = await loadQuestions();
-      if (ignore) return;
+  async function start(): Promise<void> {
+    if (startedRef.current) return;
+    startedRef.current = true;
 
-      dispatch({ type: "QUESTIONS_LOADED", total: qs.length });
-      setTotalQuestions(qs.length);
+    const qs = await loadQuestions();
+    dispatch({ type: "QUESTIONS_LOADED", total: qs.length });
+    setTotalQuestions(qs.length);
 
-      const restored = loadStoredSession();
-      if (restored) {
-        dispatch({
-          type: "SESSION_RESTORED",
-          queue: restored.sessionQueue,
-          firstTryScore: restored.firstTryScore,
-          initialQuestionsCount: restored.initialQuestionsCount,
-        });
-        setScore(restored.firstTryScore, restored.initialQuestionsCount, false);
-      } else {
-        const queue = buildSessionQueue(qs);
-        saveSession({ sessionQueue: queue, firstTryScore: 0, initialQuestionsCount: queue.length });
-        dispatch({ type: "SESSION_STARTED", queue });
-        setScore(0, queue.length, false);
-      }
-      updateGlobalAccuracy();
-    })();
-
-    return () => {
-      ignore = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const queue = buildSessionQueue(qs, getSM2);
+    dispatch({ type: "SESSION_STARTED", queue });
+    setScore(0, queue.length, false);
+  }
 
   function submitAnswer(selected: number | number[]): void {
     const q = state.currentQuestion;
@@ -107,7 +100,7 @@ export function useQuizEngine(): QuizEngine {
       if (isCorrect) qStats.correct = (qStats.correct || 0) + 1;
     }
     const nextSm2 = calculateSM2(q.sm2, isCorrect ? 4 : 1);
-    saveSM2(q.id, {
+    recordAnswer(q.id, {
       ...nextSm2,
       attempts: qStats.attempts,
       correct: qStats.correct,
@@ -118,11 +111,6 @@ export function useQuizEngine(): QuizEngine {
     const updatedQueue = state.sessionQueue.slice(1);
     const newFirstTryScore =
       isCorrect && q.isFirstTry ? state.firstTryScore + 1 : state.firstTryScore;
-    saveSession({
-      sessionQueue: updatedQueue,
-      firstTryScore: newFirstTryScore,
-      initialQuestionsCount: state.initialQuestionsCount,
-    });
 
     dispatch({
       type: "ANSWER_SUBMITTED",
@@ -169,20 +157,17 @@ export function useQuizEngine(): QuizEngine {
 
   function next(): void {
     if (state.sessionQueue.length === 0) {
-      clearSession();
-      addResult(state.firstTryScore, state.initialQuestionsCount);
+      recordResult(state.firstTryScore, state.initialQuestionsCount);
     }
     dispatch({ type: "NEXT_REQUESTED" });
   }
 
   async function restart(): Promise<void> {
-    const qs = await loadQuestions(); // already cached by mount effect
-    const queue = buildSessionQueue(qs);
-    saveSession({ sessionQueue: queue, firstTryScore: 0, initialQuestionsCount: queue.length });
+    const qs = await loadQuestions();
+    const queue = buildSessionQueue(qs, getSM2);
     dispatch({ type: "SESSION_STARTED", queue });
     setScore(0, queue.length, false);
-    updateGlobalAccuracy();
   }
 
-  return { state, selectOption, submitMulti, next, restart };
+  return { state, start, selectOption, submitMulti, next, restart };
 }
