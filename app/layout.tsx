@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import Header from "@/src/Header";
 import AuthSync from "@/src/AuthSync";
+import UpdateBanner from "@/src/UpdateBanner";
 import CookieBanner from "@/src/CookieBanner";
 import { HeaderStatsProvider } from "@/src/headerStats";
 import { ThemeProvider } from "@/src/themeContext";
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                                     <HeaderStatsProvider>
                                         <QuizProvider>
                                             <AuthSync />
+                                            <UpdateBanner />
                                             <Header>{children}</Header>
                                         </QuizProvider>
                                     </HeaderStatsProvider>

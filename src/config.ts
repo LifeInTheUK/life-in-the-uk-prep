@@ -32,3 +32,11 @@ export const SESSION_CORRECT_RATIO = 0.05;
 export const GIT_COMMIT_SHA = (
   process.env.NEXT_PUBLIC_GIT_COMMIT_SHA || ""
 ).slice(0, 7);
+
+// Same value as GIT_COMMIT_SHA above, but read server-side (not baked into
+// the client bundle) — reflects whichever deployment is currently live,
+// unlike the client's frozen build-time value. Used by /api/version to
+// detect when a client's bundle is older than what's currently deployed.
+export const VERCEL_GIT_COMMIT_SHA = (
+  process.env.VERCEL_GIT_COMMIT_SHA || ""
+).slice(0, 7);
