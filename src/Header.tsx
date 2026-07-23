@@ -27,6 +27,34 @@ export default function Header({ children }: { children: ReactNode }) {
   const scoreRef = useRef<HTMLDivElement>(null);
   const prevScore = useRef(scoreCurrent);
 
+  // router.back() can land on a history entry that's the same route with only
+  // the query string changed (e.g. a pagination step) — skip through those so
+  // "Back" always lands on an actual different page. usePathname() doesn't
+  // change (and so won't re-fire an effect keyed on it) when only the query
+  // string changes, so this listens to popstate directly and reads
+  // window.location, which always reflects the real current URL.
+  const backNavigating = useRef(false);
+  const pathnameBeforeBack = useRef<string | null>(null);
+
+  useEffect(() => {
+    function onPopState(): void {
+      if (!backNavigating.current) return;
+      if (window.location.pathname === pathnameBeforeBack.current) {
+        window.history.back();
+      } else {
+        backNavigating.current = false;
+      }
+    }
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  function handleBack(): void {
+    pathnameBeforeBack.current = window.location.pathname;
+    backNavigating.current = true;
+    router.back();
+  }
+
   useEffect(() => {
     const el = scoreRef.current;
     if (!el) return;
@@ -132,7 +160,7 @@ export default function Header({ children }: { children: ReactNode }) {
 
       {!isLanding && !isQuizPage && (
         <button
-          onClick={() => router.back()}
+          onClick={handleBack}
           className="order-2 self-start inline-flex items-center gap-2 px-3 py-2 rounded-full border border-line bg-surface text-sm font-medium text-ink hover:border-accent hover:text-accent transition-colors"
         >
           <svg
