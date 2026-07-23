@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { sql } from "@/src/db";
-import type { Question } from "@/src/types";
+import { getAllQuestions } from "@/src/questionsData";
 import { TOPIC_ORDER, topicLabel } from "@/src/topics";
 import { fuzzyScore } from "@/src/search";
 import SearchBox from "@/src/SearchBox";
@@ -28,19 +27,7 @@ export default async function QuestionsPage({
   const query = (qParam ?? "").trim();
   const isSearching = query.length > 0;
 
-  const rows = await sql`
-    SELECT id, question, options, answer, explanation, topic
-    FROM questions
-    ORDER BY id
-  `;
-  const questions: Question[] = rows.map((row) => ({
-    id: row.id,
-    q: row.question,
-    o: row.options,
-    a: row.answer,
-    ex: row.explanation,
-    topic: row.topic ?? undefined,
-  }));
+  const questions = await getAllQuestions();
 
   const topicsPresent = TOPIC_ORDER.filter((t) =>
     questions.some((q) => q.topic === t),

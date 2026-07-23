@@ -8,6 +8,7 @@ import { useProgress } from "./progressContext";
 import { useHistoryState } from "./historyContext";
 import { useQuiz } from "./quiz/QuizContext";
 import SignInNudge from "./SignInNudge";
+import Skeleton from "./Skeleton";
 
 export default function HomePage() {
   const router = useRouter();
@@ -102,7 +103,11 @@ export default function HomePage() {
           className="rounded-xl border border-line bg-surface p-3 text-center hover:border-accent transition-colors"
         >
           <div className="text-xl font-semibold tabular text-accent">
-            {questionCount ?? "–"}
+            {questionCount === null ? (
+              <Skeleton className="h-6 w-8 mx-auto" />
+            ) : (
+              questionCount
+            )}
           </div>
           <div className="text-[11px] text-muted">Question Bank</div>
         </Link>

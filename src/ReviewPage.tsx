@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useProgress } from "./progressContext";
+import { loadQuestions } from "./quiz/loadQuestions";
 import type { Question, SM2Data } from "./types";
 
 function formatAnswer(o: string[], a: number | number[] | undefined): string {
@@ -75,13 +76,13 @@ const PAGE_SIZE = 15;
 
 export default function ReviewPage() {
   const [attempted, setAttempted] = useState<Attempted[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<"incorrect" | "correct">("incorrect");
   const [page, setPage] = useState(1);
   const { getSM2 } = useProgress();
 
   useEffect(() => {
-    fetch("/api/questions")
-      .then((res) => res.json())
+    loadQuestions()
       .then((qs: Question[]) => {
         const loaded = qs
           .map((question) => ({ question, sm2: getSM2(question.id) }))
@@ -90,7 +91,8 @@ export default function ReviewPage() {
         if (loaded.filter((a) => a.sm2.lastCorrect === false).length === 0) {
           setTab("correct");
         }
-      });
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const incorrect = attempted.filter((a) => a.sm2.lastCorrect === false);
@@ -110,7 +112,11 @@ export default function ReviewPage() {
     <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
       <h2 className="text-lg font-semibold">Review answers</h2>
 
-      {attempted.length === 0 ? (
+      {isLoading ? (
+        <p className="text-sm text-muted py-8 text-center">
+          Loading your review...
+        </p>
+      ) : attempted.length === 0 ? (
         <p className="text-sm text-muted">
           You haven't answered any questions yet — start a test to build up your
           review list.

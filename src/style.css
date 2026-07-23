@@ -49,6 +49,10 @@ button:disabled {
     font-variant-numeric: tabular-nums;
 }
 
+.consent-given #cookie-banner {
+    display: none;
+}
+
 .fade-in {
     animation: fadeIn 0.25s ease-out;
 }

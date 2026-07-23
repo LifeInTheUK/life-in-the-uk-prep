@@ -70,11 +70,24 @@ const THEME_INIT_SCRIPT = `
 })();
 `;
 
+const COOKIE_CONSENT_INIT_SCRIPT = `
+(function () {
+    try {
+        if (localStorage.getItem("ukTestCookieConsent")) {
+            document.documentElement.classList.add("consent-given");
+        }
+    } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
                 <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+                <script
+                    dangerouslySetInnerHTML={{ __html: COOKIE_CONSENT_INIT_SCRIPT }}
+                />
             </head>
             <body className={`${inter.className} min-h-screen text-ink`}>
                 <ThemeProvider>
