@@ -9,3 +9,6 @@ next-env.d.ts
 /playwright-report
 /test-results
 /blob-report
+.DS_Store
+.superpowers
+.claude
