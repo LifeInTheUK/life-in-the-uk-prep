@@ -38,7 +38,7 @@ export async function submitFeedback(
             ),
         });
         if (res.ok) return { ok: true };
-        return { ok: false, rateLimited: res.status === 429 };
+        return { ok: false, rateLimited: res.status === 429 || res.status === 403 };
     } catch {
         return { ok: false, rateLimited: false };
     }

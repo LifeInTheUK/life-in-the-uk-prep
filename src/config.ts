@@ -18,8 +18,7 @@ export const SITE_URL =
 
 // Official test length is 24 questions; override with NEXT_PUBLIC_SESSION_SIZE
 // (e.g. in .env.development) to use a shorter session while developing.
-export const SESSION_SIZE =
-  Number(process.env.NEXT_PUBLIC_SESSION_SIZE) || 24;
+export const SESSION_SIZE = Number(process.env.NEXT_PUBLIC_SESSION_SIZE) || 24;
 
 // Session mix: new questions / questions answered wrong at least once /
 // questions always answered correctly so far. Keeps review resurfacing from
@@ -40,3 +39,40 @@ export const GIT_COMMIT_SHA = (
 export const VERCEL_GIT_COMMIT_SHA = (
   process.env.VERCEL_GIT_COMMIT_SHA || ""
 ).slice(0, 7);
+
+export const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
+// Rate-limit / ban thresholds, overridable in production without a
+// redeploy - each falls back to the value that was previously hardcoded
+// if unset or invalid, so default behavior is unchanged.
+
+// /api/feedback (question reports)
+export const FEEDBACK_RATE_LIMIT_WINDOW_MS =
+  (Number(process.env.FEEDBACK_RATE_LIMIT_WINDOW_MINUTES) || 10) * 60 * 1000;
+// Signed-in users are identifiable/accountable (real account, bannable), so
+// they get a slightly higher ceiling than anonymous IP-keyed requests, whose
+// identity is weaker (shared NAT/proxy IPs) and easier to spoof/rotate.
+export const FEEDBACK_RATE_LIMIT_MAX_SIGNED_IN =
+  Number(process.env.FEEDBACK_RATE_LIMIT_MAX_SIGNED_IN) || 5;
+export const FEEDBACK_RATE_LIMIT_MAX_ANONYMOUS =
+  Number(process.env.FEEDBACK_RATE_LIMIT_MAX_ANONYMOUS) || 2;
+export const FEEDBACK_GLOBAL_MINUTE_MAX =
+  Number(process.env.FEEDBACK_GLOBAL_MINUTE_MAX) || 5;
+export const FEEDBACK_GLOBAL_HOUR_MAX =
+  Number(process.env.FEEDBACK_GLOBAL_HOUR_MAX) || 10;
+
+// /api/app-feedback (general app feedback)
+export const APP_FEEDBACK_RATE_LIMIT_WINDOW_MS =
+  (Number(process.env.APP_FEEDBACK_RATE_LIMIT_WINDOW_MINUTES) || 60) * 60 * 1000;
+export const APP_FEEDBACK_RATE_LIMIT_MAX_PER_IDENTITY =
+  Number(process.env.APP_FEEDBACK_RATE_LIMIT_MAX_PER_IDENTITY) || 1;
+export const APP_FEEDBACK_GLOBAL_MAX =
+  Number(process.env.APP_FEEDBACK_GLOBAL_MAX) || 5;
+
+// Repeat-offender ban rules (lib/rateLimit.ts)
+export const BAN_VIOLATION_THRESHOLD =
+  Number(process.env.BAN_VIOLATION_THRESHOLD) || 3;
+export const BAN_VIOLATION_WINDOW_MS =
+  (Number(process.env.BAN_VIOLATION_WINDOW_MINUTES) || 60) * 60 * 1000;
+export const BAN_DURATION_MS =
+  (Number(process.env.BAN_DURATION_HOURS) || 24) * 60 * 60 * 1000;

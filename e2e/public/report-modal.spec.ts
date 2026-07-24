@@ -40,3 +40,20 @@ test("non-Other categories don't show the textarea and submit without it", async
   await expect(page.locator("textarea")).not.toBeVisible();
   await expect(page.getByRole("button", { name: "Submit" })).toBeEnabled();
 });
+
+test("typing space/digits into the Other textarea types instead of triggering the quiz's keyboard shortcuts", async ({
+  page,
+}) => {
+  await openReportModal(page);
+
+  await page.getByRole("button", { name: "Other" }).click();
+  const textarea = page.locator("textarea");
+  await textarea.click();
+  await textarea.pressSequentially("a 2 b");
+
+  // If the quiz's global keydown handler had intercepted these keys, the
+  // modal would have advanced/restarted the quiz (dismissing the modal) or
+  // selected an option instead of typing - both would fail this assertion.
+  await expect(textarea).toHaveValue("a 2 b");
+  await expect(page.getByRole("button", { name: "Submit" })).toBeVisible();
+});

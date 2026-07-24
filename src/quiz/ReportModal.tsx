@@ -30,7 +30,7 @@ export default function ReportModal({
 
   useEffect(() => {
     if (status !== "done") return;
-    const timer = setTimeout(onClose, 1200);
+    const timer = setTimeout(onClose, 2500);
     return () => clearTimeout(timer);
   }, [status, onClose]);
 

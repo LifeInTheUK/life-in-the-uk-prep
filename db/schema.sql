@@ -56,3 +56,33 @@ CREATE TABLE IF NOT EXISTS feedback_rate_limits (
   count INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (key, window_start)
 );
+
+CREATE TABLE IF NOT EXISTS app_feedback (
+  id BIGSERIAL PRIMARY KEY,
+  user_id TEXT,
+  details TEXT NOT NULL,
+  ip TEXT,
+  created_at BIGINT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS captcha_challenges (
+  token TEXT PRIMARY KEY,
+  answer INTEGER NOT NULL,
+  expires_at BIGINT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rate_limit_violations (
+  key TEXT NOT NULL,
+  endpoint TEXT NOT NULL,
+  occurred_at BIGINT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS rate_limit_violations_key_endpoint_idx
+  ON rate_limit_violations (key, endpoint, occurred_at);
+
+CREATE TABLE IF NOT EXISTS identity_bans (
+  key TEXT NOT NULL,
+  endpoint TEXT NOT NULL,
+  banned_until BIGINT NOT NULL,
+  PRIMARY KEY (key, endpoint)
+);

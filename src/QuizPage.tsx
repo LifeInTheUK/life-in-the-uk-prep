@@ -36,6 +36,18 @@ function QuizPageInner() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent): void {
+      // Don't hijack keystrokes meant for a text field - e.g. ReportModal's
+      // "Other" textarea (mounted on this page via FeedbackPanel), where
+      // typing "1"-"9" or a space should type, not select an option / advance.
+      const target = document.activeElement;
+      if (
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLInputElement ||
+        (target instanceof HTMLElement && target.isContentEditable)
+      ) {
+        return;
+      }
+
       if (e.key >= "1" && e.key <= "9") {
         const idx = Number(e.key) - 1;
         if (idx < state.currentDisplayOptions.length) {

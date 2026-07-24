@@ -9,6 +9,7 @@ import { useHistoryState } from "./historyContext";
 import { useQuiz } from "./quiz/QuizContext";
 import SignInNudge from "./SignInNudge";
 import Skeleton from "./Skeleton";
+import AppFeedbackModal from "./AppFeedbackModal";
 
 export default function HomePage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function HomePage() {
   const [questionCount, setQuestionCount] = useState<number | null>(null);
   const [averageAccuracy, setAverageAccuracy] = useState<number | null>(null);
   const [totalUsers, setTotalUsers] = useState<number | null>(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const hasSession = quizState.phase === "active";
 
@@ -321,6 +323,16 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setShowFeedbackModal(true)}
+        className="text-xs text-muted hover:text-ink transition-colors self-center"
+      >
+        Send feedback
+      </button>
+
+      {showFeedbackModal && <AppFeedbackModal onClose={() => setShowFeedbackModal(false)} />}
     </div>
   );
 }
