@@ -8,7 +8,6 @@
     "build": "next build",
     "start": "next start",
     "analyze": "ANALYZE=true next build",
-    "migrate": "node --experimental-strip-types --env-file=.env.local scripts/migrate-questions.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

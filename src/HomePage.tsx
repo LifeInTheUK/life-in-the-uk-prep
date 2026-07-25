@@ -105,12 +105,22 @@ export default function HomePage() {
         />
       </a>
 
-      <Link
-        href="/test"
-        className="w-full bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
-      >
-        {hasSession ? "Continue Test" : "Start Test"}
-      </Link>
+      {hasSession ? (
+        <Link
+          href="/test"
+          className="w-full bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
+        >
+          Continue Test
+        </Link>
+      ) : (
+        <button
+          type="button"
+          onClick={startNewTest}
+          className="w-full bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-3 px-4 rounded-xl transition-all flex items-center justify-center"
+        >
+          Start Test
+        </button>
+      )}
 
       {hasSession && (
         <button
