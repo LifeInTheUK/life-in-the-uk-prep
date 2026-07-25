@@ -153,7 +153,7 @@ export default async function QuestionsPage({
                   >
                     {correct ? (
                       <svg
-                        className="w-4 h-4 text-good flex-shrink-0"
+                        className="w-4 h-4 text-good shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -166,7 +166,7 @@ export default async function QuestionsPage({
                         />
                       </svg>
                     ) : (
-                      <span className="w-4 h-4 flex-shrink-0" />
+                      <span className="w-4 h-4 shrink-0" />
                     )}
                     {option}
                   </li>

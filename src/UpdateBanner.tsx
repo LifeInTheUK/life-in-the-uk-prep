@@ -57,14 +57,14 @@ export default function UpdateBanner() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => window.location.reload()}
-            className="flex-shrink-0 bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-2 px-4 rounded-xl transition-all"
+            className="shrink-0 bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-2 px-4 rounded-xl transition-all"
           >
             Refresh
           </button>
           <button
             onClick={() => setDismissed(true)}
             aria-label="Dismiss"
-            className="flex-shrink-0 text-white/60 hover:text-white text-sm px-2 py-2"
+            className="shrink-0 text-white/60 hover:text-white text-sm px-2 py-2"
           >
             ×
           </button>

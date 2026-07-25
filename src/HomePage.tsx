@@ -101,7 +101,7 @@ export default function HomePage() {
         <img
           src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
           alt="Buy Me A Coffee"
-          className="h-9 flex-shrink-0"
+          className="h-9 shrink-0"
         />
       </a>
 
@@ -247,7 +247,7 @@ export default function HomePage() {
         <h3 className="text-sm font-semibold">How it works</h3>
 
         <div className="flex gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
+          <div className="shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
             <svg
               className="w-4 h-4"
               fill="none"
@@ -273,7 +273,7 @@ export default function HomePage() {
         </div>
 
         <div className="flex gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
+          <div className="shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
             <svg
               className="w-4 h-4"
               fill="none"
@@ -299,7 +299,7 @@ export default function HomePage() {
         </div>
 
         <div className="flex gap-3">
-          <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
+          <div className="shrink-0 w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
             <svg
               className="w-4 h-4"
               fill="none"

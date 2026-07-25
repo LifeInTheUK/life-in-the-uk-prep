@@ -24,7 +24,7 @@ export default function CookieBanner() {
                 </p>
                 <button
                     onClick={accept}
-                    className="w-full sm:w-auto flex-shrink-0 bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-2 px-4 rounded-xl transition-all"
+                    className="w-full sm:w-auto shrink-0 bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-2 px-4 rounded-xl transition-all"
                 >
                     Accept
                 </button>
