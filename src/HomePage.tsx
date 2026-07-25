@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 import { useProgress } from "./progressContext";
@@ -9,7 +10,8 @@ import { useHistoryState } from "./historyContext";
 import { useQuiz } from "./quiz/QuizContext";
 import SignInNudge from "./SignInNudge";
 import Skeleton from "./Skeleton";
-import AppFeedbackModal from "./AppFeedbackModal";
+
+const AppFeedbackModal = dynamic(() => import("./AppFeedbackModal"), { ssr: false });
 
 export default function HomePage() {
   const router = useRouter();

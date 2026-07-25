@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { authClient } from "@/lib/auth/client";
 import { useQuiz } from "./quiz/QuizContext";
 import { canSubmitMulti, isMultiSelect } from "./quiz/derived";
@@ -9,7 +10,8 @@ import OptionsList from "./quiz/OptionsList";
 import FeedbackPanel from "./quiz/FeedbackPanel";
 import NavigationBar from "./quiz/NavigationBar";
 import ResultsScreen from "./quiz/ResultsScreen";
-import SignInPromptModal from "./quiz/SignInPromptModal";
+
+const SignInPromptModal = dynamic(() => import("./quiz/SignInPromptModal"), { ssr: false });
 
 function QuizPageInner() {
   const { state, start, selectOption, submitMulti, next, restart } = useQuiz();

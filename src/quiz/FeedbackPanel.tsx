@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import type { LastResult } from "./types";
 import { useFeedbackState } from "../feedbackContext";
-import ReportModal from "./ReportModal";
+
+const ReportModal = dynamic(() => import("./ReportModal"), { ssr: false });
 
 export default function FeedbackPanel({ lastResult }: { lastResult: LastResult }) {
   const [reportOpen, setReportOpen] = useState(false);
