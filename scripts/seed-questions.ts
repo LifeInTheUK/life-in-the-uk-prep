@@ -1,9 +1,11 @@
-// scripts/migrate-questions.ts
+// scripts/seed-questions.ts
 //
-// Standalone script — deliberately does not import src/db.ts or
-// src/config.ts. Those files are shared with the Next.js app, whose
-// bundler (moduleResolution: "bundler") forbids ".ts" extensions in
-// relative imports, while this script runs via plain Node
+// Repeatable data seed (idempotent upsert), not a schema migration - run
+// again any time src/questions.ts changes. Standalone script —
+// deliberately does not import src/db.ts or src/config.ts. Those files
+// are shared with the Next.js app, whose bundler
+// (moduleResolution: "bundler") forbids ".ts" extensions in relative
+// imports, while this script runs via plain Node
 // (`node --experimental-strip-types`), whose ESM resolver requires them.
 // Routing this script through src/db.ts would force one or the other to
 // break. Self-contained means it works under both.

@@ -19,8 +19,8 @@ export default function ChangelogPage() {
   }, []);
 
   return (
-    <div className="max-w-xl mx-auto px-4 py-6">
-      <h1 className="text-lg font-semibold mb-4">Changelog</h1>
+    <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
+      <h1 className="text-lg font-semibold">Changelog</h1>
       {releases === null ? (
         <p className="text-sm text-muted">Loading…</p>
       ) : releases.length === 0 ? (

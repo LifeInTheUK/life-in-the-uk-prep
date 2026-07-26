@@ -9,6 +9,8 @@
     "postbuild": "node --experimental-strip-types scripts/record-release.ts",
     "start": "next start",
     "analyze": "ANALYZE=true next build",
+    "migrate": "node --experimental-strip-types --env-file=.env.local scripts/migrate.ts",
+    "seed:questions": "node --experimental-strip-types --env-file=.env.local scripts/seed-questions.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {

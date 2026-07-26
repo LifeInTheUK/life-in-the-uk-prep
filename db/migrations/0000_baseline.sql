@@ -1,4 +1,12 @@
--- db/schema.sql
+-- db/migrations/0000_baseline.sql
+--
+-- Historical baseline: this is every table that existed before the
+-- numbered migration system (scripts/migrate.ts) was introduced, moved
+-- here verbatim from the old db/schema.sql. All statements are idempotent
+-- (IF NOT EXISTS), so re-running this against a database that already has
+-- these tables is always safe. Add new schema changes as
+-- db/migrations/0001_<description>.sql, 0002_<description>.sql, etc -
+-- never edit this file after it's been applied anywhere.
 CREATE TABLE IF NOT EXISTS questions (
   id INTEGER PRIMARY KEY,
   question TEXT NOT NULL,

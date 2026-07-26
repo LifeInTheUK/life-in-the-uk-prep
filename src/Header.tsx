@@ -224,7 +224,9 @@ export default function Header({ children }: { children: ReactNode }) {
       </div>
       {GIT_COMMIT_SHA && (
         <div className="order-5 flex justify-center text-[10px] text-muted/60">
-          v.{GIT_COMMIT_SHA}
+          <Link href="/changelog" className="hover:text-muted transition-colors">
+            v.{GIT_COMMIT_SHA}
+          </Link>
         </div>
       )}
     </div>
