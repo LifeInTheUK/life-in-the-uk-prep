@@ -86,3 +86,13 @@ CREATE TABLE IF NOT EXISTS identity_bans (
   banned_until BIGINT NOT NULL,
   PRIMARY KEY (key, endpoint)
 );
+
+-- Populated automatically by scripts/record-release.ts on every production
+-- Vercel deploy (see CLAUDE.md's "Stale-build detection" section). sha is
+-- truncated to 7 chars to match GIT_COMMIT_SHA/VERCEL_GIT_COMMIT_SHA's
+-- existing convention in src/config.ts.
+CREATE TABLE IF NOT EXISTS releases (
+  sha TEXT PRIMARY KEY,
+  message TEXT NOT NULL,
+  released_at BIGINT NOT NULL
+);

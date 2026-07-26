@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node --experimental-strip-types scripts/record-release.ts",
     "start": "next start",
     "analyze": "ANALYZE=true next build",
     "test:e2e": "playwright test"
