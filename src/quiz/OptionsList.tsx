@@ -51,7 +51,7 @@ export default function OptionsList({
       >
         {displayOptions.map((opt, i) => (
           <OptionButton
-            key={opt.originalIndex}
+            key={`${question.id}-${opt.originalIndex}`}
             idx={i}
             text={opt.text}
             isMulti={isMulti}
