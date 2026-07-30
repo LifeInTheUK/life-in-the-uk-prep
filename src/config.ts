@@ -69,6 +69,12 @@ export const APP_FEEDBACK_RATE_LIMIT_MAX_PER_IDENTITY =
 export const APP_FEEDBACK_GLOBAL_MAX =
   Number(process.env.APP_FEEDBACK_GLOBAL_MAX) || 5;
 
+// /api/friends/add (accepting a friend invite token)
+export const FRIENDS_ADD_RATE_LIMIT_WINDOW_MS =
+  (Number(process.env.FRIENDS_ADD_RATE_LIMIT_WINDOW_MINUTES) || 60) * 60 * 1000;
+export const FRIENDS_ADD_RATE_LIMIT_MAX_PER_IDENTITY =
+  Number(process.env.FRIENDS_ADD_RATE_LIMIT_MAX_PER_IDENTITY) || 20;
+
 // Repeat-offender ban rules (lib/rateLimit.ts)
 export const BAN_VIOLATION_THRESHOLD =
   Number(process.env.BAN_VIOLATION_THRESHOLD) || 3;

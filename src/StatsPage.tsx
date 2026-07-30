@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { authClient } from "@/lib/auth/client";
 import { useHistoryState } from "./historyContext";
 import { useProgress } from "./progressContext";
 import ScoreChart from "./ScoreChart";
@@ -10,6 +12,35 @@ interface GlobalStats {
     totalUsers: number;
     averageAccuracy: number;
     percentile: number | null;
+}
+
+interface FriendEntry {
+    userId: string;
+    name: string | null;
+    image: string | null;
+    accuracy: number;
+    attempts: number;
+    isMe: boolean;
+    accountDeleted: boolean;
+}
+
+function FriendAvatar({ image }: { image: string | null }) {
+    return (
+        <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center overflow-hidden shrink-0">
+            {image ? (
+                <img src={image} alt="" className="w-full h-full object-cover" />
+            ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                </svg>
+            )}
+        </div>
+    );
 }
 
 function tierFor(accuracy: number): { label: string; className: string } {
@@ -22,7 +53,9 @@ function tierFor(accuracy: number): { label: string; className: string } {
 export default function StatsPage() {
     const { history } = useHistoryState();
     const { aggregate } = useProgress();
+    const { data: session } = authClient.useSession();
     const [global, setGlobal] = useState<GlobalStats | null>(null);
+    const [friends, setFriends] = useState<FriendEntry[] | null>(null);
 
     const { attempts, correct } = aggregate;
     const personalAccuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
@@ -34,6 +67,28 @@ export default function StatsPage() {
             .then(setGlobal);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    useEffect(() => {
+        if (!session?.user) {
+            setFriends(null);
+            return;
+        }
+        fetch("/api/friends")
+            .then((res) => res.json())
+            .then((data) => setFriends(data.entries));
+    }, [session?.user]);
+
+    const hasFriends = (friends?.length ?? 0) > 1;
+    const friendsWithAttempts = friends?.filter((f) => !f.isMe && f.attempts > 0) ?? [];
+    const friendsAvgAccuracy =
+        friendsWithAttempts.length > 0
+            ? Math.round(
+                  friendsWithAttempts.reduce((sum, f) => sum + f.accuracy, 0) /
+                      friendsWithAttempts.length,
+              )
+            : null;
+    const friendsDelta =
+        friendsAvgAccuracy !== null ? personalAccuracy - friendsAvgAccuracy : null;
 
     const scores = history.map((h) => Math.round((h.score / h.total) * 100));
     const best = scores.length > 0 ? Math.max(...scores) : 0;
@@ -152,6 +207,54 @@ export default function StatsPage() {
                                 </p>
                             </div>
                         )}
+
+                        {hasAttempts && friendsAvgAccuracy !== null && (
+                            <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-medium">You vs your friends</span>
+                                    <span
+                                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${tier.className}`}
+                                    >
+                                        {tier.label}
+                                    </span>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <div>
+                                        <div className="flex justify-between text-xs text-muted mb-1">
+                                            <span>You</span>
+                                            <span className="tabular">{personalAccuracy}%</span>
+                                        </div>
+                                        <div className="h-2 bg-line rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-accent rounded-full transition-all"
+                                                style={{ width: `${personalAccuracy}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between text-xs text-muted mb-1">
+                                            <span>Friends average</span>
+                                            <span className="tabular">{friendsAvgAccuracy}%</span>
+                                        </div>
+                                        <div className="h-2 bg-line rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-muted rounded-full transition-all"
+                                                style={{ width: `${friendsAvgAccuracy}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p className="text-sm text-muted">
+                                    {friendsDelta === 0
+                                        ? "You're right at your friends' average."
+                                        : friendsDelta! > 0
+                                          ? `You're ${friendsDelta} points above your friends' average.`
+                                          : `You're ${-friendsDelta!} points below your friends' average.`}
+                                </p>
+                            </div>
+                        )}
                     </>
                 )}
 
@@ -161,6 +264,70 @@ export default function StatsPage() {
                     </p>
                 )}
             </div>
+
+            {session?.user && (
+                <div className="flex flex-col gap-3 pt-4 border-t border-line">
+                    <h3 className="text-sm font-semibold text-ink">Friends</h3>
+
+                    {!friends ? (
+                        <p className="text-sm text-muted">Loading friends...</p>
+                    ) : !hasFriends ? (
+                        <p className="text-sm text-muted">
+                            Invite a friend to start comparing scores.
+                        </p>
+                    ) : (
+                        <div className="flex flex-col gap-2">
+                            {friends.map((entry, i) => (
+                                <div
+                                    key={entry.userId}
+                                    className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3"
+                                >
+                                    <div className="w-5 text-center text-sm font-semibold text-muted tabular">
+                                        {i + 1}
+                                    </div>
+                                    <FriendAvatar image={entry.image} />
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-ink truncate">
+                                            {entry.isMe
+                                                ? "You"
+                                                : entry.accountDeleted
+                                                  ? "Deleted user"
+                                                  : (entry.name ?? "Unknown")}
+                                        </p>
+                                        {entry.attempts === 0 ? (
+                                            <p className="text-xs text-muted">No attempts yet</p>
+                                        ) : (
+                                            <p className="text-xs text-muted tabular">
+                                                {entry.accuracy}% accuracy
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <Link
+                        href="/friends"
+                        className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
+                    >
+                        {hasFriends ? "Manage friends" : "Invite a friend"}
+                        <svg
+                            className="w-4 h-4 text-muted"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                    </Link>
+                </div>
+            )}
         </div>
     );
 }
