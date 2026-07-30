@@ -49,7 +49,7 @@ export default function ChangelogPage() {
                   {new Date(r.releasedAt).toLocaleDateString()}
                 </span>
               </div>
-              <p className="text-sm">{r.message}</p>
+              <p className="text-sm whitespace-pre-line">{r.message}</p>
             </li>
           ))}
         </ul>
