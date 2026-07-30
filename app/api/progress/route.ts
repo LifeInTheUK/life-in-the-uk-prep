@@ -46,12 +46,13 @@ export async function POST(request: NextRequest) {
     INSERT INTO progress (user_id, question_id, n, ef, i, next, attempts, correct, last_correct, last_selected)
     VALUES (
       ${session.user.id}, ${id}, ${sm2Data.n}, ${sm2Data.ef}, ${sm2Data.i}, ${sm2Data.next},
-      ${sm2Data.attempts}, ${sm2Data.correct}, ${sm2Data.lastCorrect ?? null},
+      1, ${sm2Data.lastCorrect ? 1 : 0}, ${sm2Data.lastCorrect ?? null},
       ${sm2Data.lastSelected !== undefined ? JSON.stringify(sm2Data.lastSelected) : null}
     )
     ON CONFLICT (user_id, question_id) DO UPDATE SET
       n = EXCLUDED.n, ef = EXCLUDED.ef, i = EXCLUDED.i, next = EXCLUDED.next,
-      attempts = EXCLUDED.attempts, correct = EXCLUDED.correct,
+      attempts = progress.attempts + 1,
+      correct = progress.correct + CASE WHEN EXCLUDED.last_correct THEN 1 ELSE 0 END,
       last_correct = EXCLUDED.last_correct, last_selected = EXCLUDED.last_selected
   `;
 

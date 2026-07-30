@@ -73,6 +73,17 @@ export default function ProfilePage() {
     const best = scores.length > 0 ? Math.max(...scores) : 0;
     const latest = scores.length > 0 ? scores[scores.length - 1] : 0;
 
+    const RECENT_WINDOW = 10;
+    const recentSessions = history.slice(-RECENT_WINDOW);
+    const recentAccuracy =
+        recentSessions.length > 0
+            ? Math.round(
+                  (recentSessions.reduce((sum, h) => sum + h.score, 0) /
+                      recentSessions.reduce((sum, h) => sum + h.total, 0)) *
+                      100,
+              )
+            : 0;
+
     return (
         <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
             <h2 className="text-lg font-semibold">Profile</h2>
@@ -117,7 +128,7 @@ export default function ProfilePage() {
             <div className="flex flex-col gap-3 pt-2 border-t border-line">
                 <h3 className="text-sm font-semibold text-ink">Your progress</h3>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 tabular">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 tabular">
                     <div className="rounded-xl border border-line bg-surface p-3 text-center">
                         <div className="text-xl font-semibold">{history.length}</div>
                         <div className="text-[11px] text-muted">Tests taken</div>
@@ -125,6 +136,12 @@ export default function ProfilePage() {
                     <div className="rounded-xl border border-line bg-surface p-3 text-center">
                         <div className="text-xl font-semibold">{overallAccuracy}%</div>
                         <div className="text-[11px] text-muted">Overall accuracy</div>
+                    </div>
+                    <div className="rounded-xl border border-line bg-surface p-3 text-center">
+                        <div className="text-xl font-semibold">{recentAccuracy}%</div>
+                        <div className="text-[11px] text-muted">
+                            Last {recentSessions.length} test{recentSessions.length === 1 ? "" : "s"}
+                        </div>
                     </div>
                     <div className="rounded-xl border border-line bg-surface p-3 text-center">
                         <div className="text-xl font-semibold text-good">{best}%</div>
