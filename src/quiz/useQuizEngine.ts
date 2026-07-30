@@ -1,4 +1,4 @@
-import { useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import type { Question, SessionQuestion } from "../types";
 import type { SM2Data } from "../types";
 import { calculateSM2 } from "../sm2";
@@ -8,10 +8,41 @@ import {
   SESSION_IMPROVE_RATIO,
 } from "../config";
 import { initialQuizState, quizReducer } from "./reducer";
+import type { QuizState } from "./types";
 import { loadQuestions } from "./loadQuestions";
 import { useHeaderStats } from "../headerStats";
 import { useProgress } from "../progressContext";
 import { useHistoryState } from "../historyContext";
+
+// Persists the in-progress session (queue, current question, score, answered
+// state) across a full page reload — a reload previously always built a
+// fresh randomized queue via buildSessionQueue(), changing the question the
+// user was looking at. sessionStorage (not localStorage) matches the app's
+// existing tab-scoped-only semantics for anonymous session data — it survives
+// a reload but not a closed tab, and never leaks a stale session into a new
+// tab.
+const SESSION_STORAGE_KEY = "quizActiveSession";
+
+// Answer index/explanation are stripped before writing to sessionStorage —
+// both are plaintext-readable via devtools while a question is still
+// unanswered, which would let a user look up the correct answer before
+// picking one. Every other field (question text, options, sm2/accuracy
+// snapshot) is harmless to store since it doesn't reveal correctness.
+// restore() re-fetches the live bank to put `a`/`ex` back into memory (never
+// into storage) before dispatching SESSION_RESTORED, so the app functions
+// exactly as before restoring — OptionsList still needs `question.a` at
+// render time (to detect multi-select and to reveal the correct answer once
+// answered), just never sourced from the persisted snapshot.
+type StorableSessionQuestion = Omit<SessionQuestion, "a" | "ex">;
+type StorableQuizState = Omit<QuizState, "sessionQueue" | "currentQuestion"> & {
+  sessionQueue: StorableSessionQuestion[];
+  currentQuestion: StorableSessionQuestion | null;
+};
+
+function stripAnswer(q: SessionQuestion): StorableSessionQuestion {
+  const { a: _a, ex: _ex, ...rest } = q;
+  return rest;
+}
 
 function isMultiQuestion(q: SessionQuestion): boolean {
   return Array.isArray(q.a);
@@ -114,9 +145,56 @@ export function useQuizEngine(): QuizEngine {
   // session on remount and to survive React Strict Mode's double-invoke.
   const startedRef = useRef(false);
 
+  // Snapshot the active session to sessionStorage on every change (skipped
+  // while phase is "loading" — the pre-start() placeholder state — so a
+  // restore attempt in start() never reads back that placeholder).
+  useEffect(() => {
+    if (state.phase === "loading") return;
+    const storable: StorableQuizState = {
+      ...state,
+      sessionQueue: state.sessionQueue.map(stripAnswer),
+      currentQuestion: state.currentQuestion ? stripAnswer(state.currentQuestion) : null,
+    };
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(storable));
+  }, [state]);
+
   async function start(): Promise<void> {
     if (startedRef.current) return;
     startedRef.current = true;
+
+    const stored = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (stored) {
+      const storable = JSON.parse(stored) as StorableQuizState;
+      const qs = await loadQuestions();
+      const byId = new Map(qs.map((q) => [q.id, q]));
+
+      function rehydrate(sq: StorableSessionQuestion): SessionQuestion | null {
+        const full = byId.get(sq.id);
+        if (!full) return null; // question removed from the bank since this session started
+        return { ...sq, a: full.a, ex: full.ex };
+      }
+
+      const sessionQueue = storable.sessionQueue
+        .map(rehydrate)
+        .filter((q): q is SessionQuestion => q !== null);
+      const currentQuestion = storable.currentQuestion
+        ? rehydrate(storable.currentQuestion)
+        : null;
+
+      // Only trust the restored snapshot if every question it needs still
+      // resolves — a null currentQuestion while phase is "active" means the
+      // bank changed underneath it, so fall through to a fresh session
+      // instead of restoring broken state.
+      if (storable.phase === "results" || currentQuestion !== null) {
+        dispatch({
+          type: "SESSION_RESTORED",
+          snapshot: { ...storable, sessionQueue, currentQuestion },
+        });
+        setTotalQuestions(storable.totalQuestionCount);
+        setScore(storable.firstTryScore, storable.initialQuestionsCount, false);
+        return;
+      }
+    }
 
     const qs = await loadQuestions();
     dispatch({ type: "QUESTIONS_LOADED", total: qs.length });

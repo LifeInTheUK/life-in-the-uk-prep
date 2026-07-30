@@ -8,6 +8,7 @@ import { useHistoryState } from "./historyContext";
 import { useProgress } from "./progressContext";
 import ScoreChart from "./ScoreChart";
 import SignInNudge from "./SignInNudge";
+import Skeleton from "./Skeleton";
 
 export default function ProfilePage() {
     const router = useRouter();
@@ -39,7 +40,31 @@ export default function ProfilePage() {
     if (isPending) {
         return (
             <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
-                <p className="text-sm text-muted">Loading...</p>
+                <h2 className="text-lg font-semibold">Profile</h2>
+
+                <div className="flex items-center gap-4">
+                    <Skeleton className="w-16 h-16 rounded-full shrink-0" />
+                    <div className="min-w-0 flex flex-col gap-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-40" />
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-3 pt-2 border-t border-line">
+                    <Skeleton className="h-4 w-28" />
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="rounded-xl border border-line bg-surface p-3 flex flex-col items-center gap-1"
+                            >
+                                <Skeleton className="h-6 w-10" />
+                                <Skeleton className="h-3 w-14" />
+                            </div>
+                        ))}
+                    </div>
+                    <Skeleton className="h-24 w-full rounded-xl" />
+                </div>
             </div>
         );
     }

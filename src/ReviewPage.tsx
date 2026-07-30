@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useProgress } from "./progressContext";
 import { loadQuestions } from "./quiz/loadQuestions";
 import type { Question, SM2Data } from "./types";
+import Skeleton from "./Skeleton";
 
 function formatAnswer(o: string[], a: number | number[] | undefined): string {
   if (a === undefined) return "—";
@@ -113,9 +114,17 @@ export default function ReviewPage() {
       <h2 className="text-lg font-semibold">Review answers</h2>
 
       {isLoading ? (
-        <p className="text-sm text-muted py-8 text-center">
-          Loading your review...
-        </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-2 border-b border-line pb-2">
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-6 w-20" />
+          </div>
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+          </div>
+        </div>
       ) : attempted.length === 0 ? (
         <p className="text-sm text-muted">
           You haven't answered any questions yet — start a test to build up your

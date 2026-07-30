@@ -6,6 +6,8 @@ import { authClient } from "@/lib/auth/client";
 import { useHistoryState } from "./historyContext";
 import { useProgress } from "./progressContext";
 import ScoreChart from "./ScoreChart";
+import Skeleton from "./Skeleton";
+import FriendRowSkeleton from "./FriendRowSkeleton";
 
 interface GlobalStats {
     totalTests: number;
@@ -39,6 +41,34 @@ function FriendAvatar({ image }: { image: string | null }) {
                     />
                 </svg>
             )}
+        </div>
+    );
+}
+
+function ComparisonCardSkeleton() {
+    return (
+        <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
+            <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
+            <div className="flex flex-col gap-2">
+                <div>
+                    <div className="flex justify-between mb-1">
+                        <Skeleton className="h-3 w-8" />
+                        <Skeleton className="h-3 w-8" />
+                    </div>
+                    <Skeleton className="h-2 w-full rounded-full" />
+                </div>
+                <div>
+                    <div className="flex justify-between mb-1">
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-8" />
+                    </div>
+                    <Skeleton className="h-2 w-full rounded-full" />
+                </div>
+            </div>
+            <Skeleton className="h-4 w-3/4" />
         </div>
     );
 }
@@ -130,7 +160,20 @@ export default function StatsPage() {
                 <h3 className="text-sm font-semibold text-ink">Community</h3>
 
                 {!global ? (
-                    <p className="text-sm text-muted">Loading community stats...</p>
+                    <div className="flex flex-col gap-3">
+                        <div className="grid grid-cols-2 gap-2 tabular">
+                            <div className="rounded-xl border border-line bg-surface p-3 text-center flex flex-col items-center gap-1">
+                                <Skeleton className="h-6 w-10" />
+                                <Skeleton className="h-3 w-24" />
+                            </div>
+                            <div className="rounded-xl border border-line bg-surface p-3 text-center flex flex-col items-center gap-1">
+                                <Skeleton className="h-6 w-10" />
+                                <Skeleton className="h-3 w-20" />
+                            </div>
+                        </div>
+                        {hasAttempts && <ComparisonCardSkeleton />}
+                        {hasAttempts && <ComparisonCardSkeleton />}
+                    </div>
                 ) : !hasCommunityData ? (
                     <p className="text-sm text-muted">
                         Not enough community data yet — check back soon.
@@ -270,7 +313,10 @@ export default function StatsPage() {
                     <h3 className="text-sm font-semibold text-ink">Friends</h3>
 
                     {!friends ? (
-                        <p className="text-sm text-muted">Loading friends...</p>
+                        <div className="flex flex-col gap-2">
+                            <FriendRowSkeleton />
+                            <FriendRowSkeleton />
+                        </div>
                     ) : !hasFriends ? (
                         <p className="text-sm text-muted">
                             Invite a friend to start comparing scores.

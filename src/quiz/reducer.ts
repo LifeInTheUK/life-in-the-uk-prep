@@ -95,6 +95,9 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
       };
     }
 
+    case "SESSION_RESTORED":
+      return action.snapshot;
+
     default:
       return state;
   }

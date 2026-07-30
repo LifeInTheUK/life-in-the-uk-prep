@@ -35,4 +35,5 @@ export type QuizAction =
         newFirstTryScore: number;
       };
     }
-  | { type: "NEXT_REQUESTED" };
+  | { type: "NEXT_REQUESTED" }
+  | { type: "SESSION_RESTORED"; snapshot: QuizState };

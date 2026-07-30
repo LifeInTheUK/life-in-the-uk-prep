@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import SignInNudge from "./SignInNudge";
+import Skeleton from "./Skeleton";
+import FriendRowSkeleton from "./FriendRowSkeleton";
 
 interface FriendEntry {
   userId: string;
@@ -75,7 +77,17 @@ export default function FriendsPage() {
   if (isPending) {
     return (
       <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
-        <p className="text-sm text-muted">Loading...</p>
+        <h2 className="text-lg font-semibold">Friends</h2>
+        <div className="flex flex-col gap-3">
+          <Skeleton className="h-4 w-28" />
+          <Skeleton className="h-4 w-64 max-w-full" />
+          <Skeleton className="h-10 w-full rounded-xl" />
+        </div>
+        <div className="flex flex-col gap-3 pt-4 border-t border-line">
+          <Skeleton className="h-4 w-24" />
+          <FriendRowSkeleton />
+          <FriendRowSkeleton />
+        </div>
       </div>
     );
   }
@@ -132,7 +144,10 @@ export default function FriendsPage() {
         <h3 className="text-sm font-semibold text-ink">Leaderboard</h3>
 
         {!entries ? (
-          <p className="text-sm text-muted">Loading...</p>
+          <div className="flex flex-col gap-2">
+            <FriendRowSkeleton />
+            <FriendRowSkeleton />
+          </div>
         ) : !hasFriends ? (
           <p className="text-sm text-muted">
             Invite a friend to start comparing scores.

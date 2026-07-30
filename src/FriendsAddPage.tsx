@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import SignInNudge from "./SignInNudge";
+import Skeleton from "./Skeleton";
 
 interface InviteInfo {
   inviterId: string;
@@ -57,7 +58,9 @@ export default function FriendsAddPage() {
   if (isPending || invite === null) {
     return (
       <div className={wrapperClass}>
-        <p className="text-sm text-muted">Loading...</p>
+        <h2 className="text-lg font-semibold">Add Friend</h2>
+        <Skeleton className="h-4 w-64 max-w-full" />
+        <Skeleton className="h-10 w-32 rounded-xl" />
       </div>
     );
   }

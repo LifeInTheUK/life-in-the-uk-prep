@@ -22,6 +22,7 @@ export default function HomePage() {
   const [questionCount, setQuestionCount] = useState<number | null>(null);
   const [averageAccuracy, setAverageAccuracy] = useState<number | null>(null);
   const [totalUsers, setTotalUsers] = useState<number | null>(null);
+  const [loadingGlobalStats, setLoadingGlobalStats] = useState(true);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   const hasSession = quizState.phase === "active";
@@ -52,6 +53,7 @@ export default function HomePage() {
         if (attempts > 0 && data.totalUsers > 0) {
           setAverageAccuracy(data.averageAccuracy);
         }
+        setLoadingGlobalStats(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -204,14 +206,20 @@ export default function HomePage() {
           >
             <span>
               Your stats
-              {delta !== null && (
-                <span className="block text-xs font-normal text-muted mt-0.5">
-                  {delta === 0
-                    ? "You're right at the average."
-                    : delta > 0
-                      ? `You're ${delta} points above the average user.`
-                      : `You're ${-delta} points below the average user.`}
+              {loadingGlobalStats ? (
+                <span className="block mt-1">
+                  <Skeleton className="h-3 w-48 max-w-full" />
                 </span>
+              ) : (
+                delta !== null && (
+                  <span className="block text-xs font-normal text-muted mt-0.5">
+                    {delta === 0
+                      ? "You're right at the average."
+                      : delta > 0
+                        ? `You're ${delta} points above the average user.`
+                        : `You're ${-delta} points below the average user.`}
+                  </span>
+                )
               )}
             </span>
             <svg
