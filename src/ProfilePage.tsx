@@ -219,6 +219,26 @@ export default function ProfilePage() {
                         />
                     </svg>
                 </Link>
+
+                <Link
+                    href="/propose-question"
+                    className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
+                >
+                    Propose a new question
+                    <svg
+                        className="w-4 h-4 text-muted"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M9 5l7 7-7 7"
+                        />
+                    </svg>
+                </Link>
             </div>
 
             <div className="flex flex-col gap-2 pt-2 border-t border-line">

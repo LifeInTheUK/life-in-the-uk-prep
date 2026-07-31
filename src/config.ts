@@ -75,6 +75,12 @@ export const FRIENDS_ADD_RATE_LIMIT_WINDOW_MS =
 export const FRIENDS_ADD_RATE_LIMIT_MAX_PER_IDENTITY =
   Number(process.env.FRIENDS_ADD_RATE_LIMIT_MAX_PER_IDENTITY) || 20;
 
+// /api/propose-question (signed-in users suggesting new questions)
+export const PROPOSE_QUESTION_RATE_LIMIT_WINDOW_MS =
+  (Number(process.env.PROPOSE_QUESTION_RATE_LIMIT_WINDOW_MINUTES) || 60) * 60 * 1000;
+export const PROPOSE_QUESTION_RATE_LIMIT_MAX_PER_IDENTITY =
+  Number(process.env.PROPOSE_QUESTION_RATE_LIMIT_MAX_PER_IDENTITY) || 5;
+
 // Repeat-offender ban rules (lib/rateLimit.ts)
 export const BAN_VIOLATION_THRESHOLD =
   Number(process.env.BAN_VIOLATION_THRESHOLD) || 3;
