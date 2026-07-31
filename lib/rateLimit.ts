@@ -23,11 +23,22 @@ export async function incrementRateLimit(key: string, windowMs: number): Promise
       SET count = feedback_rate_limits.count + 1
     RETURNING count
   `;
+
+  // Opportunistic sweep, same pattern as the captcha_challenges sweep in
+  // GET /api/captcha - keeps feedback_rate_limits bounded without a cron job.
+  // Longest configured window is 1h, so 24h is a safe buffer, not a tight
+  // coupling to any specific window size.
+  await sql`DELETE FROM feedback_rate_limits WHERE window_start < ${Date.now() - 24 * 60 * 60 * 1000}`;
+
   return Number(count);
 }
 
 // Checks whether (key, endpoint) is currently under an active ban.
 export async function checkBanned(key: string, endpoint: string): Promise<boolean> {
+  // Opportunistic sweep, same pattern as the captcha_challenges sweep in
+  // GET /api/captcha - keeps identity_bans bounded without a cron job.
+  await sql`DELETE FROM identity_bans WHERE banned_until < ${Date.now()}`;
+
   const [row] = await sql`
     SELECT banned_until FROM identity_bans WHERE key = ${key} AND endpoint = ${endpoint}
   `;
@@ -45,6 +56,12 @@ export async function recordViolationAndMaybeBan(key: string, endpoint: string):
     INSERT INTO rate_limit_violations (key, endpoint, occurred_at)
     VALUES (${key}, ${endpoint}, ${now})
   `;
+
+  // Opportunistic sweep, same pattern as the captcha_challenges sweep in
+  // GET /api/captcha - keeps rate_limit_violations bounded without a cron
+  // job. Ban lookback (BAN_VIOLATION_WINDOW_MS) is only ~1h, so 24h is a
+  // safe buffer, not a tight coupling to that window.
+  await sql`DELETE FROM rate_limit_violations WHERE occurred_at < ${now - 24 * 60 * 60 * 1000}`;
 
   const [{ count }] = await sql`
     SELECT COUNT(*) AS count FROM rate_limit_violations
