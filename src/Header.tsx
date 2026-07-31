@@ -85,17 +85,12 @@ export default function Header({ children }: { children: ReactNode }) {
               Sign out
             </button>
           ) : (
-            <button
-              onClick={() =>
-                authClient.signIn.social({
-                  provider: "google",
-                  callbackURL: "/",
-                })
-              }
+            <Link
+              href="/sign-in?callbackURL=/"
               className="text-xs font-medium text-muted hover:text-ink transition-colors"
             >
               Sign in
-            </button>
+            </Link>
           )}
           {session?.user ? (
             <Link
@@ -127,13 +122,8 @@ export default function Header({ children }: { children: ReactNode }) {
               )}
             </Link>
           ) : (
-            <button
-              onClick={() =>
-                authClient.signIn.social({
-                  provider: "google",
-                  callbackURL: "/profile",
-                })
-              }
+            <Link
+              href="/sign-in?callbackURL=/profile"
               className="shrink-0 w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center hover:bg-accent-dark transition-colors overflow-hidden"
               title="Sign in"
               aria-label="Sign in"
@@ -151,7 +141,7 @@ export default function Header({ children }: { children: ReactNode }) {
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 />
               </svg>
-            </button>
+            </Link>
           )}
         </div>
       </div>

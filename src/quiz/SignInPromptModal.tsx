@@ -1,6 +1,6 @@
 "use client";
 
-import { authClient } from "@/lib/auth/client";
+import Link from "next/link";
 
 export default function SignInPromptModal({
   score,
@@ -39,14 +39,12 @@ export default function SignInPromptModal({
           profile.
         </p>
         <div className="flex gap-2">
-          <button
-            onClick={() =>
-              authClient.signIn.social({ provider: "google", callbackURL: "/test" })
-            }
-            className="flex-1 bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-2 px-4 rounded-xl transition-all"
+          <Link
+            href="/sign-in?callbackURL=/test"
+            className="flex-1 text-center bg-accent hover:bg-accent-dark active:scale-[0.98] text-white font-medium text-sm py-2 px-4 rounded-xl transition-all"
           >
-            Sign in with Google
-          </button>
+            Sign in
+          </Link>
           <button
             onClick={onClose}
             className="text-sm font-medium text-muted hover:text-ink px-3 transition-colors"
