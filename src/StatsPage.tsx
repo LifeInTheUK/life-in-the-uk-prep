@@ -7,7 +7,6 @@ import { useHistoryState } from "./historyContext";
 import { useProgress } from "./progressContext";
 import ScoreChart from "./ScoreChart";
 import Skeleton from "./Skeleton";
-import FriendRowSkeleton from "./FriendRowSkeleton";
 
 interface GlobalStats {
     totalTests: number;
@@ -109,16 +108,9 @@ export default function StatsPage() {
     }, [session?.user]);
 
     const hasFriends = (friends?.length ?? 0) > 1;
-    const friendsWithAttempts = friends?.filter((f) => !f.isMe && f.attempts > 0) ?? [];
-    const friendsAvgAccuracy =
-        friendsWithAttempts.length > 0
-            ? Math.round(
-                  friendsWithAttempts.reduce((sum, f) => sum + f.accuracy, 0) /
-                      friendsWithAttempts.length,
-              )
-            : null;
-    const friendsDelta =
-        friendsAvgAccuracy !== null ? personalAccuracy - friendsAvgAccuracy : null;
+    const friendsList = friends?.filter((f) => !f.isMe) ?? [];
+    const friendsByAccuracy = [...friendsList].sort((a, b) => b.accuracy - a.accuracy);
+    const me = friends?.find((f) => f.isMe);
 
     const scores = history.map((h) => Math.round((h.score / h.total) * 100));
     const best = scores.length > 0 ? Math.max(...scores) : 0;
@@ -251,51 +243,72 @@ export default function StatsPage() {
                             </div>
                         )}
 
-                        {hasAttempts && friendsAvgAccuracy !== null && (
+                        {hasAttempts && friendsByAccuracy.length > 0 && (
                             <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">You vs your friends</span>
-                                    <span
-                                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${tier.className}`}
-                                    >
-                                        {tier.label}
-                                    </span>
-                                </div>
+                                <span className="text-sm font-medium">You vs your friends</span>
 
-                                <div className="flex flex-col gap-2">
-                                    <div>
-                                        <div className="flex justify-between text-xs text-muted mb-1">
-                                            <span>You</span>
-                                            <span className="tabular">{personalAccuracy}%</span>
-                                        </div>
-                                        <div className="h-2 bg-line rounded-full overflow-hidden">
+                                <div className="flex flex-col gap-2.5">
+                                    <div className="flex items-center gap-2">
+                                        <FriendAvatar image={me?.image ?? null} />
+                                        <span className="text-xs font-semibold text-ink truncate w-20 shrink-0">
+                                            You
+                                        </span>
+                                        <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-accent rounded-full transition-all"
                                                 style={{ width: `${personalAccuracy}%` }}
                                             />
                                         </div>
+                                        <span className="text-xs tabular text-ink w-9 text-right shrink-0">
+                                            {personalAccuracy}%
+                                        </span>
+                                        <span className="text-xs tabular text-muted w-8 text-right shrink-0" />
                                     </div>
-                                    <div>
-                                        <div className="flex justify-between text-xs text-muted mb-1">
-                                            <span>Friends average</span>
-                                            <span className="tabular">{friendsAvgAccuracy}%</span>
-                                        </div>
-                                        <div className="h-2 bg-line rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-muted rounded-full transition-all"
-                                                style={{ width: `${friendsAvgAccuracy}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <p className="text-sm text-muted">
-                                    {friendsDelta === 0
-                                        ? "You're right at your friends' average."
-                                        : friendsDelta! > 0
-                                          ? `You're ${friendsDelta} points above your friends' average.`
-                                          : `You're ${-friendsDelta!} points below your friends' average.`}
-                                </p>
+                                    {friendsByAccuracy.map((friend) => {
+                                        const friendDelta = personalAccuracy - friend.accuracy;
+                                        const name = friend.accountDeleted
+                                            ? "Deleted user"
+                                            : (friend.name ?? "Unknown");
+                                        return (
+                                            <div
+                                                key={friend.userId}
+                                                className="flex items-center gap-2"
+                                            >
+                                                <FriendAvatar image={friend.image} />
+                                                <span className="text-xs font-medium text-ink truncate w-20 shrink-0">
+                                                    {name}
+                                                </span>
+                                                {friend.attempts === 0 ? (
+                                                    <span className="flex-1 text-xs text-muted">
+                                                        No attempts yet
+                                                    </span>
+                                                ) : (
+                                                    <>
+                                                        <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-muted rounded-full transition-all"
+                                                                style={{
+                                                                    width: `${friend.accuracy}%`,
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-xs tabular text-ink w-9 text-right shrink-0">
+                                                            {friend.accuracy}%
+                                                        </span>
+                                                        <span className="text-xs tabular text-muted w-8 text-right shrink-0">
+                                                            {friendDelta === 0
+                                                                ? "±0"
+                                                                : friendDelta > 0
+                                                                  ? `+${friendDelta}`
+                                                                  : friendDelta}
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         )}
                     </>
@@ -309,50 +322,7 @@ export default function StatsPage() {
             </div>
 
             {session?.user && (
-                <div className="flex flex-col gap-3 pt-4 border-t border-line">
-                    <h3 className="text-sm font-semibold text-ink">Friends</h3>
-
-                    {!friends ? (
-                        <div className="flex flex-col gap-2">
-                            <FriendRowSkeleton />
-                            <FriendRowSkeleton />
-                        </div>
-                    ) : !hasFriends ? (
-                        <p className="text-sm text-muted">
-                            Invite a friend to start comparing scores.
-                        </p>
-                    ) : (
-                        <div className="flex flex-col gap-2">
-                            {friends.map((entry, i) => (
-                                <div
-                                    key={entry.userId}
-                                    className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3"
-                                >
-                                    <div className="w-5 text-center text-sm font-semibold text-muted tabular">
-                                        {i + 1}
-                                    </div>
-                                    <FriendAvatar image={entry.image} />
-                                    <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-ink truncate">
-                                            {entry.isMe
-                                                ? "You"
-                                                : entry.accountDeleted
-                                                  ? "Deleted user"
-                                                  : (entry.name ?? "Unknown")}
-                                        </p>
-                                        {entry.attempts === 0 ? (
-                                            <p className="text-xs text-muted">No attempts yet</p>
-                                        ) : (
-                                            <p className="text-xs text-muted tabular">
-                                                {entry.accuracy}% accuracy
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
+                <div className="pt-4 border-t border-line">
                     <Link
                         href="/friends"
                         className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"

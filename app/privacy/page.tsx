@@ -11,7 +11,7 @@ export default function PrivacyPage() {
                 <h2 className="text-lg font-semibold text-ink mb-1">
                     Privacy Policy
                 </h2>
-                <p className="text-xs text-muted">Last updated: 22 July 2026</p>
+                <p className="text-xs text-muted">Last updated: 31 July 2026</p>
             </div>
 
             <p>
@@ -38,6 +38,14 @@ export default function PrivacyPage() {
                     address, and profile photo from Google, and use your
                     Google account to identify you and link it to your
                     synced progress.
+                </p>
+                <p>
+                    <strong className="text-ink">Feedback and reports.</strong>{" "}
+                    If you report a question, submit a question proposal, or
+                    send app feedback, we store the text you submit along
+                    with your IP address. We use the IP address to prevent
+                    abuse (e.g. rate-limiting and blocking repeated spam
+                    submissions) — it isn't used for any other purpose.
                 </p>
                 <p>
                     <strong className="text-ink">Analytics.</strong> We use

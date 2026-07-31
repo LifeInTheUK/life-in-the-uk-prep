@@ -106,10 +106,12 @@ export default function SignInPage() {
 
     let data;
     try {
+      const avatarUrl = `https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(email.trim().toLowerCase())}`;
       ({ data } = await authClient.signUp.email({
         email,
         password,
         name: name.trim(),
+        image: avatarUrl,
         callbackURL,
       }));
     } catch (err) {
