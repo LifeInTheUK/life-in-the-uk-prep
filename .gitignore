@@ -14,4 +14,3 @@ next-env.d.ts
 .claude
 .playwright-mcp
 /db/questions-export.json
-/db/*.pdf
