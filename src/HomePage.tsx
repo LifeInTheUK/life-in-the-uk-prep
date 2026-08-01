@@ -10,6 +10,7 @@ import { useHistoryState } from "./historyContext";
 import { useQuiz } from "./quiz/QuizContext";
 import SignInNudge from "./SignInNudge";
 import Skeleton from "./Skeleton";
+import NavCard from "./NavCard";
 
 const AppFeedbackModal = dynamic(() => import("./AppFeedbackModal"), { ssr: false });
 
@@ -133,129 +134,108 @@ export default function HomePage() {
         </button>
       )}
 
-      <div className="grid grid-cols-3 gap-2 tabular">
+      <div className="rounded-xl border border-line bg-surface p-4 flex divide-x divide-line tabular">
         <Link
           href="/questions"
-          className="rounded-xl border border-line bg-surface p-3 text-center hover:border-accent transition-colors"
+          className="flex-1 flex flex-col items-center gap-1.5 px-2 group"
         >
-          <div className="text-xl font-semibold tabular text-accent">
+          <div className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+              />
+            </svg>
+          </div>
+          <div className="text-lg font-semibold text-ink group-hover:text-accent transition-colors">
             {questionCount === null ? (
-              <Skeleton className="h-6 w-8 mx-auto" />
+              <Skeleton className="h-5 w-8 mx-auto" />
             ) : (
               questionCount
             )}
           </div>
           <div className="text-[11px] text-muted">Question Bank</div>
         </Link>
-        <div className="rounded-xl border border-line bg-surface p-3 text-center">
-          <div className="text-xl font-semibold">{accuracy}%</div>
+
+        <div className="flex-1 flex flex-col items-center gap-1.5 px-2">
+          <div
+            className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              !hasAttempts
+                ? "bg-line text-muted"
+                : accuracy >= 75
+                  ? "bg-good-soft text-good"
+                  : accuracy >= 50
+                    ? "bg-accent/10 text-accent"
+                    : "bg-bad-soft text-bad"
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div className="text-lg font-semibold text-ink">{accuracy}%</div>
           <div className="text-[11px] text-muted">Accuracy</div>
         </div>
-        <div className="rounded-xl border border-line bg-surface p-3 text-center">
-          <div className="text-xl font-semibold">{testsCompleted}</div>
+
+        <div className="flex-1 flex flex-col items-center gap-1.5 px-2">
+          <div className="w-8 h-8 rounded-lg bg-line text-muted flex items-center justify-center">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+              />
+            </svg>
+          </div>
+          <div className="text-lg font-semibold text-ink">{testsCompleted}</div>
           <div className="text-[11px] text-muted">Tests</div>
         </div>
       </div>
 
-      <Link
-        href="/profile"
-        className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
-      >
-        Your profile
-        <svg
-          className="w-4 h-4 text-muted"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M9 5l7 7-7 7"
-          />
-        </svg>
-      </Link>
-
       <div className="flex flex-col gap-2">
-        <Link
-          href="/propose-question"
-          className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
-        >
-          Propose a question
-          <svg
-            className="w-4 h-4 text-muted"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </Link>
         {hasAttempts && (
-          <Link
-            href="/review"
-            className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
-          >
-            Review answers
-            <svg
-              className="w-4 h-4 text-muted"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </Link>
-        )}
-        {hasAttempts && (
-          <Link
+          <NavCard
             href="/stats"
-            className="flex items-center justify-between p-3 rounded-xl border border-line hover:border-accent transition-colors text-sm font-medium"
-          >
-            <span>
-              Your stats
-              {loadingGlobalStats ? (
-                <span className="block mt-1">
-                  <Skeleton className="h-3 w-48 max-w-full" />
-                </span>
+            title="Your stats"
+            subtitle={
+              loadingGlobalStats ? (
+                <Skeleton className="h-3 w-48 max-w-full" />
               ) : (
-                delta !== null && (
-                  <span className="block text-xs font-normal text-muted mt-0.5">
-                    {delta === 0
-                      ? "You're right at the average."
-                      : delta > 0
-                        ? `You're ${delta} points above the average user.`
-                        : `You're ${-delta} points below the average user.`}
-                  </span>
-                )
-              )}
-            </span>
-            <svg
-              className="w-4 h-4 text-muted shrink-0"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </Link>
+                delta !== null &&
+                (delta === 0
+                  ? "You're right at the average."
+                  : delta > 0
+                    ? `You're ${delta} points above the average user.`
+                    : `You're ${-delta} points below the average user.`)
+              )
+            }
+          />
         )}
+        {hasAttempts && (
+          <NavCard
+            href="/review"
+            title="Review answers"
+            subtitle="See every question you've gotten right or wrong"
+          />
+        )}
+        <NavCard
+          href="/profile"
+          title="Your profile"
+          subtitle="Account settings and sign-in"
+        />
+        <NavCard
+          href="/propose-question"
+          title="Propose a question"
+          subtitle="Suggest a question for the question bank"
+        />
         {!isPending && !session?.user ? (
           <SignInNudge
             title={

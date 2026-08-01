@@ -296,6 +296,9 @@ export function useQuizEngine(): QuizEngine {
 
   async function restart(): Promise<void> {
     const qs = await loadQuestions();
+    dispatch({ type: "QUESTIONS_LOADED", total: qs.length });
+    setTotalQuestions(qs.length);
+
     const queue = buildSessionQueue(qs, getSM2);
     dispatch({ type: "SESSION_STARTED", queue });
     setScore(0, queue.length, false);

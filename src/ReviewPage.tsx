@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useProgress } from "./progressContext";
 import { loadQuestions } from "./quiz/loadQuestions";
 import type { Question, SM2Data } from "./types";
 import Skeleton from "./Skeleton";
+import SearchBox from "./SearchBox";
 
 function formatAnswer(o: string[], a: number | number[] | undefined): string {
   if (a === undefined) return "—";
@@ -81,6 +83,8 @@ export default function ReviewPage() {
   const [tab, setTab] = useState<"incorrect" | "correct">("incorrect");
   const [page, setPage] = useState(1);
   const { getSM2 } = useProgress();
+  const searchParams = useSearchParams();
+  const query = (searchParams.get("q") ?? "").trim().toLowerCase();
 
   useEffect(() => {
     loadQuestions()
@@ -96,8 +100,11 @@ export default function ReviewPage() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const incorrect = attempted.filter((a) => a.sm2.lastCorrect === false);
-  const correct = attempted.filter((a) => a.sm2.lastCorrect === true);
+  const filtered = query
+    ? attempted.filter((a) => a.question.q.toLowerCase().includes(query))
+    : attempted;
+  const incorrect = filtered.filter((a) => a.sm2.lastCorrect === false);
+  const correct = filtered.filter((a) => a.sm2.lastCorrect === true);
   const shown = tab === "incorrect" ? incorrect : correct;
   const totalPages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -108,6 +115,10 @@ export default function ReviewPage() {
     setTab(next);
     setPage(1);
   }
+
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
 
   return (
     <div className="order-3 flex flex-col gap-6 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
@@ -132,6 +143,8 @@ export default function ReviewPage() {
         </p>
       ) : (
         <>
+          <SearchBox />
+
           <div className="flex gap-2 border-b border-line" role="tablist">
             <button
               role="tab"
@@ -160,7 +173,9 @@ export default function ReviewPage() {
           </div>
 
           {shown.length === 0 ? (
-            <p className="text-sm text-muted">Nothing here yet.</p>
+            <p className="text-sm text-muted">
+              {query ? "No matching questions." : "Nothing here yet."}
+            </p>
           ) : (
             <>
               <ul className="flex flex-col gap-3">

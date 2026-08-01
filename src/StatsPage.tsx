@@ -5,7 +5,11 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import { useHistoryState } from "./historyContext";
 import { useProgress } from "./progressContext";
+import { useTheme } from "./themeContext";
+import { CHART_TOKENS } from "./muiTheme";
 import ScoreChart from "./ScoreChart";
+import StatGauge from "./StatGauge";
+import TopicAccuracyChart from "./TopicAccuracyChart";
 import Skeleton from "./Skeleton";
 
 interface GlobalStats {
@@ -81,8 +85,10 @@ function tierFor(accuracy: number): { label: string; className: string } {
 
 export default function StatsPage() {
     const { history } = useHistoryState();
-    const { aggregate } = useProgress();
+    const { aggregate, getAllProgress } = useProgress();
     const { data: session } = authClient.useSession();
+    const { isDark } = useTheme();
+    const chartTokens = isDark ? CHART_TOKENS.dark : CHART_TOKENS.light;
     const [global, setGlobal] = useState<GlobalStats | null>(null);
     const [friends, setFriends] = useState<FriendEntry[] | null>(null);
 
@@ -110,11 +116,22 @@ export default function StatsPage() {
     const hasFriends = (friends?.length ?? 0) > 1;
     const friendsList = friends?.filter((f) => !f.isMe) ?? [];
     const friendsByAccuracy = [...friendsList].sort((a, b) => b.accuracy - a.accuracy);
-    const me = friends?.find((f) => f.isMe);
 
     const scores = history.map((h) => Math.round((h.score / h.total) * 100));
     const best = scores.length > 0 ? Math.max(...scores) : 0;
     const latest = scores.length > 0 ? scores[scores.length - 1] : 0;
+
+    const RECENT_WINDOW = 50;
+    const recentSessions = history.slice(-RECENT_WINDOW);
+    const recentAccuracy =
+        recentSessions.length > 0
+            ? Math.round(
+                  (recentSessions.reduce((sum, h) => sum + h.score, 0) /
+                      recentSessions.reduce((sum, h) => sum + h.total, 0)) *
+                      100,
+              )
+            : 0;
+
     const tier = tierFor(personalAccuracy);
     const delta = global ? personalAccuracy - global.averageAccuracy : 0;
     const hasCommunityData = !!global && global.totalUsers > 0;
@@ -126,26 +143,24 @@ export default function StatsPage() {
             <div className="flex flex-col gap-3">
                 <h3 className="text-sm font-semibold text-ink">Your progress</h3>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 tabular">
-                    <div className="rounded-xl border border-line bg-surface p-3 text-center">
-                        <div className="text-xl font-semibold">{history.length}</div>
-                        <div className="text-[11px] text-muted">Tests taken</div>
-                    </div>
-                    <div className="rounded-xl border border-line bg-surface p-3 text-center">
-                        <div className="text-xl font-semibold">{personalAccuracy}%</div>
-                        <div className="text-[11px] text-muted">Your accuracy</div>
-                    </div>
-                    <div className="rounded-xl border border-line bg-surface p-3 text-center">
-                        <div className="text-xl font-semibold text-good">{best}%</div>
-                        <div className="text-[11px] text-muted">Best score</div>
-                    </div>
-                    <div className="rounded-xl border border-line bg-surface p-3 text-center">
-                        <div className="text-xl font-semibold">{latest}%</div>
-                        <div className="text-[11px] text-muted">Latest score</div>
-                    </div>
+                <div className="rounded-xl border border-line bg-surface p-3 text-center tabular">
+                    <div className="text-xl font-semibold">{history.length}</div>
+                    <div className="text-[11px] text-muted">Tests taken</div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <StatGauge value={personalAccuracy} label="Overall accuracy" />
+                    <StatGauge
+                        value={recentAccuracy}
+                        label={`Last ${recentSessions.length} test${recentSessions.length === 1 ? "" : "s"}`}
+                    />
+                    <StatGauge value={best} label="Best score" />
+                    <StatGauge value={latest} label="Latest score" />
                 </div>
 
                 <ScoreChart history={history} />
+
+                <TopicAccuracyChart progress={getAllProgress()} />
             </div>
 
             <div className="flex flex-col gap-3 pt-4 border-t border-line">
@@ -192,7 +207,7 @@ export default function StatsPage() {
                         </div>
 
                         {hasAttempts && (
-                            <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
+                            <div className="flex flex-col gap-4 rounded-xl border border-line bg-surface p-4">
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm font-medium">You vs average</span>
                                     <span
@@ -202,36 +217,50 @@ export default function StatsPage() {
                                     </span>
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <div>
-                                        <div className="flex justify-between text-xs text-muted mb-1">
-                                            <span>You</span>
-                                            <span className="tabular">{personalAccuracy}%</span>
-                                        </div>
-                                        <div className="h-2 bg-line rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-accent rounded-full transition-all"
-                                                style={{ width: `${personalAccuracy}%` }}
+                                <div className="flex items-center justify-center gap-6">
+                                    <StatGauge
+                                        value={personalAccuracy}
+                                        label="You"
+                                        size={112}
+                                        variant="bare"
+                                    />
+                                    <div
+                                        className={`flex flex-col items-center gap-0.5 shrink-0 tabular ${
+                                            delta === 0
+                                                ? "text-muted"
+                                                : delta > 0
+                                                  ? "text-good"
+                                                  : "text-bad"
+                                        }`}
+                                    >
+                                        <svg
+                                            className={`w-5 h-5 ${delta < 0 ? "rotate-180" : ""}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth="2.5"
+                                                d="M12 19V5m0 0l-6 6m6-6l6 6"
                                             />
-                                        </div>
+                                        </svg>
+                                        <span className="text-lg font-bold">
+                                            {delta === 0 ? "±0" : `${Math.abs(delta)}`}
+                                        </span>
+                                        <span className="text-[10px] text-muted">points</span>
                                     </div>
-                                    <div>
-                                        <div className="flex justify-between text-xs text-muted mb-1">
-                                            <span>Average</span>
-                                            <span className="tabular">
-                                                {global.averageAccuracy}%
-                                            </span>
-                                        </div>
-                                        <div className="h-2 bg-line rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-muted rounded-full transition-all"
-                                                style={{ width: `${global.averageAccuracy}%` }}
-                                            />
-                                        </div>
-                                    </div>
+                                    <StatGauge
+                                        value={global.averageAccuracy}
+                                        label="Average"
+                                        size={112}
+                                        color={chartTokens.muted}
+                                        variant="bare"
+                                    />
                                 </div>
 
-                                <p className="text-sm text-muted">
+                                <p className="text-sm text-muted text-center">
                                     {delta === 0
                                         ? "You're right at the average."
                                         : delta > 0
@@ -243,74 +272,101 @@ export default function StatsPage() {
                             </div>
                         )}
 
-                        {hasAttempts && friendsByAccuracy.length > 0 && (
-                            <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
-                                <span className="text-sm font-medium">You vs your friends</span>
+                        {hasAttempts && friendsByAccuracy.length > 0 && (() => {
+                            const rankedFriends = friendsByAccuracy.filter(
+                                (f) => f.attempts > 0,
+                            );
+                            const unrankedFriends = friendsByAccuracy.filter(
+                                (f) => f.attempts === 0,
+                            );
+                            const nameFor = (f: FriendEntry) =>
+                                f.accountDeleted ? "Deleted user" : (f.name ?? "Unknown");
 
-                                <div className="flex flex-col gap-2.5">
-                                    <div className="flex items-center gap-2">
-                                        <FriendAvatar image={me?.image ?? null} />
-                                        <span className="text-xs font-semibold text-ink truncate w-20 shrink-0">
-                                            You
-                                        </span>
-                                        <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
+                            const leaderboard = [
+                                {
+                                    key: "me",
+                                    label: "You",
+                                    value: personalAccuracy,
+                                    image: session?.user.image ?? null,
+                                    isMe: true,
+                                },
+                                ...rankedFriends.map((f) => ({
+                                    key: f.userId,
+                                    label: nameFor(f),
+                                    value: f.accuracy,
+                                    image: f.image,
+                                    isMe: false,
+                                })),
+                            ].sort((a, b) => b.value - a.value);
+
+                            const MEDALS = ["🥇", "🥈", "🥉"];
+
+                            return (
+                                <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4">
+                                    <span className="text-sm font-medium">
+                                        You vs your friends
+                                    </span>
+
+                                    <div className="flex flex-col gap-1">
+                                        {leaderboard.map((entry, i) => (
                                             <div
-                                                className="h-full bg-accent rounded-full transition-all"
-                                                style={{ width: `${personalAccuracy}%` }}
-                                            />
-                                        </div>
-                                        <span className="text-xs tabular text-ink w-9 text-right shrink-0">
-                                            {personalAccuracy}%
-                                        </span>
-                                        <span className="text-xs tabular text-muted w-8 text-right shrink-0" />
+                                                key={entry.key}
+                                                className={`flex items-center gap-2.5 rounded-lg px-2 py-1.5 ${
+                                                    entry.isMe
+                                                        ? "bg-accent/10 ring-1 ring-accent/30"
+                                                        : ""
+                                                }`}
+                                            >
+                                                <span className="w-5 text-center text-xs font-semibold text-muted shrink-0">
+                                                    {MEDALS[i] ?? `#${i + 1}`}
+                                                </span>
+                                                <FriendAvatar image={entry.image} />
+                                                <span
+                                                    className={`text-xs truncate w-16 shrink-0 ${
+                                                        entry.isMe
+                                                            ? "font-semibold text-accent"
+                                                            : "font-medium text-ink"
+                                                    }`}
+                                                >
+                                                    {entry.label}
+                                                </span>
+                                                <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`h-full rounded-full transition-all ${
+                                                            entry.isMe ? "bg-accent" : "bg-muted"
+                                                        }`}
+                                                        style={{ width: `${entry.value}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-xs font-semibold tabular text-ink w-9 text-right shrink-0">
+                                                    {entry.value}%
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
 
-                                    {friendsByAccuracy.map((friend) => {
-                                        const friendDelta = personalAccuracy - friend.accuracy;
-                                        const name = friend.accountDeleted
-                                            ? "Deleted user"
-                                            : (friend.name ?? "Unknown");
-                                        return (
-                                            <div
-                                                key={friend.userId}
-                                                className="flex items-center gap-2"
-                                            >
-                                                <FriendAvatar image={friend.image} />
-                                                <span className="text-xs font-medium text-ink truncate w-20 shrink-0">
-                                                    {name}
-                                                </span>
-                                                {friend.attempts === 0 ? (
-                                                    <span className="flex-1 text-xs text-muted">
+                                    {unrankedFriends.length > 0 && (
+                                        <div className="flex flex-col gap-1.5 pt-2 border-t border-line">
+                                            {unrankedFriends.map((f) => (
+                                                <div
+                                                    key={f.userId}
+                                                    className="flex items-center gap-2.5 px-2"
+                                                >
+                                                    <span className="w-5 shrink-0" />
+                                                    <FriendAvatar image={f.image} />
+                                                    <span className="text-xs font-medium text-ink truncate w-16 shrink-0">
+                                                        {nameFor(f)}
+                                                    </span>
+                                                    <span className="text-xs text-muted">
                                                         No attempts yet
                                                     </span>
-                                                ) : (
-                                                    <>
-                                                        <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
-                                                            <div
-                                                                className="h-full bg-muted rounded-full transition-all"
-                                                                style={{
-                                                                    width: `${friend.accuracy}%`,
-                                                                }}
-                                                            />
-                                                        </div>
-                                                        <span className="text-xs tabular text-ink w-9 text-right shrink-0">
-                                                            {friend.accuracy}%
-                                                        </span>
-                                                        <span className="text-xs tabular text-muted w-8 text-right shrink-0">
-                                                            {friendDelta === 0
-                                                                ? "±0"
-                                                                : friendDelta > 0
-                                                                  ? `+${friendDelta}`
-                                                                  : friendDelta}
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </>
                 )}
 

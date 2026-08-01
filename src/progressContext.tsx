@@ -24,6 +24,7 @@ function computeAggregate(data: Record<number, SM2Data>): Aggregate {
 interface ProgressValue {
   aggregate: Aggregate;
   getSM2: (id: number) => SM2Data;
+  getAllProgress: () => Record<number, SM2Data>;
   recordAnswer: (id: number, sm2Data: SM2Data) => void;
   refreshFromServer: () => Promise<void>;
   reset: () => void;
@@ -38,6 +39,7 @@ export function ProgressProvider({ children }: { children: ReactNode }) {
   const value: ProgressValue = {
     aggregate,
     getSM2: (id) => (data[id] ? { ...data[id] } : { ...DEFAULT_SM2 }),
+    getAllProgress: () => data,
     recordAnswer: (id, sm2Data) => {
       setData((prev) => ({ ...prev, [id]: sm2Data }));
       postProgress(id, sm2Data);

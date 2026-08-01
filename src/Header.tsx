@@ -64,7 +64,12 @@ export default function Header({ children }: { children: ReactNode }) {
       el.textContent = `${scoreCurrent} / ${scoreTotal}`;
     }
     prevScore.current = scoreCurrent;
-  }, [scoreCurrent, scoreTotal, animateScore]);
+    // isQuizPage is a dep so this re-syncs once the score <div> actually
+    // mounts — if scoreCurrent/scoreTotal changed while still on another
+    // route (e.g. restart() called from the home page before navigating to
+    // /test), this effect fires with scoreRef.current still null and no-ops,
+    // and won't fire again once the node exists unless something re-triggers it.
+  }, [scoreCurrent, scoreTotal, animateScore, isQuizPage]);
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-5">
