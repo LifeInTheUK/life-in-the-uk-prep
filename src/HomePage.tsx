@@ -79,9 +79,9 @@ export default function HomePage() {
             {totalUsers === 1 ? "person" : "people"} preparing for their test
           </span>
         )}
-        <h2 className="text-xl font-semibold mb-1">
+        <h1 className="text-xl font-semibold mb-1">
           Prepare for the Life in the UK Test
-        </h2>
+        </h1>
         <p className="text-sm text-muted">
           Free practice questions covering UK history, culture, government and
           traditions — with spaced repetition to help you focus on what you

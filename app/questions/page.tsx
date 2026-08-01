@@ -70,7 +70,7 @@ export default async function QuestionsPage({
   return (
     <div className="order-3 flex flex-col gap-5 sm:bg-surface sm:rounded-2xl sm:border sm:border-line sm:shadow-lg sm:shadow-slate-200/60 dark:shadow-none py-2 sm:p-7">
       <div>
-        <h2 className="text-lg font-semibold">Question Bank</h2>
+        <h1 className="text-lg font-semibold">Question Bank</h1>
         <p className="text-xs text-muted mt-1">
           {questions.length} questions and answers, organised by category
         </p>
