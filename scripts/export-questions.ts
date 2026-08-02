@@ -2,9 +2,12 @@
 //
 // Dumps the live `questions` table to a gitignored JSON file
 // (db/questions-export.json) for manual review/editing, then re-synced
-// back via scripts/sync-questions.ts. Standalone script (own neon()
-// client, no src/db.ts import) for the same reason as
-// scripts/seed-questions.ts - see that file's header comment.
+// back via scripts/sync-questions.ts. Standalone script - deliberately
+// does not import src/db.ts or src/config.ts. Those files are shared
+// with the Next.js app, whose bundler (moduleResolution: "bundler")
+// forbids ".ts" extensions in relative imports, while this script runs
+// via plain Node (`node --experimental-strip-types`), whose ESM
+// resolver requires them. Self-contained means it works under both.
 //
 // Reads DATABASE_URL from the environment like every other script here.
 // The npm script defaults to dev (.env.local); to export prod, run with

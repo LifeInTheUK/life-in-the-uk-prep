@@ -2,8 +2,10 @@
 //
 // Reads db/questions-export.json (produced by scripts/export-questions.ts
 // and hand-edited for review) and upserts every row into `questions` by
-// id - same INSERT ... ON CONFLICT (id) DO UPDATE shape as
-// scripts/seed-questions.ts. Rows present in the DB but absent from the
+// id - INSERT ... ON CONFLICT (id) DO UPDATE. This is the only way
+// question content gets into the table (no static in-repo source), so
+// it's also the bootstrap path for a freshly-migrated, empty `questions`
+// table. Rows present in the DB but absent from the
 // file are left untouched (never deleted): questions.id is referenced by
 // progress.question_id/feedback.question_id (see
 // db/migrations/0000_baseline.sql), so this script never removes rows -

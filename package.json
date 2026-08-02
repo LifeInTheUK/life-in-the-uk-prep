@@ -12,7 +12,6 @@
     "check-updates": "npx npm-check-updates -i",
     "analyze": "ANALYZE=true next build",
     "migrate": "node --experimental-strip-types --env-file=.env.local scripts/migrate.ts",
-    "seed:questions": "node --experimental-strip-types --env-file=.env.local scripts/seed-questions.ts",
     "export:questions": "node --experimental-strip-types --env-file=.env.local scripts/export-questions.ts",
     "sync:questions": "node --experimental-strip-types --env-file=.env.local scripts/sync-questions.ts",
     "test:e2e": "playwright test"
