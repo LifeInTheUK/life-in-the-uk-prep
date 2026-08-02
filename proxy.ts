@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // same-origin (or same-site behind a proxy), which curl/scripts/other sites
 // don't send. This raises the bar against casual scraping/direct API access;
 // it can't stop a script that deliberately replicates browser headers.
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const secFetchSite = request.headers.get("sec-fetch-site");
   if (secFetchSite === "same-origin" || secFetchSite === "same-site") {
     return NextResponse.next();
