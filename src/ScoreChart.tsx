@@ -1,33 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
+import type { ScaleLinear } from "@mui/x-charts-vendor/d3-scale";
 import { ThemeProvider } from "@mui/material/styles";
-import { LineChart } from "@mui/x-charts/LineChart";
+import {
+  LineChart,
+  lineClasses,
+  MarkElement,
+  type MarkElementProps,
+} from "@mui/x-charts/LineChart";
 import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
+import { useYScale, useDrawingArea } from "@mui/x-charts/hooks";
 import type { TestResult } from "./history";
 import { useTheme } from "./themeContext";
 import { getMuiTheme, CHART_TOKENS } from "./muiTheme";
 
-const PASS_RATIO = 0.75;
+const PASS_MARK = 75;
 const DEFAULT_VISIBLE_TESTS = 15;
-// A softer, more sophisticated red than the app's shared --color-bad token
-// (used for status chips/gauges) — chosen specifically for this chart's fill.
-const INCORRECT_COLOR = { light: "#f43f5e", dark: "#fb7185" };
-// High-contrast neutral so the trend line reads clearly against every fill
-// color (indigo/green/rose) regardless of theme.
-const TREND_COLOR = { light: "#0f172a", dark: "#f8fafc" };
 
-function movingAverage(values: number[], window: number): number[] {
-  return values.map((_, i) => {
-    const start = Math.max(0, i - window + 1);
-    const slice = values.slice(start, i + 1);
-    return slice.reduce((sum, v) => sum + v, 0) / slice.length;
-  });
+function PassFailGradient({
+  id,
+  color1,
+  color2,
+}: {
+  id: string;
+  color1: string;
+  color2: string;
+}) {
+  const { top, height, bottom } = useDrawingArea();
+  const svgHeight = top + bottom + height;
+  const scale = useYScale() as ScaleLinear<number, number>;
+  const y0 = scale(PASS_MARK);
+  const off = y0 !== undefined ? y0 / svgHeight : 0;
+
+  return (
+    <defs>
+      <linearGradient
+        id={id}
+        x1="0"
+        x2="0"
+        y1="0"
+        y2={`${svgHeight}px`}
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop offset={off} stopColor={color1} stopOpacity={1} />
+        <stop offset={off} stopColor={color2} stopOpacity={1} />
+      </linearGradient>
+    </defs>
+  );
+}
+
+type ScoreMarkData = { scores: number[]; tokens: typeof CHART_TOKENS.light };
+
+function useScoreMark(data: ScoreMarkData) {
+  const dataRef = useRef<ScoreMarkData>(data);
+  dataRef.current = data;
+
+  const markRef =
+    useRef<(props: MarkElementProps) => React.JSX.Element>(undefined);
+  if (!markRef.current) {
+    markRef.current = (props: MarkElementProps) => {
+      const { scores, tokens } = dataRef.current;
+      const passed = scores[props.dataIndex] >= PASS_MARK;
+      return (
+        <MarkElement {...props} color={passed ? tokens.good : tokens.bad} />
+      );
+    };
+  }
+  return markRef.current;
 }
 
 export default function ScoreChart({ history }: { history: TestResult[] }) {
   const { isDark } = useTheme();
   const [showAll, setShowAll] = useState(false);
+
+  const hasMore = history.length > DEFAULT_VISIBLE_TESTS;
+  const isCapped = !showAll && hasMore;
+  const visibleHistory = isCapped
+    ? history.slice(-DEFAULT_VISIBLE_TESTS)
+    : history;
+  const offset = history.length - visibleHistory.length;
+
+  const labels = visibleHistory.map((_, i) => `Test ${offset + i + 1}`);
+  const scores = visibleHistory.map((h) =>
+    h.total > 0 ? Math.round((h.score / h.total) * 100) : 0,
+  );
+  const correctAnswers = visibleHistory.map((h) => h.score);
+  const totals = visibleHistory.map((h) => h.total);
+  const tokens = isDark ? CHART_TOKENS.dark : CHART_TOKENS.light;
+  const ScoreMark = useScoreMark({ scores, tokens });
+  const reactId = useId();
+  const gradientId = `score-chart-pass-fail-${reactId}`;
 
   if (history.length === 0) {
     return (
@@ -37,118 +100,77 @@ export default function ScoreChart({ history }: { history: TestResult[] }) {
     );
   }
 
-  const isCapped = !showAll && history.length > DEFAULT_VISIBLE_TESTS;
-  const visibleHistory = isCapped
-    ? history.slice(-DEFAULT_VISIBLE_TESTS)
-    : history;
-  const offset = history.length - visibleHistory.length;
-
-  const labels = visibleHistory.map((_, i) => `Test ${offset + i + 1}`);
-  const tokens = isDark ? CHART_TOKENS.dark : CHART_TOKENS.light;
-  const sessionSize = Math.max(...history.map((h) => h.total));
-  const passLine = sessionSize * PASS_RATIO;
-  const correctBelowPass = visibleHistory.map((h) =>
-    Math.min(h.score, passLine),
-  );
-  const correctAbovePass = visibleHistory.map((h) =>
-    Math.max(h.score - passLine, 0),
-  );
-  const incorrect = visibleHistory.map((h) => h.total - h.score);
-  // Expanding average across exactly the tests currently visible (toggled by
-  // "Show full history" / "Show last N") — not a fixed rolling window, so the
-  // line always reflects the full range the user has selected.
-  const trend = movingAverage(
-    visibleHistory.map((h) => h.score),
-    visibleHistory.length,
-  );
-
   return (
     <div>
       <ThemeProvider theme={getMuiTheme(isDark)}>
         <LineChart
-          height={270}
+          height={250}
           xAxis={[{ data: labels, scaleType: "point" }]}
           yAxis={[
             {
               min: 0,
-              max: sessionSize,
+              max: 100,
+              width: 0,
+              disableLine: true,
+              disableTicks: true,
             },
           ]}
           series={[
             {
-              id: "correctBelowPass",
-              label: "Correct",
-              data: correctBelowPass,
-              color: tokens.accent,
+              id: "score",
+              label: "Score",
+              data: scores,
+              color: tokens.ink,
               area: true,
-              stack: "total",
-              showMark: false,
-              curve: "stepAfter",
-            },
-            {
-              id: "correctAbovePass",
-              label: "Above pass mark",
-              data: correctAbovePass,
-              color: tokens.good,
-              area: true,
-              stack: "total",
-              showMark: false,
-              curve: "stepAfter",
-            },
-            {
-              id: "incorrect",
-              label: "Incorrect",
-              data: incorrect,
-              color: isDark ? INCORRECT_COLOR.dark : INCORRECT_COLOR.light,
-              area: true,
-              stack: "total",
-              showMark: false,
-              curve: "stepAfter",
-            },
-            {
-              id: "trend",
-              label: "Trend",
-              data: trend,
-              color: isDark ? TREND_COLOR.dark : TREND_COLOR.light,
-              showMark: false,
+              showMark: true,
               curve: "monotoneX",
+              valueFormatter: (v: number | null, { dataIndex }) =>
+                v === null
+                  ? ""
+                  : `${v}% (${correctAnswers[dataIndex]}/${totals[dataIndex]} correct)`,
             },
           ]}
           grid={{ horizontal: true }}
-          margin={{ left: 0, right: 0, top: 0, bottom: 0 }}
+          margin={{ left: 0, right: 0, top: 10, bottom: 0 }}
+          slots={{ mark: ScoreMark }}
           sx={{
-            "& .MuiLineChart-area[data-series-id='correctBelowPass']": {
-              fillOpacity: 0.85,
-            },
-            "& .MuiLineChart-area[data-series-id='correctAbovePass']": {
-              fillOpacity: 0.85,
-            },
-            "& .MuiLineChart-area[data-series-id='incorrect']": {
-              fillOpacity: 0.6,
-            },
-            "& .MuiLineChart-line[data-series-id='correctBelowPass'], & .MuiLineChart-line[data-series-id='correctAbovePass'], & .MuiLineChart-line[data-series-id='incorrect']":
-              {
-                stroke: "none",
-              },
-            "& .MuiLineChart-line[data-series-id='trend']": {
-              strokeWidth: 2.5,
-            },
-            "& .MuiLineChart-area": {
+            [`& .${lineClasses.area}`]: {
+              fill: `url(#${gradientId})`,
+              fillOpacity: 0.55,
               filter: "none",
             },
-          }}
-        >
-          <ChartsReferenceLine
-            y={passLine}
-            lineStyle={{
-              stroke: tokens.ink,
-              strokeDasharray: "6 4",
+            [`& .${lineClasses.line}`]: {
               strokeWidth: 2,
+            },
+          }}
+          hideLegend
+        >
+          <PassFailGradient
+            id={gradientId}
+            color1={tokens.good}
+            color2={tokens.bad}
+          />
+          <ChartsReferenceLine
+            y={PASS_MARK}
+            label="Pass mark (75%)"
+            labelAlign="start"
+            labelStyle={{
+              fontSize: 11,
+              fontWeight: 600,
+              fill: tokens.ink,
+              stroke: tokens.surface,
+              strokeWidth: 4,
+              paintOrder: "stroke",
+            }}
+            lineStyle={{
+              stroke: tokens.muted,
+              strokeDasharray: "6 4",
+              strokeWidth: 1.5,
             }}
           />
         </LineChart>
       </ThemeProvider>
-      {history.length > DEFAULT_VISIBLE_TESTS && (
+      {hasMore && (
         <div className="mt-3 flex justify-center">
           <button
             type="button"
