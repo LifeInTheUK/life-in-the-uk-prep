@@ -1,5 +1,3 @@
-import { getAuthState } from "./authState";
-
 export interface TestResult {
     timestamp: number;
     score: number;
@@ -7,13 +5,11 @@ export interface TestResult {
 }
 
 export function postHistory(result: TestResult): void {
-    if (getAuthState()) {
-        fetch("/api/history", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(result),
-        }).catch(() => {});
-    }
+    fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(result),
+    }).catch(() => {});
 }
 
 export async function fetchHistoryFromServer(): Promise<TestResult[]> {

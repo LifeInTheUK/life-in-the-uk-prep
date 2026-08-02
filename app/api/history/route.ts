@@ -29,15 +29,13 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     const { data: session } = await auth.getSession();
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const userId = session?.user?.id ?? null;
 
     const result = (await request.json()) as TestResult;
 
     await sql`
       INSERT INTO history (user_id, score, total, completed_at)
-      VALUES (${session.user.id}, ${result.score}, ${result.total}, ${result.timestamp})
+      VALUES (${userId}, ${result.score}, ${result.total}, ${result.timestamp})
     `;
 
     return NextResponse.json({ ok: true });

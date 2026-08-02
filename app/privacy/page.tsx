@@ -12,7 +12,7 @@ export default function PrivacyPage() {
                 <h1 className="text-lg font-semibold text-ink mb-1">
                     Privacy Policy
                 </h1>
-                <p className="text-xs text-muted">Last updated: 31 July 2026</p>
+                <p className="text-xs text-muted">Last updated: 2 August 2026</p>
             </div>
 
             <p>
@@ -25,20 +25,34 @@ export default function PrivacyPage() {
                 <h3 className="font-semibold text-ink">What we collect</h3>
                 <p>
                     <strong className="text-ink">Quiz progress.</strong> Your
-                    answers, spaced-repetition scheduling data, and test
-                    history are stored in your browser's local storage. If
-                    you sign in, this data is also synced to our database so
-                    it follows you across devices. If you later delete your
-                    account, this synced data is kept in anonymized form for
+                    answers and spaced-repetition scheduling data are kept in
+                    memory in your browser for the current tab only, and
+                    aren't sent to us unless you sign in. If you sign in,
+                    this data is also synced to our database so it follows
+                    you across devices. If you later delete your account,
+                    this synced data is kept in anonymized form for
                     aggregate statistics, unless you separately request full
                     erasure.
+                </p>
+                <p>
+                    <strong className="text-ink">Test completions.</strong>{" "}
+                    Whether or not you're signed in, we record that a test
+                    was completed and its score, so we can report aggregate
+                    usage (e.g. how many tests have been taken). If you're
+                    signed out, this record isn't linked to you in any way —
+                    no name, email, or IP address is stored alongside it.
                 </p>
                 <p>
                     <strong className="text-ink">Account information.</strong>{" "}
                     If you sign in with Google, we receive your name, email
                     address, and profile photo from Google, and use your
                     Google account to identify you and link it to your
-                    synced progress.
+                    synced progress. If you sign in with email and password
+                    instead, we store the email address and a securely
+                    hashed password you provide, and use that email address
+                    to send you account-related emails (a verification code
+                    when you sign up, and a password-reset code if you
+                    request one).
                 </p>
                 <p>
                     <strong className="text-ink">Feedback and reports.</strong>{" "}
@@ -77,6 +91,12 @@ export default function PrivacyPage() {
                     and Neon (database storage for synced progress and
                     account data).
                 </p>
+                <p>
+                    If you use the friends feature, adding a friend shares
+                    your name and overall accuracy with that friend on a
+                    leaderboard — this is visible to friends you've added,
+                    not the public.
+                </p>
             </section>
 
             <section className="flex flex-col gap-2">
@@ -85,7 +105,9 @@ export default function PrivacyPage() {
                 </h3>
                 <p>
                     You can use the app fully without signing in — in that
-                    case, nothing leaves your browser. If you've signed in,
+                    case, the only thing we record is an anonymous count of
+                    completed tests (see "Test completions" above), nothing
+                    that identifies you. If you've signed in,
                     you can permanently delete your account at any time from
                     your{" "}
                     <a
