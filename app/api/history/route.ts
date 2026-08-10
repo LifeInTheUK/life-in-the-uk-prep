@@ -11,20 +11,28 @@ export async function GET() {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const rows = await sql`
-      SELECT score, total, completed_at
-      FROM history
-      WHERE user_id = ${session.user.id}
-      ORDER BY completed_at DESC
-      LIMIT ${MAX_ENTRIES}
-    `;
+    const [rows, countRows] = await Promise.all([
+        sql`
+          SELECT score, total, completed_at
+          FROM history
+          WHERE user_id = ${session.user.id}
+          ORDER BY completed_at DESC
+          LIMIT ${MAX_ENTRIES}
+        `,
+        sql`
+          SELECT COUNT(*) AS count
+          FROM history
+          WHERE user_id = ${session.user.id}
+        `,
+    ]);
 
-    const data: TestResult[] = rows.map((row) => ({
+    const entries: TestResult[] = rows.map((row) => ({
         timestamp: Number(row.completed_at),
         score: row.score,
         total: row.total,
     }));
-    return NextResponse.json(data);
+    const total = Number(countRows[0].count);
+    return NextResponse.json({ entries, total });
 }
 
 export async function POST(request: NextRequest) {

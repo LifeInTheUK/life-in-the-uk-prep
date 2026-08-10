@@ -18,7 +18,7 @@ export default function HomePage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const { aggregate } = useProgress();
-  const { history } = useHistoryState();
+  const { totalCount } = useHistoryState();
   const { state: quizState, restart } = useQuiz();
   const [questionCount, setQuestionCount] = useState<number | null>(null);
   const [averageAccuracy, setAverageAccuracy] = useState<number | null>(null);
@@ -35,7 +35,7 @@ export default function HomePage() {
 
   const { attempts, correct } = aggregate;
   const accuracy = attempts > 0 ? Math.round((correct / attempts) * 100) : 0;
-  const testsCompleted = history.length;
+  const testsCompleted = totalCount;
   const hasAttempts = attempts > 0;
 
   useEffect(() => {

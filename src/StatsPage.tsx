@@ -106,7 +106,7 @@ function tierFor(accuracy: number): { label: string; className: string } {
 }
 
 export default function StatsPage() {
-  const { history } = useHistoryState();
+  const { history, totalCount } = useHistoryState();
   const { aggregate, getAllProgress } = useProgress();
   const { data: session } = authClient.useSession();
   const { isDark } = useTheme();
@@ -203,7 +203,7 @@ export default function StatsPage() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              {history.length}
+              {totalCount}
             </div>
             <div className="text-[11px] text-muted">Tests taken</div>
           </div>

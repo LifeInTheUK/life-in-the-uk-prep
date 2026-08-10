@@ -12,12 +12,17 @@ export function postHistory(result: TestResult): void {
     }).catch(() => {});
 }
 
-export async function fetchHistoryFromServer(): Promise<TestResult[]> {
+export interface HistoryResponse {
+    entries: TestResult[];
+    total: number;
+}
+
+export async function fetchHistoryFromServer(): Promise<HistoryResponse> {
     try {
         const res = await fetch("/api/history");
-        if (!res.ok) return [];
+        if (!res.ok) return { entries: [], total: 0 };
         return await res.json();
     } catch {
-        return [];
+        return { entries: [], total: 0 };
     }
 }
