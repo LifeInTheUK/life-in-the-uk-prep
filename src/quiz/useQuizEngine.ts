@@ -229,6 +229,7 @@ export function useQuizEngine(): QuizEngine {
     const id = setInterval(() => {
       if (Date.now() - startedAt >= SESSION_TIME_LIMIT_MS) {
         dispatch({ type: "TIME_EXPIRED" });
+        setSessionTimer(null, 0);
       }
     }, 1000);
     return () => clearInterval(id);
@@ -268,7 +269,10 @@ export function useQuizEngine(): QuizEngine {
         });
         setTotalQuestions(storable.totalQuestionCount);
         setScore(storable.firstTryScore, storable.initialQuestionsCount, false);
-        setSessionTimer(storable.startedAt, SESSION_TIME_LIMIT_MS);
+        setSessionTimer(
+          storable.phase === "active" ? storable.startedAt : null,
+          SESSION_TIME_LIMIT_MS,
+        );
         return;
       }
     }
@@ -369,6 +373,7 @@ export function useQuizEngine(): QuizEngine {
   function next(): void {
     if (state.sessionQueue.length === 0) {
       recordResult(state.firstTryScore, state.initialQuestionsCount);
+      setSessionTimer(null, 0);
     }
     dispatch({ type: "NEXT_REQUESTED" });
   }
