@@ -7,9 +7,11 @@ import { launchConfetti } from "./confetti";
 export default function ResultsScreen({
   firstTryScore,
   initialQuestionsCount,
+  timedOut,
 }: {
   firstTryScore: number;
   initialQuestionsCount: number;
+  timedOut: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scoreRef = useRef<HTMLSpanElement>(null);
@@ -45,6 +47,11 @@ export default function ResultsScreen({
         </svg>
       </div>
       <h2 className="text-xl font-semibold mb-2">{passed ? "Test passed" : "Test failed"}</h2>
+      {timedOut && (
+        <p className="text-xs font-medium text-bad mb-2">
+          Time&apos;s up — the 45-minute limit was reached before you finished.
+        </p>
+      )}
       <p className="text-sm text-muted mb-6">
         {passed
           ? "You met the 75% requirement for the official test."

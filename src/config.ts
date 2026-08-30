@@ -20,12 +20,32 @@ export const SITE_URL =
 // (e.g. in .env.development) to use a shorter session while developing.
 export const SESSION_SIZE = Number(process.env.NEXT_PUBLIC_SESSION_SIZE) || 24;
 
+// Official test allows 45 minutes; override with
+// NEXT_PUBLIC_SESSION_TIME_LIMIT_MINUTES for faster dev/e2e runs, same reason
+// SESSION_SIZE is overridable.
+export const SESSION_TIME_LIMIT_MINUTES =
+  Number(process.env.NEXT_PUBLIC_SESSION_TIME_LIMIT_MINUTES) || 45;
+export const SESSION_TIME_LIMIT_MS = SESSION_TIME_LIMIT_MINUTES * 60 * 1000;
+
 // Session mix: new questions / questions answered wrong at least once /
 // questions always answered correctly so far. Keeps review resurfacing from
 // session one instead of only after the whole bank has been seen.
 export const SESSION_NEW_RATIO = 0.8;
 export const SESSION_IMPROVE_RATIO = 0.15;
 export const SESSION_CORRECT_RATIO = 0.05;
+
+// Chapter-weighted quotas mirroring the official test's per-chapter ranges
+// out of 24: Ch1 Values & Principles 2-3 (using 3), Ch2 UK Overview 3-4 (3),
+// Ch3 History 8-10 (9), Ch4 Culture 4-5 (4), Ch5 Government & Law 5-6 (5).
+// Ratios (not fixed counts) so NEXT_PUBLIC_SESSION_SIZE overrides (e2e) still
+// scale sanely. "history" deliberately omitted — it absorbs the rounding
+// remainder, same pattern SESSION_CORRECT_RATIO's sibling counts already use.
+export const CHAPTER_QUOTA_RATIOS: Record<string, number> = {
+  "uk-overview": 3 / 24,
+  "values-principles": 3 / 24,
+  culture: 4 / 24,
+  "government-law": 5 / 24,
+};
 
 // Short commit hash of the deployed build, empty outside Vercel (see next.config.ts).
 export const GIT_COMMIT_SHA = (

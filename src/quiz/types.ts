@@ -22,11 +22,13 @@ export interface QuizState {
   currentDisplayOptions: { text: string; originalIndex: number }[];
   answered: boolean;
   lastResult: LastResult | null;
+  startedAt: number | null;
+  endReason: "completed" | "timeout";
 }
 
 export type QuizAction =
   | { type: "QUESTIONS_LOADED"; total: number }
-  | { type: "SESSION_STARTED"; queue: SessionQuestion[] }
+  | { type: "SESSION_STARTED"; queue: SessionQuestion[]; startedAt: number }
   | { type: "OPTION_TOGGLED"; idx: number }
   | {
       type: "ANSWER_SUBMITTED";
@@ -36,4 +38,5 @@ export type QuizAction =
       };
     }
   | { type: "NEXT_REQUESTED" }
-  | { type: "SESSION_RESTORED"; snapshot: QuizState };
+  | { type: "SESSION_RESTORED"; snapshot: QuizState }
+  | { type: "TIME_EXPIRED" };

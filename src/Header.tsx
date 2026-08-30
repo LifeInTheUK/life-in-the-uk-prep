@@ -16,8 +16,14 @@ export default function Header({ children }: { children: ReactNode }) {
   const isLanding = pathname === "/";
   const isQuizPage = pathname === "/test";
   const { data: session } = authClient.useSession();
-  const { totalQuestions, scoreCurrent, scoreTotal, animateScore } =
-    useHeaderStats();
+  const {
+    totalQuestions,
+    scoreCurrent,
+    scoreTotal,
+    animateScore,
+    sessionStartedAt,
+    sessionTimeLimitMs,
+  } = useHeaderStats();
   const { aggregate } = useProgress();
   const accuracyPct =
     aggregate.attempts === 0
@@ -26,6 +32,7 @@ export default function Header({ children }: { children: ReactNode }) {
 
   const scoreRef = useRef<HTMLDivElement>(null);
   const prevScore = useRef(scoreCurrent);
+  const timeLeftRef = useRef<HTMLDivElement>(null);
 
   // router.back() can land on a history entry that's the same route with only
   // the query string changed (e.g. a pagination step) — skip through those so
@@ -70,6 +77,31 @@ export default function Header({ children }: { children: ReactNode }) {
     // /test), this effect fires with scoreRef.current still null and no-ops,
     // and won't fire again once the node exists unless something re-triggers it.
   }, [scoreCurrent, scoreTotal, animateScore, isQuizPage]);
+
+  // Ticks the countdown display itself (direct textContent write, same
+  // imperative pattern as the score tile above) rather than a context value
+  // that changes every second — that would re-render the whole tree and, if
+  // it lived in quiz reducer state instead, re-fire the sessionStorage
+  // persistence effect every second. Only the static sessionStartedAt lives
+  // upstream; remaining time is always recomputed from wall-clock time here.
+  useEffect(() => {
+    const el = timeLeftRef.current;
+    if (!el || !isQuizPage || sessionStartedAt === null) return;
+    const startedAt = sessionStartedAt;
+
+    function tick(): void {
+      if (!el) return;
+      const remainingMs = Math.max(0, sessionTimeLimitMs - (Date.now() - startedAt));
+      const totalSec = Math.ceil(remainingMs / 1000);
+      const mm = String(Math.floor(totalSec / 60)).padStart(2, "0");
+      const ss = String(totalSec % 60).padStart(2, "0");
+      el.textContent = `${mm}:${ss}`;
+    }
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [isQuizPage, sessionStartedAt, sessionTimeLimitMs]);
 
   return (
     <div className="w-full max-w-xl mx-auto px-4 py-6 sm:py-10 flex flex-col gap-5">
@@ -205,6 +237,15 @@ export default function Header({ children }: { children: ReactNode }) {
               0 / 0
             </div>
             <div className="text-[11px] text-muted">Score</div>
+          </div>
+          <div
+            className="flex flex-col items-center justify-center flex-1 min-w-21 rounded-xl bg-surface border border-line py-2"
+            title="Time remaining in this session"
+          >
+            <div className="text-base font-semibold tabular" ref={timeLeftRef}>
+              --:--
+            </div>
+            <div className="text-[11px] text-muted">Time Left</div>
           </div>
         </div>
       )}

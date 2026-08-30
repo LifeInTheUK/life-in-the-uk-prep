@@ -103,6 +103,7 @@ function QuizPageInner() {
           <ResultsScreen
             firstTryScore={state.firstTryScore}
             initialQuestionsCount={state.initialQuestionsCount}
+            timedOut={state.endReason === "timeout"}
           />
         </div>
         <NavigationBar />

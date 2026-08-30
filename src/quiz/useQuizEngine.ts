@@ -6,7 +6,10 @@ import {
   SESSION_SIZE,
   SESSION_NEW_RATIO,
   SESSION_IMPROVE_RATIO,
+  SESSION_TIME_LIMIT_MS,
+  CHAPTER_QUOTA_RATIOS,
 } from "../config";
+import { TOPIC_ORDER } from "../topics";
 import { initialQuizState, quizReducer } from "./reducer";
 import type { QuizState } from "./types";
 import { loadQuestions } from "./loadQuestions";
@@ -61,12 +64,63 @@ function byDueThenWeakest(a: SessionQuestion, b: SessionQuestion): number {
   return a.accuracy - b.accuracy; // lowest accuracy first
 }
 
+// Draw from three buckets within a pool — new / answered-wrong-before /
+// always-correct-so-far — at a fixed ratio, with a shortfall fill (new ->
+// improve -> correct) for when a bucket runs dry. Appends picks straight into
+// `selected` and records their ids in the shared `usedIds` set so a question
+// already picked for one chapter can never be picked again for another.
+function selectForPool(
+  pool: SessionQuestion[],
+  quota: number,
+  usedIds: Set<number>,
+  selected: SessionQuestion[],
+): void {
+  const newQ = pool.filter((q) => q.sm2.attempts === 0).sort(byDueThenWeakest);
+  const improveQ = pool
+    .filter((q) => q.sm2.attempts > 0 && q.sm2.correct < q.sm2.attempts)
+    .sort(byDueThenWeakest);
+  const correctQ = pool
+    .filter((q) => q.sm2.attempts > 0 && q.sm2.correct === q.sm2.attempts)
+    .sort(byDueThenWeakest);
+
+  const newCount = Math.round(quota * SESSION_NEW_RATIO);
+  const improveCount = Math.round(quota * SESSION_IMPROVE_RATIO);
+  const correctCount = quota - newCount - improveCount;
+
+  const startLength = selected.length;
+  function take(source: SessionQuestion[], count: number): void {
+    for (const q of source) {
+      if (count <= 0) break;
+      if (usedIds.has(q.id)) continue;
+      selected.push(q);
+      usedIds.add(q.id);
+      count--;
+    }
+  }
+
+  take(newQ, newCount);
+  take(improveQ, improveCount);
+  take(correctQ, correctCount);
+
+  let shortfall = quota - (selected.length - startLength);
+  if (shortfall > 0) take(newQ, shortfall);
+  shortfall = quota - (selected.length - startLength);
+  if (shortfall > 0) take(improveQ, shortfall);
+  shortfall = quota - (selected.length - startLength);
+  if (shortfall > 0) take(correctQ, shortfall);
+}
+
 // Sorting the whole bank by "overdue first" alone means unseen questions
 // (sm2.next === 0, always the smallest timestamp) come before every
 // previously-missed question, so review never surfaces until the entire bank
-// has been seen once. Instead, draw from three buckets every session — new /
-// answered-wrong-before / always-correct-so-far — at a fixed ratio, with a
-// shortfall fill (new -> improve -> correct) for when a bucket runs dry.
+// has been seen once — selectForPool() above handles that per chapter.
+//
+// On top of that, the real Life in the UK test draws a fixed number of
+// questions from each of 5 official chapters (History and Government most
+// heavily weighted) rather than treating the bank as one undifferentiated
+// pool — see CHAPTER_QUOTA_RATIOS in src/config.ts. Each chapter runs its own
+// new/improve/correct selection scaled to its quota, sharing one usedIds set
+// so the same question is never double-picked across chapters.
 function buildSessionQueue(
   questions: Question[],
   getSM2: (id: number) => SM2Data,
@@ -81,43 +135,49 @@ function buildSessionQueue(
   // random order instead of array order.
   shuffle(allWithSM2);
 
-  const newQ = allWithSM2.filter((q) => q.sm2.attempts === 0).sort(byDueThenWeakest);
-  const improveQ = allWithSM2
-    .filter((q) => q.sm2.attempts > 0 && q.sm2.correct < q.sm2.attempts)
-    .sort(byDueThenWeakest);
-  const correctQ = allWithSM2
-    .filter((q) => q.sm2.attempts > 0 && q.sm2.correct === q.sm2.attempts)
-    .sort(byDueThenWeakest);
+  // Partition by chapter; questions with no topic (or a topic outside the 5
+  // known chapters) are dropped from every chapter's pool — there's no 6th
+  // catch-all chapter to fold them into.
+  const byChapter = new Map<string, SessionQuestion[]>();
+  for (const topic of TOPIC_ORDER) byChapter.set(topic, []);
+  for (const q of allWithSM2) {
+    const pool = q.topic ? byChapter.get(q.topic) : undefined;
+    if (pool) pool.push(q);
+  }
 
-  const newCount = Math.round(SESSION_SIZE * SESSION_NEW_RATIO);
-  const improveCount = Math.round(SESSION_SIZE * SESSION_IMPROVE_RATIO);
-  const correctCount = SESSION_SIZE - newCount - improveCount;
+  // Quotas are ratios of SESSION_SIZE (not fixed counts) so a dev/e2e
+  // override like NEXT_PUBLIC_SESSION_SIZE=3 still scales sanely instead of
+  // demanding a full 24-question split. "history" absorbs the rounding
+  // remainder, same pattern SESSION_CORRECT_RATIO's siblings already use.
+  const quotas: Record<string, number> = {};
+  let allocated = 0;
+  for (const topic of TOPIC_ORDER) {
+    if (topic === "history") continue;
+    const quota = Math.round(SESSION_SIZE * (CHAPTER_QUOTA_RATIOS[topic] ?? 0));
+    quotas[topic] = quota;
+    allocated += quota;
+  }
+  quotas["history"] = Math.max(0, SESSION_SIZE - allocated);
 
   const selected: SessionQuestion[] = [];
   const usedIds = new Set<number>();
-  function take(pool: SessionQuestion[], count: number): void {
-    for (const q of pool) {
-      if (count <= 0) break;
-      if (usedIds.has(q.id)) continue;
+  for (const topic of TOPIC_ORDER) {
+    selectForPool(byChapter.get(topic) ?? [], quotas[topic] ?? 0, usedIds, selected);
+  }
+
+  // Cross-chapter shortfall — only reachable in extreme edge cases (a
+  // chapter's own new/improve/correct pools all ran dry). Backfill from
+  // whatever's left in the whole bank, regardless of chapter, so the total
+  // never falls short of SESSION_SIZE.
+  if (selected.length < SESSION_SIZE) {
+    const remaining = allWithSM2
+      .filter((q) => !usedIds.has(q.id))
+      .sort(byDueThenWeakest);
+    for (const q of remaining) {
+      if (selected.length >= SESSION_SIZE) break;
       selected.push(q);
       usedIds.add(q.id);
-      count--;
     }
-  }
-
-  take(newQ, newCount);
-  take(improveQ, improveCount);
-  take(correctQ, correctCount);
-
-  if (selected.length < SESSION_SIZE) {
-    const shortfall = SESSION_SIZE - selected.length;
-    take(newQ, shortfall);
-  }
-  if (selected.length < SESSION_SIZE) {
-    take(improveQ, SESSION_SIZE - selected.length);
-  }
-  if (selected.length < SESSION_SIZE) {
-    take(correctQ, SESSION_SIZE - selected.length);
   }
 
   return shuffle(selected);
@@ -134,7 +194,7 @@ export interface QuizEngine {
 
 export function useQuizEngine(): QuizEngine {
   const [state, dispatch] = useReducer(quizReducer, initialQuizState);
-  const { setTotalQuestions, setScore } = useHeaderStats();
+  const { setTotalQuestions, setScore, setSessionTimer } = useHeaderStats();
   const { getSM2, recordAnswer } = useProgress();
   const { recordResult } = useHistoryState();
 
@@ -157,6 +217,22 @@ export function useQuizEngine(): QuizEngine {
     };
     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(storable));
   }, [state]);
+
+  // Auto-finishes the session once the 45-minute limit elapses. Wall-clock
+  // based (Date.now() - startedAt) rather than a decrementing counter, so a
+  // throttled background tab self-corrects instead of drifting — it may fire
+  // up to ~60s late while backgrounded, never early. Depends only on
+  // phase/startedAt (not full state) so it isn't torn down on every answer.
+  useEffect(() => {
+    if (state.phase !== "active" || state.startedAt === null) return;
+    const startedAt = state.startedAt;
+    const id = setInterval(() => {
+      if (Date.now() - startedAt >= SESSION_TIME_LIMIT_MS) {
+        dispatch({ type: "TIME_EXPIRED" });
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [state.phase, state.startedAt]);
 
   async function start(): Promise<void> {
     if (startedRef.current) return;
@@ -192,6 +268,7 @@ export function useQuizEngine(): QuizEngine {
         });
         setTotalQuestions(storable.totalQuestionCount);
         setScore(storable.firstTryScore, storable.initialQuestionsCount, false);
+        setSessionTimer(storable.startedAt, SESSION_TIME_LIMIT_MS);
         return;
       }
     }
@@ -201,8 +278,10 @@ export function useQuizEngine(): QuizEngine {
     setTotalQuestions(qs.length);
 
     const queue = buildSessionQueue(qs, getSM2);
-    dispatch({ type: "SESSION_STARTED", queue });
+    const startedAt = Date.now();
+    dispatch({ type: "SESSION_STARTED", queue, startedAt });
     setScore(0, queue.length, false);
+    setSessionTimer(startedAt, SESSION_TIME_LIMIT_MS);
   }
 
   function submitAnswer(selected: number | number[]): void {
@@ -300,8 +379,10 @@ export function useQuizEngine(): QuizEngine {
     setTotalQuestions(qs.length);
 
     const queue = buildSessionQueue(qs, getSM2);
-    dispatch({ type: "SESSION_STARTED", queue });
+    const startedAt = Date.now();
+    dispatch({ type: "SESSION_STARTED", queue, startedAt });
     setScore(0, queue.length, false);
+    setSessionTimer(startedAt, SESSION_TIME_LIMIT_MS);
   }
 
   return { state, start, selectOption, submitMulti, next, restart };

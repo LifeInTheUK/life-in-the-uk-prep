@@ -22,6 +22,8 @@ export const initialQuizState: QuizState = {
   currentDisplayOptions: [],
   answered: false,
   lastResult: null,
+  startedAt: null,
+  endReason: "completed",
 };
 
 export function quizReducer(state: QuizState, action: QuizAction): QuizState {
@@ -40,6 +42,8 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
         selectedOptions: [],
         answered: false,
         lastResult: null,
+        startedAt: action.startedAt,
+        endReason: "completed",
         currentDisplayOptions: action.queue[0]
           ? shuffledDisplayOptions(action.queue[0].o)
           : [],
@@ -97,6 +101,10 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
 
     case "SESSION_RESTORED":
       return action.snapshot;
+
+    case "TIME_EXPIRED":
+      if (state.phase !== "active") return state;
+      return { ...state, phase: "results", endReason: "timeout" };
 
     default:
       return state;
