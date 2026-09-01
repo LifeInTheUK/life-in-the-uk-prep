@@ -166,3 +166,13 @@ Both feedback endpoints (plus `/api/friends/add` and `/api/propose-question`, se
 `lib/rateLimit.ts`'s three functions each piggyback an opportunistic sweep of their own table on every call — same pattern as `captcha_challenges`' sweep in `GET /api/captcha` (see "General app feedback" above): `incrementRateLimit` sweeps `feedback_rate_limits` rows with `window_start` older than 24h, `checkBanned` sweeps `identity_bans` rows with `banned_until` in the past, `recordViolationAndMaybeBan` sweeps `rate_limit_violations` rows with `occurred_at` older than 24h. The 24h cutoffs are a safe buffer, not tightly coupled to the 1h `BAN_VIOLATION_WINDOW_MS` lookback or the longest 1h rate-limit window — no cron job, all three tables stay bounded purely from being hit by normal traffic on the rate-limited endpoints.
 
 All rate-limit/ban numeric thresholds (15 total — `/api/feedback`/`/api/app-feedback`'s per-identity/global limits, `/api/friends/add`'s and `/api/propose-question`'s per-identity limit/window, plus the ban's violation threshold/window/duration) are environment-configurable via `src/config.ts`, following the same `Number(process.env.X) || default` pattern as `SESSION_SIZE` — unset or invalid falls back silently to the value that was previously hardcoded, no startup validation. Window durations are expressed as `_MINUTES`/`_HOURS` env vars (e.g. `FEEDBACK_RATE_LIMIT_WINDOW_MINUTES`) for operator readability, converted to ms once in `src/config.ts`. Deliberately **not** configurable: `/api/feedback`'s two global window *durations* (fixed 1min/1hr — their key literals `__global_minute__`/`__global_hour__` embed that duration, so decoupling the duration from the name risks a misleading mismatch) and `MAX_DETAILS_LENGTH` in both feedback routes (unrelated to rate-limiting). All vars are documented (commented-out, with defaults) in `.env.example`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
