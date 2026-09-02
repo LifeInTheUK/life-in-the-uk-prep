@@ -34,6 +34,13 @@ export const SESSION_NEW_RATIO = 0.8;
 export const SESSION_IMPROVE_RATIO = 0.15;
 export const SESSION_CORRECT_RATIO = 0.05;
 
+// When the "new" bucket can't fill its quota (bank mostly seen), its
+// shortfall is redistributed between improve/mastered rather than dumped
+// entirely into improve — biased toward mastered so a depleted new pool
+// doesn't turn every session into a wall of previously-failed questions.
+export const SESSION_NEW_SHORTFALL_IMPROVE_RATIO = 0.4;
+export const SESSION_NEW_SHORTFALL_CORRECT_RATIO = 0.6;
+
 // Chapter-weighted quotas mirroring the official test's per-chapter ranges
 // out of 24: Ch1 Values & Principles 2-3 (using 3), Ch2 UK Overview 3-4 (3),
 // Ch3 History 8-10 (9), Ch4 Culture 4-5 (4), Ch5 Government & Law 5-6 (5).

@@ -6,6 +6,7 @@ import {
   SESSION_SIZE,
   SESSION_NEW_RATIO,
   SESSION_IMPROVE_RATIO,
+  SESSION_NEW_SHORTFALL_IMPROVE_RATIO,
   SESSION_TIME_LIMIT_MS,
   CHAPTER_QUOTA_RATIOS,
 } from "../config";
@@ -65,10 +66,19 @@ function byDueThenWeakest(a: SessionQuestion, b: SessionQuestion): number {
 }
 
 // Draw from three buckets within a pool — new / answered-wrong-before /
-// always-correct-so-far — at a fixed ratio, with a shortfall fill (new ->
-// improve -> correct) for when a bucket runs dry. Appends picks straight into
-// `selected` and records their ids in the shared `usedIds` set so a question
-// already picked for one chapter can never be picked again for another.
+// always-correct-so-far — at a fixed ratio. Once a user has attempted most of
+// the bank, the "new" bucket runs dry per chapter; its shortfall is
+// redistributed between improve/mastered biased toward mastered
+// (SESSION_NEW_SHORTFALL_IMPROVE_RATIO) rather than dumped entirely into
+// improve, so a depleted new pool doesn't turn every session into a wall of
+// previously-failed questions (SM-2's next=now+60s reset on a miss means
+// missed questions sort first via byDueThenWeakest almost immediately, so an
+// all-improve fallback would otherwise compound). A final cascade fill (new
+// -> improve -> correct) remains as a last resort for the rarer case where
+// improve/correct also can't fill their (now boosted) counts. Appends picks
+// straight into `selected` and records their ids in the shared `usedIds` set
+// so a question already picked for one chapter can never be picked again for
+// another.
 function selectForPool(
   pool: SessionQuestion[],
   quota: number,
@@ -99,9 +109,15 @@ function selectForPool(
   }
 
   take(newQ, newCount);
-  take(improveQ, improveCount);
-  take(correctQ, correctCount);
+  const newShortfall = newCount - (selected.length - startLength);
+  const improveExtra = Math.round(newShortfall * SESSION_NEW_SHORTFALL_IMPROVE_RATIO);
+  const correctExtra = newShortfall - improveExtra;
 
+  take(improveQ, improveCount + improveExtra);
+  take(correctQ, correctCount + correctExtra);
+
+  // Last-resort cascade: only reachable if improve/correct also can't fill
+  // their (now boosted) counts.
   let shortfall = quota - (selected.length - startLength);
   if (shortfall > 0) take(newQ, shortfall);
   shortfall = quota - (selected.length - startLength);
