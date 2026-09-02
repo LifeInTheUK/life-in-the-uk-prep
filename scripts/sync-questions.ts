@@ -30,15 +30,33 @@ interface ExportedQuestion {
   topic: string | null;
 }
 
-const sql = neon(process.env.DATABASE_URL!);
-const filePath = join(dirname(fileURLToPath(import.meta.url)), "..", "db", "questions-export.json");
+const sqlDev = neon(process.env.DATABASE_URL_DEV!);
+const sqlProd = neon(process.env.DATABASE_URL_PROD!);
+const filePath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "..",
+  "db",
+  "questions-export.json",
+);
 
 async function main() {
-  const questions: ExportedQuestion[] = JSON.parse(readFileSync(filePath, "utf-8"));
+  const questions: ExportedQuestion[] = JSON.parse(
+    readFileSync(filePath, "utf-8"),
+  );
 
   let synced = 0;
   for (const q of questions) {
-    await sql`
+    await sqlDev`
+      INSERT INTO questions (id, question, options, answer, explanation, topic)
+      VALUES (${q.id}, ${q.question}, ${JSON.stringify(q.options)}, ${JSON.stringify(q.answer)}, ${q.explanation}, ${q.topic ?? null})
+      ON CONFLICT (id) DO UPDATE SET
+        question = EXCLUDED.question,
+        options = EXCLUDED.options,
+        answer = EXCLUDED.answer,
+        explanation = EXCLUDED.explanation,
+        topic = EXCLUDED.topic
+    `;
+    await sqlProd`
       INSERT INTO questions (id, question, options, answer, explanation, topic)
       VALUES (${q.id}, ${q.question}, ${JSON.stringify(q.options)}, ${JSON.stringify(q.answer)}, ${q.explanation}, ${q.topic ?? null})
       ON CONFLICT (id) DO UPDATE SET
