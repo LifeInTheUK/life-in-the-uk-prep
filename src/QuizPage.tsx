@@ -10,6 +10,7 @@ import OptionsList from "./quiz/OptionsList";
 import FeedbackPanel from "./quiz/FeedbackPanel";
 import NavigationBar from "./quiz/NavigationBar";
 import ResultsScreen from "./quiz/ResultsScreen";
+import ReviewAnswersList from "./quiz/ReviewAnswersList";
 
 const SignInPromptModal = dynamic(() => import("./quiz/SignInPromptModal"), { ssr: false });
 
@@ -18,7 +19,14 @@ function QuizPageInner() {
   const { data: session, isPending } = authClient.useSession();
   const containerRef = useRef<HTMLDivElement>(null);
   const [showSignInPrompt, setShowSignInPrompt] = useState(false);
+  const [showReview, setShowReview] = useState(false);
   const promptedRef = useRef(false);
+
+  // Collapse the review whenever we leave the results phase, so a restart()
+  // doesn't drop the next test's results screen straight into review mode.
+  useEffect(() => {
+    if (state.phase !== "results") setShowReview(false);
+  }, [state.phase]);
 
   useEffect(() => {
     if (state.phase === "loading") start();
@@ -62,7 +70,11 @@ function QuizPageInner() {
       if (e.key === "Enter" || e.key === " ") {
         // A focused button already handles Enter/Space natively; only step
         // in when the key press isn't targeting one, to avoid double-firing.
+        // <summary> (the review list's collapsible rows) does the same but
+        // isn't an HTMLButtonElement — without it, expanding a row with the
+        // keyboard would also restart the test.
         if (document.activeElement instanceof HTMLButtonElement) return;
+        if (document.activeElement?.tagName === "SUMMARY") return;
 
         if (state.phase === "active" && state.answered) {
           e.preventDefault();
@@ -105,6 +117,23 @@ function QuizPageInner() {
             initialQuestionsCount={state.initialQuestionsCount}
             timedOut={state.endReason === "timeout"}
           />
+          <div className="mt-2 flex justify-center">
+            <button
+              id="review-answers-btn"
+              type="button"
+              aria-expanded={showReview}
+              aria-controls="session-review"
+              onClick={() => setShowReview((v) => !v)}
+              className="text-sm font-medium text-accent hover:text-accent-dark transition-colors"
+            >
+              {showReview ? "Back to results" : "Review answers"}
+            </button>
+          </div>
+          {showReview && (
+            <div id="session-review" className="mt-4 fade-in">
+              <ReviewAnswersList answerHistory={state.answerHistory} />
+            </div>
+          )}
         </div>
         <NavigationBar />
         {showSignInPrompt && (

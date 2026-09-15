@@ -4,15 +4,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useProgress } from "./progressContext";
 import { loadQuestions } from "./quiz/loadQuestions";
+import { formatAnswer } from "./quiz/formatAnswer";
 import type { Question, SM2Data } from "./types";
 import Skeleton from "./Skeleton";
 import SearchBox from "./SearchBox";
 
-function formatAnswer(o: string[], a: number | number[] | undefined): string {
-  if (a === undefined) return "—";
-  if (Array.isArray(a)) return a.map((i) => o[i]).join(", ");
-  return o[a];
-}
 
 interface Attempted {
   question: Question;

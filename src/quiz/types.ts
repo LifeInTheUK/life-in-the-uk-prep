@@ -11,6 +11,21 @@ export interface LastResult {
   questionId: number;
 }
 
+// A snapshot of one answered question, appended as it happens so the results
+// screen can offer a post-session review. The live sessionQueue can't serve
+// this: answered questions are dropped from it on ANSWER_SUBMITTED, and
+// lastResult only ever holds the most recent one.
+export interface AnsweredQuestionRecord {
+  questionId: number;
+  q: string;
+  o: string[];
+  topic?: string;
+  correctAnswer: number | number[];
+  selectedOriginal: number | number[];
+  isCorrect: boolean;
+  explanation: string;
+}
+
 export interface QuizState {
   phase: QuizPhase;
   totalQuestionCount: number;
@@ -22,6 +37,7 @@ export interface QuizState {
   currentDisplayOptions: { text: string; originalIndex: number }[];
   answered: boolean;
   lastResult: LastResult | null;
+  answerHistory: AnsweredQuestionRecord[];
   startedAt: number | null;
   endReason: "completed" | "timeout";
 }
@@ -35,6 +51,7 @@ export type QuizAction =
       payload: LastResult & {
         updatedQueue: SessionQuestion[];
         newFirstTryScore: number;
+        historyRecord: AnsweredQuestionRecord;
       };
     }
   | { type: "NEXT_REQUESTED" }

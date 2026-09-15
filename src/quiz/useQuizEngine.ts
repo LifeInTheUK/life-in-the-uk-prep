@@ -12,7 +12,7 @@ import {
 } from "../config";
 import { TOPIC_ORDER } from "../topics";
 import { initialQuizState, quizReducer } from "./reducer";
-import type { QuizState } from "./types";
+import type { AnsweredQuestionRecord, QuizState } from "./types";
 import { loadQuestions } from "./loadQuestions";
 import { useHeaderStats } from "../headerStats";
 import { useProgress } from "../progressContext";
@@ -37,6 +37,13 @@ const SESSION_STORAGE_KEY = "quizActiveSession";
 // exactly as before restoring — OptionsList still needs `question.a` at
 // render time (to detect multi-select and to reveal the correct answer once
 // answered), just never sourced from the persisted snapshot.
+//
+// state.answerHistory is deliberately NOT stripped the same way: every record
+// in it is for an already-answered, already-revealed question, so its
+// correctAnswer/explanation give nothing away that the user hasn't seen. The
+// Omit below only names sessionQueue/currentQuestion, so answerHistory rides
+// through to storage (and back) whole — which is what the results-screen
+// review list needs after a reload.
 type StorableSessionQuestion = Omit<SessionQuestion, "a" | "ex">;
 type StorableQuizState = Omit<QuizState, "sessionQueue" | "currentQuestion"> & {
   sessionQueue: StorableSessionQuestion[];
@@ -281,7 +288,15 @@ export function useQuizEngine(): QuizEngine {
       if (storable.phase === "results" || currentQuestion !== null) {
         dispatch({
           type: "SESSION_RESTORED",
-          snapshot: { ...storable, sessionQueue, currentQuestion },
+          snapshot: {
+            ...storable,
+            sessionQueue,
+            currentQuestion,
+            // A snapshot written by a build that predates answerHistory has
+            // no such key; without this default the next ANSWER_SUBMITTED
+            // spreads undefined and throws.
+            answerHistory: storable.answerHistory ?? [],
+          },
         });
         setTotalQuestions(storable.totalQuestionCount);
         setScore(storable.firstTryScore, storable.initialQuestionsCount, false);
@@ -343,6 +358,19 @@ export function useQuizEngine(): QuizEngine {
     const newFirstTryScore =
       isCorrect && q.isFirstTry ? state.firstTryScore + 1 : state.firstTryScore;
 
+    // Captured here because the answered question is about to leave
+    // sessionQueue — nothing else retains it through to the results phase.
+    const historyRecord: AnsweredQuestionRecord = {
+      questionId: q.id,
+      q: q.q,
+      o: q.o,
+      topic: q.topic,
+      correctAnswer: q.a,
+      selectedOriginal: selected,
+      isCorrect,
+      explanation: q.ex,
+    };
+
     dispatch({
       type: "ANSWER_SUBMITTED",
       payload: {
@@ -350,6 +378,7 @@ export function useQuizEngine(): QuizEngine {
         selectedOriginal: selected,
         updatedQueue,
         newFirstTryScore,
+        historyRecord,
         correctRenderedIdx,
         explanation: q.ex,
         historicalAccuracyPct: Math.round(

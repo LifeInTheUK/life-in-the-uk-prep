@@ -22,6 +22,7 @@ export const initialQuizState: QuizState = {
   currentDisplayOptions: [],
   answered: false,
   lastResult: null,
+  answerHistory: [],
   startedAt: null,
   endReason: "completed",
 };
@@ -42,6 +43,9 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
         selectedOptions: [],
         answered: false,
         lastResult: null,
+        // Both start()'s fresh-session branch and restart() dispatch this, so
+        // clearing here is the only reset the review list needs.
+        answerHistory: [],
         startedAt: action.startedAt,
         endReason: "completed",
         currentDisplayOptions: action.queue[0]
@@ -74,6 +78,7 @@ export function quizReducer(state: QuizState, action: QuizAction): QuizState {
         answered: true,
         sessionQueue: action.payload.updatedQueue,
         firstTryScore: action.payload.newFirstTryScore,
+        answerHistory: [...state.answerHistory, action.payload.historyRecord],
         lastResult: {
           isCorrect: action.payload.isCorrect,
           selectedOriginal: action.payload.selectedOriginal,
