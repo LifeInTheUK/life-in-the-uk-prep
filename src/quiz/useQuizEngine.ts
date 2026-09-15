@@ -67,8 +67,24 @@ function shuffle<T>(arr: T[]): T[] {
   return arr;
 }
 
+// `sm2.next` used to be an epoch-ms timestamp; it's now a completed-session
+// count (see calculateSM2). Anything at/above this threshold is a leftover
+// pre-migration timestamp (real epoch values are ~1.7e12+) — realistic session
+// counts never approach it. Such values are treated as due-now for sorting
+// only (no write); once the question is next answered, calculateSM2 overwrites
+// `next` with a real session count and the clamp stops applying to it. Without
+// this, legacy rows would sort last forever, never get picked, and so never get
+// re-answered into the new unit.
+const LEGACY_NEXT_THRESHOLD = 1_000_000;
+
+function effectiveNext(sm2: SessionQuestion["sm2"]): number {
+  return sm2.next >= LEGACY_NEXT_THRESHOLD ? 0 : sm2.next;
+}
+
 function byDueThenWeakest(a: SessionQuestion, b: SessionQuestion): number {
-  if (a.sm2.next !== b.sm2.next) return a.sm2.next - b.sm2.next; // overdue first
+  const an = effectiveNext(a.sm2);
+  const bn = effectiveNext(b.sm2);
+  if (an !== bn) return an - bn; // overdue first
   return a.accuracy - b.accuracy; // lowest accuracy first
 }
 
@@ -78,10 +94,11 @@ function byDueThenWeakest(a: SessionQuestion, b: SessionQuestion): number {
 // redistributed between improve/mastered biased toward mastered
 // (SESSION_NEW_SHORTFALL_IMPROVE_RATIO) rather than dumped entirely into
 // improve, so a depleted new pool doesn't turn every session into a wall of
-// previously-failed questions (SM-2's next=now+60s reset on a miss means
-// missed questions sort first via byDueThenWeakest almost immediately, so an
-// all-improve fallback would otherwise compound). A final cascade fill (new
-// -> improve -> correct) remains as a last resort for the rarer case where
+// previously-failed questions (SM-2's next=currentSessionCount reset on a miss
+// means missed questions are due again immediately and so sort first via
+// byDueThenWeakest, meaning an all-improve fallback would compound). A final
+// cascade fill (new -> improve -> correct) remains as a last resort for the
+// rarer case where
 // improve/correct also can't fill their (now boosted) counts. Appends picks
 // straight into `selected` and records their ids in the shared `usedIds` set
 // so a question already picked for one chapter can never be picked again for
@@ -134,7 +151,7 @@ function selectForPool(
 }
 
 // Sorting the whole bank by "overdue first" alone means unseen questions
-// (sm2.next === 0, always the smallest timestamp) come before every
+// (sm2.next === 0, always the smallest due-count) come before every
 // previously-missed question, so review never surfaces until the entire bank
 // has been seen once — selectForPool() above handles that per chapter.
 //
@@ -219,7 +236,7 @@ export function useQuizEngine(): QuizEngine {
   const [state, dispatch] = useReducer(quizReducer, initialQuizState);
   const { setTotalQuestions, setScore, setSessionTimer } = useHeaderStats();
   const { getSM2, recordAnswer } = useProgress();
-  const { recordResult } = useHistoryState();
+  const { recordResult, totalCount } = useHistoryState();
 
   // useQuizEngine lives above the /test route (mounted once in app/layout.tsx)
   // so its state survives navigating away and back. This guard makes start()
@@ -345,7 +362,9 @@ export function useQuizEngine(): QuizEngine {
       qStats.attempts = (qStats.attempts || 0) + 1;
       if (isCorrect) qStats.correct = (qStats.correct || 0) + 1;
     }
-    const nextSm2 = calculateSM2(q.sm2, isCorrect ? 4 : 1);
+    // totalCount is sessions completed *before* this one — it only increments
+    // in recordResult(), fired from next() once the queue empties.
+    const nextSm2 = calculateSM2(q.sm2, isCorrect ? 4 : 1, totalCount);
     recordAnswer(q.id, {
       ...nextSm2,
       attempts: qStats.attempts,
